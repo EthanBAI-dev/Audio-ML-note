@@ -114,9 +114,11 @@ function icon(kind, x, y, w = 74, h = 58) {
   const cx = x + w / 2;
   const cy = y + h / 2;
   if (kind === 'air') {
-    out += R(x + 8, cy - 13, 12, 26, { fill: SOFT, stroke: BLUE, radius: 3 });
-    out += PATH(`M${x + 20} ${cy - 10} L${x + 31} ${cy - 17} L${x + 31} ${cy + 17} L${x + 20} ${cy + 10} Z`, { color: BLUE, width: 1.5, fill: PALE });
-    [0, 9, 18].forEach((offset) => { out += PATH(`M${x + 38 + offset} ${cy - 15 + offset * 0.18} Q${x + 48 + offset} ${cy} ${x + 38 + offset} ${cy + 15 - offset * 0.18}`, { color: offset === 18 ? WARM : BLUE, width: 1.6 }); });
+    const sx = w / 104;
+    const sy = h / 72;
+    out += R(x + 10 * sx, cy - 15 * sy, 14 * sx, 30 * sy, { fill: SOFT, stroke: BLUE, radius: 3 });
+    out += PATH(`M${x + 24 * sx} ${cy - 12 * sy} L${x + 39 * sx} ${cy - 21 * sy} L${x + 39 * sx} ${cy + 21 * sy} L${x + 24 * sx} ${cy + 12 * sy} Z`, { color: BLUE, width: 1.7, fill: PALE });
+    [0, 14, 28].forEach((offset) => { out += PATH(`M${x + (49 + offset) * sx} ${cy - (18 - offset * 0.15) * sy} Q${x + (62 + offset) * sx} ${cy} ${x + (49 + offset) * sx} ${cy + (18 - offset * 0.15) * sy}`, { color: offset === 28 ? WARM : BLUE, width: 1.8 }); });
   }
   if (kind === 'propagate') {
     for (let i = 0; i < 7; i += 1) for (let j = 0; j < 3; j += 1) {
@@ -275,25 +277,26 @@ write('01-evidence.svg', (() => {
   ];
   let s = header(['同一段机器声里', '不同表示能看见什么']);
   rows.forEach(([name, a, aOk, b, bOk], i) => {
-    const y = 80 + i * 182;
-    s += card(28, y, 364, 154);
-    s += T(48, y + 34, name, { size: 18, weight: 700, fill: BLUE });
-    const miniX = 268; const miniY = y + 10; const miniW = 96; const miniH = 34;
+    const y = 72 + i * 182;
+    s += R(28, y + 4, 4, 24, { fill: i === 2 ? WARM : BLUE, stroke: 'none', radius: 2 });
+    s += T(42, y + 23, name, { size: 16, weight: 700, fill: BLUE });
+    const miniX = 28; const miniY = y + 38; const miniW = 364; const miniH = 72;
     if (i === 0) {
       s += plotFrame(miniX, miniY, miniW, miniH);
-      s += curve(miniX + 4, miniY + 4, miniW - 8, miniH - 8, (u) => 0.5 + 0.3 * Math.sin(u * 28), 120, { color: BLUE, width: 1.3 });
+      s += curve(miniX + 6, miniY + 6, miniW - 12, miniH - 12, (u) => 0.5 + 0.12 * Math.sin(u * 65) + 0.3 * Math.exp(-Math.pow((u - 0.34) / 0.035, 2)) * Math.sin(u * 420), 400, { color: BLUE, width: 1.6 });
     } else if (i === 1) {
       s += plotFrame(miniX, miniY, miniW, miniH);
-      s += curve(miniX + 4, miniY + 4, miniW - 8, miniH - 8, spectrumFn, 100, { color: BLUE, width: 1.5 });
+      s += curve(miniX + 6, miniY + 6, miniW - 12, miniH - 12, spectrumFn, 240, { color: BLUE, width: 1.8 });
     } else s += spectrogram(miniX, miniY, miniW, miniH);
     [[a, aOk], [b, bOk]].forEach(([label, ok], j) => {
-      const yy = y + 70 + j * 42;
-      s += T(50, yy, label, { size: 15 });
-      s += R(250, yy - 22, 112, 30, { fill: ok ? '#eaf5ef' : '#f0f2f4', stroke: ok ? GREEN : '#bdc6ce', radius: 15 });
-      s += T(306, yy - 1, ok ? '看得清' : '容易丢失', { size: 14, weight: 700, fill: ok ? GREEN : MUTED, anchor: 'middle' });
+      const x = j === 0 ? 32 : 218;
+      const yy = y + 139;
+      s += T(x, yy, label, { size: 14, fill: INK });
+      s += T(x + 82, yy, ok ? '✓ 看得清' : '— 容易丢失', { size: 14, weight: 700, fill: ok ? GREEN : MUTED });
     });
+    if (i < 2) s += L(28, y + 166, 392, y + 166, { color: GRID, width: 1 });
   });
-  s += MT(30, 642, ['没有“最高级”的表示，', '只有任务所需的证据是否还在。'], { size: 15, weight: 700, fill: WARM, leading: 21 });
+  s += MT(30, 632, ['没有“最高级”的表示，', '只有任务所需的证据是否还在。'], { size: 15, weight: 700, fill: WARM, leading: 21 });
   return svg(H, s, '波形频谱和声谱图对敲击与嗡声的保留差异');
 })());
 
@@ -328,12 +331,12 @@ write('02-air-to-numbers.svg', (() => {
   let s = header(['空气的变化怎样变成', '录音里的数字']);
   steps.forEach(([title, lines], i) => {
     const y = 78 + i * 136;
-    s += card(34, y, 352, 104, { fill: i === 3 ? PALE : PLATE });
+    s += card(24, y, 372, 104, { fill: i === 3 ? PALE : PLATE });
     s += C(64, y + 34, 17, { fill: BLUE });
     s += T(64, y + 40, i + 1, { size: 15, weight: 700, fill: '#fff', anchor: 'middle' });
     s += T(92, y + 38, title, { size: 17, weight: 700 });
     s += MT(92, y + 66, lines, { size: 14, fill: MUTED, leading: 20 });
-    s += icon(['air', 'propagate', 'mic', 'samples'][i], 298, y + 22, 68, 60);
+    s += icon(['air', 'propagate', 'mic', 'samples'][i], 270, y + 16, 104, 72);
     if (i < 3) s += ARROW(210, y + 108, 210, y + 130, { color: '#9ba9b5' });
   });
   return svg(H, s, '声音从音箱推动空气到麦克风记录数字');
