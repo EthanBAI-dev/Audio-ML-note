@@ -1,0 +1,56 @@
+# 第 16～20 课：零基础知识主线改写版
+
+本目录承接 `零基础版_11-15`。上一级目录中的旧稿继续保留，没有覆盖。
+
+完整方法见[《零基础科普文章改写与配图工作流》](../零基础改写与配图工作流.md)。本批继续采用“一篇围绕一个知识问题自然推进、图承担解释任务、桌面与手机分别构图”的方式。
+
+## 文章与边界
+
+| 课 | 文章 | 本篇只解决什么 |
+|---|---|---|
+| 16 | [功率声谱图与相对分贝：怎样把 STFT 画得可信？](16-功率声谱图与相对分贝-怎样把STFT画得可信.md) | 说明 STFT 怎样变成功率、相对 dB 与可解释坐标，避免把显示差异误当成声音差异 |
+| 17 | [梅尔刻度与三角滤波器组：为什么频率要按听感重新分带？](17-梅尔刻度与三角滤波器组-为什么频率要按听感重新分带.md) | 从相同赫兹差的不同听感进入梅尔刻度、三角滤波器组与矩阵形状 |
+| 18 | [用 Python 提取对数梅尔频谱：怎样固定参数与输出形状？](18-用Python提取对数梅尔频谱-怎样固定参数与输出形状.md) | 沿数据形状解释完整实现，并固定采样率、频带、边界和 dB 约定 |
+| 19 | [MFCC 中的对数与 DCT：为什么少量系数能概括频谱轮廓？](19-MFCC中的对数与DCT-为什么少量系数能概括频谱轮廓.md) | 用简化声源—声道关系解释取对数和 DCT 的压缩逻辑与信息损失 |
+| 20 | [用 Python 构建 MFCC 动态特征：Delta 与 39 维拼接](20-用Python构建MFCC动态特征-Delta与39维拼接.md) | 实现静态 MFCC、一二阶差分和拼接，并说明窗口、边界与实时限制 |
+
+16 不重复推导 STFT；17 不承担完整 Python 管线；18 只完成对数梅尔实现；19 集中解释 MFCC 为什么这样变换；20 再处理动态差分和工程边界。每篇可以独立阅读，必要的前置概念会在首次使用处简要说明。
+
+## 配图
+
+共 20 张知识图，每张由同一份数据输出桌面和手机两个版式：
+
+- `figures/desktop/`：880 px，适合横向比较。
+- `figures/mobile/`：420 px，比较项改为纵向排列，保留图形和完整说明。
+
+第 16、18 课的声谱图来自真实课程音频与明确参数的计算结果，不用 SVG 路径假画热力图；第 17、19、20 课的曲线与矩阵也由生成脚本计算。手机图缩窄时不删除图案，最小有效字号不低于 12 px。
+
+生成与检查：
+
+```bash
+npm install --prefix tools
+npm run --prefix tools figures:16-20
+npm run --prefix tools contact:16-20
+node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" \
+  "NotebookLM课程博客_重写版/零基础版_16-20/figures/mobile"
+```
+
+Claude Code 可以把 `.agents/skills/` 换成 `.claude/skills/`；两份项目 skill 与公式检查脚本保持同步。
+
+## 正文验收
+
+```bash
+node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" \
+  "NotebookLM课程博客_重写版/零基础版_16-20/16-功率声谱图与相对分贝-怎样把STFT画得可信.md" \
+  "NotebookLM课程博客_重写版/零基础版_16-20/17-梅尔刻度与三角滤波器组-为什么频率要按听感重新分带.md" \
+  "NotebookLM课程博客_重写版/零基础版_16-20/18-用Python提取对数梅尔频谱-怎样固定参数与输出形状.md" \
+  "NotebookLM课程博客_重写版/零基础版_16-20/19-MFCC中的对数与DCT-为什么少量系数能概括频谱轮廓.md" \
+  "NotebookLM课程博客_重写版/零基础版_16-20/20-用Python构建MFCC动态特征-Delta与39维拼接.md"
+```
+
+```bash
+node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+  "NotebookLM课程博客_重写版/零基础版_16-20"
+```
+
+验收线：正文可读性与公式 ERROR、WARN 均为 0；手机 SVG ERROR、WARN 均为 0；桌面和手机联系表还要逐张目视检查。代码中的矩阵形状、dB 参考、采样率传递、差分窗口和边界模式需要另行人工复核。

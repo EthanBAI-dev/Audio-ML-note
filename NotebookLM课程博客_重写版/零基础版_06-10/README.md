@@ -47,4 +47,9 @@ node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability
   "NotebookLM课程博客_重写版/零基础版_06-10/10-傅里叶变换的直觉-电脑怎样从复杂波形里找出频率.md"
 ```
 
-验收线：ERROR 和 WARN 都清零；图片除自动检查外，还要同时目视检查桌面、手机联系表。
+```bash
+node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+  "NotebookLM课程博客_重写版/零基础版_06-10"
+```
+
+验收线：正文与公式 ERROR、WARN 都清零；图片除自动检查外，还要同时目视检查桌面、手机联系表。

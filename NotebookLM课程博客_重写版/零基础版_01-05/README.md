@@ -79,4 +79,11 @@ node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-readability
   "NotebookLM课程博客_重写版/零基础版_01-05/05-音频特征怎么选-抽象层级时间尺度与模型输入.md"
 ```
 
-验收线：文章与图片检查的 ERROR 必须为 0；WARN 必须修复，或在审计记录中说明保留理由。
+检查 Markdown 公式：
+
+```bash
+node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+  "NotebookLM课程博客_重写版/零基础版_01-05"
+```
+
+验收线：文章、公式与图片检查的 ERROR 必须为 0；WARN 必须修复，或在审计记录中说明保留理由。

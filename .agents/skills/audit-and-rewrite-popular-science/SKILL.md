@@ -26,8 +26,9 @@ Every other rule in this skill exists to serve that reader. When accuracy and si
 7. Recommend visuals only when they clarify a mechanism, comparison, sequence, scale, or data relationship. Any figure that claims to show what a sound actually looks like must be computed from real audio or from a signal matching the text exactly — never assembled from decorative shapes; follow `references/data-figures.md` for that, and `references/mobile-figures.md` for the narrow-screen layout. Ship a desktop and a mobile variant of every figure from one generator, and run `node scripts/check-svg-mobile.mjs <path>`.
 8. Publish a modification plan before rewriting. Every keep, delete, add, reorder, simplify, exemplify, verify and visualize decision maps back to a diagnosed issue.
 9. Rewrite using the invisible depth order and knowledge-point spine in `references/article-shape.md`. Let concepts drive the section order; use scenes and analogies only underneath the concept they explain.
-10. Run `node scripts/check-readability.mjs <file>` on the rewrite. Fix every ERROR. Justify or fix every WARN.
-11. Rescore independently. Do not raise a score without evidence in the revised artifact. List resolved, unresolved and newly introduced risks, then recommend publish or no-publish against the gate above.
+10. Run `node scripts/check-markdown-math.mjs <file>` on any article containing formulas; follow `references/markdown-math.md` and fix every ERROR.
+11. Run `node scripts/check-readability.mjs <file>` on the rewrite. Fix every ERROR. Justify or fix every WARN.
+12. Rescore independently. Do not raise a score without evidence in the revised artifact. List resolved, unresolved and newly introduced risks, then recommend publish or no-publish against the gate above.
 
 ## Depth order — invisible, never labeled
 
@@ -125,8 +126,10 @@ Any bad answer means that paragraph is not yet popular science.
 - `references/article-shape.md` — the natural article shape and a worked before/after example. Read before outlining.
 - `references/data-figures.md` — real-data requirement, raster-in-SVG technique, colormap convention, two-layout rule, caption rule. Read before creating or revising any figure.
 - `references/mobile-figures.md` — narrow-screen SVG layout, font and 360 px validation rules.
+- `references/markdown-math.md` — cross-renderer Markdown math delimiters, punctuation, units and validation rules.
 - `references/rubric.md` — scoring dimensions, weights and the publication gate. Read before scoring.
 - `references/report-template.md` — sections A-K of the audit report.
 - `references/terms-zh.json` — jargon dictionary used by the checker; extend it per domain.
 - `scripts/check-readability.mjs` — mechanical jargon and structure check. Run on every rewrite.
 - `scripts/check-svg-mobile.mjs` — mechanical SVG width and effective-font check. Run on every revised figure set.
+- `scripts/check-markdown-math.mjs` — mechanical Markdown math delimiter and CJK-in-math check. Run on every article containing formulas.

@@ -48,4 +48,9 @@ node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability
   "NotebookLM课程博客_重写版/零基础版_11-15/15-短时傅里叶变换STFT-怎样同时看见频率与出现时间.md"
 ```
 
-验收线：正文 ERROR、WARN 均为 0；手机 SVG ERROR 为 0，并人工查看桌面和手机联系表。自动检查之外，还要复算公式、数组尺寸、频率轴和归一化示例。
+```bash
+node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+  "NotebookLM课程博客_重写版/零基础版_11-15"
+```
+
+验收线：正文与公式 ERROR、WARN 均为 0；手机 SVG ERROR 为 0，并人工查看桌面和手机联系表。自动检查之外，还要复算公式、数组尺寸、频率轴和归一化示例。
