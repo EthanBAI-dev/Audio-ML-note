@@ -7,10 +7,12 @@
     "figures:06-10": "node build-figures-06-10.mjs",
     "figures:11-15": "node build-figures-11-15.mjs",
     "figures:16-20": "node build-figures-16-20.mjs",
+    "figures:21-23": "node build-figures-21-23.mjs",
     "contact:01-05": "node build-figure-contact-sheets.mjs both 01-05",
     "contact:06-10": "node build-figure-contact-sheets.mjs both 06-10",
     "contact:11-15": "node build-figure-contact-sheets.mjs both 11-15",
-    "contact:16-20": "node build-figure-contact-sheets.mjs both 16-20"
+    "contact:16-20": "node build-figure-contact-sheets.mjs both 16-20",
+    "contact:21-23": "node build-figure-contact-sheets.mjs both 21-23"
   },
   "dependencies": {
     "sharp": "0.35.4"
