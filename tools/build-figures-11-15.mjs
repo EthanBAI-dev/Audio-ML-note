@@ -6,7 +6,7 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readWav, resample, fft, magnitudeSpectrum, stft, mulberry32 } from './lib/dsp.mjs';
 import {
-  svgDoc, T, R, L, P, envelopePath, spectrogramPng, image, colorbar, PALETTE,
+  svgDoc, T, R, L, P, envelopePath, spectrogramPng, image, colorbar, axisX, axisY, PALETTE,
 } from './lib/figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -80,7 +80,11 @@ function linePlot(x, y, w, h, values, o = {}) {
     x + 6 + (i / Math.max(1, values.length - 1)) * (w - 12),
     y + 6 + (1 - (v - min) / span) * (h - 12),
   ]);
-  return s + P(pts, { c: o.c ?? BLUE, w: o.w ?? 1.8 });
+  s += P(pts, { c: o.c ?? BLUE, w: o.w ?? 1.8 });
+  // 有刻度才算数据图；没有刻度只是一条示意曲线
+  if (o.xticks) s += axisX(x + 6, y + h, w - 12, o.xticks, 0, o.xmax ?? 1, { size: o.tick ?? 12, unit: o.xunit ?? '' });
+  if (o.yticks) s += axisY(x + 6, y + 6, h - 12, o.yticks, min, max, { size: o.tick ?? 12, unit: o.yunit ?? '' });
+  return s;
 }
 
 function vectorPlane(x, y, w, h, vx, vy, o = {}) {
@@ -391,14 +395,18 @@ FIGURES['14-frequency-axis'] = async (M) => {
 
 FIGURES['14-instruments'] = async (M) => {
   const head = ['同一个音附近，', '三件真实乐器的频谱轮廓仍然不同'];
-  const top = headerH(M, head); const { slots, height } = layout(M, 3, { cols: 3, h: 205 });
+  const top = headerH(M, head); const { slots, height } = layout(M, 3, { cols: 3, h: 210 });
   const items = [['钢琴 piano_c.wav', PIANO, BLUE], ['小提琴 violin_c.wav', VIOLIN, WARM], ['萨克斯 sax.wav', SAX, GREEN]];
   let s = header(M, head);
   slots.forEach((q, i) => {
     const y = top + q.y; const [name, src, c] = items[i]; const curve = spectrumCurve(src);
     s += T(q.x, y + 22, name, { size: M.h2, weight: 700, fill: c });
-    s += linePlot(q.x, y + 38, q.w, 125, curve, { min: -60, max: 0, c, w: 1.6 });
-    s += T(q.x + 6, y + 190, '0 → 3500 Hz（各自峰值为 0 dB）', { size: M.small, fill: MUTED });
+    s += linePlot(q.x + 26, y + 38, q.w - 26, 108, curve, {
+      min: -60, max: 0, c, w: 1.6, tick: wide(M) ? 11.5 : 13.5,
+      xticks: [[0, '0'], [1000, '1k'], [2000, '2k'], [3000, '3k']], xmax: 3500, xunit: 'Hz',
+      yticks: [[-60, '-60'], [-30, '-30'], [0, '0']], yunit: 'dB',
+    });
+    s += T(q.x, y + 190, '各自峰值为 0 dB', { size: M.small, fill: MUTED });
   });
   return svgDoc(M.W, top + height + 16, s, '钢琴小提琴和萨克斯的真实归一化频谱');
 };
@@ -411,8 +419,12 @@ FIGURES['14-tone-noise'] = async (M) => {
   slots.forEach((q, i) => {
     const y = top + q.y; const [name, src, c] = items[i]; const curve = spectrumCurve(src, 2500);
     s += T(q.x, y + 22, name, { size: M.h2, weight: 700, fill: c });
-    s += linePlot(q.x, y + 38, q.w, 130, curve, { min: -60, max: 0, c, w: 1.5 });
-    s += T(q.x + 6, y + 202, i ? '许多频率都有能量' : '两个位置明显突出', { size: M.small, fill: MUTED });
+    s += linePlot(q.x + 26, y + 38, q.w - 26, 116, curve, {
+      min: -60, max: 0, c, w: 1.5, tick: wide(M) ? 11.5 : 13.5,
+      xticks: [[0, '0'], [1000, '1k'], [2000, '2k']], xmax: 2500, xunit: 'Hz',
+      yticks: [[-60, '-60'], [-30, '-30'], [0, '0']], yunit: 'dB',
+    });
+    s += T(q.x, y + 202, i ? '许多频率都有能量' : '两个位置明显突出', { size: M.small, fill: MUTED });
   });
   return svgDoc(M.W, top + height + 16, s, '规则振动与真实噪声的频谱比较');
 };

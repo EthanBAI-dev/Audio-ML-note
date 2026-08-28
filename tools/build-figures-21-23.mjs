@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readWav, resample, stft } from './lib/dsp.mjs';
-import { svgDoc, T, R, L, P, spectrogramPng, image, PALETTE } from './lib/figure.mjs';
+import { svgDoc, T, R, L, P, spectrogramPng, image, axisX, axisY, PALETTE } from './lib/figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_21-23', 'figures');
@@ -74,18 +74,28 @@ function features(y) {
   return { S, freq, splitBin, berDb, centroid, bandwidth };
 }
 const DATA = TRACKS.map(([name, y, c]) => [name, features(y), c]);
-function curve(x, y, w, h, values, min, max, c, zero = false) {
+function curve(x, y, w, h, values, min, max, c, zero = false, o = {}) {
   let s = card(x, y, w, h);
   const px = (i) => x + 9 + i / Math.max(1, values.length - 1) * (w - 18);
   const py = (v) => y + 9 + (1 - (Math.max(min, Math.min(max, v)) - min) / (max - min)) * (h - 18);
   if (zero && min <= 0 && max >= 0) s += L(x + 7, py(0), x + w - 7, py(0), { c: GRID, dash: '4 4' });
   s += P(Array.from(values, (v, i) => [px(i), py(v)]), { c, w: 1.8 });
+  // 纵轴刻度：没有刻度就只是一条起伏的线，说不出数值
+  if (o.yticks) {
+    s += axisY(x + 9, y + 9, h - 18, o.yticks, min, max, { size: o.size ?? 11.5, unit: o.unit ?? '' });
+  }
   return s;
 }
-function spectrum(x, y, w, h, values, color = BLUE, maxF = 6000) {
+function spectrum(x, y, w, h, values, color = BLUE, maxF = 6000, o = {}) {
   const peak = Math.max(...values, 1e-9); const n = Math.min(values.length, Math.floor(maxF / (SR / NFFT)) + 1);
   const pts = Array.from({ length: n }, (_, i) => [x + i / (n - 1) * w, y + h - values[i] / peak * h]);
-  return P(pts, { c: color, w: 2 });
+  let s = P(pts, { c: color, w: 2 });
+  // 图上标了「质心约 2510 Hz」，横轴就必须有刻度可以对照
+  if (o.axis !== false) {
+    const ticks = o.ticks ?? [[0, '0'], [2000, '2k'], [4000, '4k'], [6000, '6k']];
+    s += axisX(x, y + h, w, ticks, 0, maxF, { size: o.size ?? 13, unit: o.unit ?? 'Hz' });
+  }
+  return s;
 }
 function synthetic(peaks) {
   return Float64Array.from({ length: NFFT / 2 + 1 }, (_, k) => {
@@ -101,14 +111,16 @@ function weightedStats(v, power = false) {
 const FIG = {};
 
 FIG['21-three-questions'] = async (M) => {
-  const lines = wide(M) ? ['同一帧频谱，可以追问三个不同问题'] : ['同一帧频谱，', '可以追问三个不同问题']; const top = headerH(M, lines); const v = synthetic([[700, 180, 1], [1800, 320, .65], [3900, 600, .35]]); const q = slots(M, 3, 3, 212); const labels = [['低频占得多不多？', '带能量比：比较分界线两边', BLUE], ['频率重心在哪里？', '频谱质心：寻找加权平均位置', ORANGE], ['频率分得有多散？', '频谱带宽：测量离中心的距离', GREEN]]; let s = header(M, lines);
-  q.forEach((a, i) => { const yy = top + a.y; s += T(a.x, yy + 22, labels[i][0], { size: 17, weight: 700, fill: labels[i][2] }) + card(a.x, yy + 36, a.w, 112); s += spectrum(a.x + 12, yy + 52, a.w - 24, 73, v, labels[i][2]); if (i === 0) { const xx = a.x + 12 + 2000 / 6000 * (a.w - 24); s += L(xx, yy + 48, xx, yy + 128, { c: ORANGE, dash: '4 4' }); } if (i > 0) { const [c, b] = weightedStats(v); const xx = a.x + 12 + c / 6000 * (a.w - 24); s += L(xx, yy + 48, xx, yy + 128, { c: ORANGE, w: 2 }); if (i === 2) s += L(Math.max(a.x + 12, xx - b / 6000 * (a.w - 24)), yy + 118, Math.min(a.x + a.w - 12, xx + b / 6000 * (a.w - 24)), yy + 118, { c: GREEN, w: 7 }); } s += T(a.x + 5, yy + 188, labels[i][1], { size: M.small, fill: MUTED }); });
-  return svgDoc(M.W, top + Math.ceil(3 / (wide(M) ? 3 : 1)) * 234, s, '带能量比、频谱质心与频谱带宽回答三个不同问题');
+  const lines = wide(M) ? ['同一帧频谱，可以追问三个不同问题'] : ['同一帧频谱，', '可以追问三个不同问题']; const top = headerH(M, lines); const v = synthetic([[700, 180, 1], [1800, 320, .65], [3900, 600, .35]]); const q = slots(M, 3, 3, 236); const labels = [['低频占得多不多？', '带能量比：比较分界线两边', BLUE], ['频率重心在哪里？', '频谱质心：寻找加权平均位置', ORANGE], ['频率分得有多散？', '频谱带宽：测量离中心的距离', GREEN]]; let s = header(M, lines);
+  q.forEach((a, i) => { const yy = top + a.y; s += T(a.x, yy + 22, labels[i][0], { size: 17, weight: 700, fill: labels[i][2] }) + card(a.x, yy + 36, a.w, 134); s += spectrum(a.x + 12, yy + 52, a.w - 24, 62, v, labels[i][2], 6000, { size: wide(M) ? 11.5 : 13.5 }); if (i === 0) { const xx = a.x + 12 + 2000 / 6000 * (a.w - 24); s += L(xx, yy + 48, xx, yy + 116, { c: ORANGE, dash: '4 4' }); } if (i > 0) { const [c, b] = weightedStats(v); const xx = a.x + 12 + c / 6000 * (a.w - 24); s += L(xx, yy + 48, xx, yy + 116, { c: ORANGE, w: 2 }); if (i === 2) s += L(Math.max(a.x + 12, xx - b / 6000 * (a.w - 24)), yy + 108, Math.min(a.x + a.w - 12, xx + b / 6000 * (a.w - 24)), yy + 108, { c: GREEN, w: 7 }); } s += T(a.x + 5, yy + 212, labels[i][1], { size: M.small, fill: MUTED }); });
+  return svgDoc(M.W, top + Math.ceil(3 / (wide(M) ? 3 : 1)) * 258, s, '带能量比、频谱质心与频谱带宽回答三个不同问题');
 };
 FIG['21-same-total'] = async (M) => {
-  const lines = ['总量相近，不代表频率分布相同']; const top = headerH(M, lines); const qs = slots(M, 4, 2, 190); const vals = [synthetic([[700, 250, 1]]), synthetic([[3600, 300, 1]]), synthetic([[2200, 220, 1]]), synthetic([[1200, 280, .75], [3200, 380, .75]])]; const names = [['能量偏低频', 'BER 较高'], ['能量偏高频', 'BER 较低'], ['集中在一处', '带宽较窄'], ['分散在两侧', '带宽较宽']]; let s = header(M, lines);
-  qs.forEach((a, i) => { const yy = top + a.y; s += T(a.x, yy + 21, names[i][0], { size: 17, weight: 700, fill: [BLUE, ORANGE, GREEN, GOLD][i] }) + card(a.x, yy + 34, a.w, 105); s += spectrum(a.x + 12, yy + 48, a.w - 24, 72, vals[i], [BLUE, ORANGE, GREEN, GOLD][i]); s += T(a.x + 5, yy + 169, names[i][1], { size: M.body, fill: MUTED }); });
-  return svgDoc(M.W, top + Math.ceil(4 / (wide(M) ? 2 : 1)) * 212, s, '相近总量下的四种不同频率分布');
+  const lines = ['总量相近，不代表频率分布相同']; const top = headerH(M, lines); const qs = slots(M, 4, 2, 190); const vals = [synthetic([[700, 250, 1]]), synthetic([[3600, 300, 1]]), synthetic([[2200, 220, 1]]), synthetic([[1200, 280, .75], [3200, 380, .75]])]; const names = [['能量偏低频', 'BER 较高'], ['能量偏高频', 'BER 较低'], ['集中在一处', '带宽较窄'], ['分散在两侧', '带宽较宽']];
+  // 前两个面板说明带能量比，后两个说明带宽；颜色跟着含义走，不按面板序号轮换
+  const tone = [BLUE, BLUE, GREEN, GREEN]; let s = header(M, lines);
+  qs.forEach((a, i) => { const yy = top + a.y; s += T(a.x, yy + 21, names[i][0], { size: 17, weight: 700, fill: tone[i] }) + card(a.x, yy + 34, a.w, 128); s += spectrum(a.x + 12, yy + 48, a.w - 24, 60, vals[i], tone[i], 6000, { size: wide(M) ? 11.5 : 13.5 }); s += T(a.x + 5, yy + 186, names[i][1], { size: M.body, fill: MUTED }); });
+  return svgDoc(M.W, top + Math.ceil(4 / (wide(M) ? 2 : 1)) * 228, s, '相近总量下的四种不同频率分布');
 };
 FIG['21-feature-response'] = async (M) => {
   const lines = wide(M) ? ['声音发生变化时，三个数字不会以同一种方式响应'] : ['声音发生变化时，', '三个数字不会以同一种方式响应']; const top = headerH(M, lines); const qs = slots(M, 3, 3, 165); const rows = [['补入高频成分', 'BER ↓　质心 ↑　带宽常 ↑'], ['整体移向高频', 'BER ↓　质心 ↑　带宽可不变'], ['围绕中心铺得更开', 'BER 未必变　质心可不变　带宽 ↑']]; let s = header(M, lines);
@@ -129,7 +141,7 @@ FIG['22-bin-map'] = async (M) => {
 };
 FIG['22-ber-curves'] = async (M) => {
   const lines = ['同一参数下，三段真实音乐得到不同的 BER 轨迹']; const top = headerH(M, lines); const qs = slots(M, 3, 3, 188); let s = header(M, lines);
-  qs.forEach((a, i) => { const yy = top + a.y; const [name, d, c] = DATA[i]; s += T(a.x, yy + 21, name, { size: 17, weight: 700, fill: c }); s += curve(a.x, yy + 35, a.w, 112, d.berDb, -25, 35, c, true); s += T(a.x + 5, yy + 171, '0 dB 表示两侧功率相等', { size: M.small, fill: MUTED }); });
+  qs.forEach((a, i) => { const yy = top + a.y; const [name, d, c] = DATA[i]; a.x += 22; a.w -= 22; s += T(a.x - 22, yy + 21, name, { size: 17, weight: 700, fill: c }); s += curve(a.x, yy + 35, a.w, 112, d.berDb, -25, 35, c, true, { yticks: [[-20, '-20'], [0, '0'], [20, '20']], unit: 'dB', size: wide(M) ? 11.5 : 13.5 }); s += T(a.x + 5, yy + 171, '横轴为时间；0 dB 表示两侧功率相等', { size: M.small, fill: MUTED }); });
   return svgDoc(M.W, top + Math.ceil(3 / (wide(M) ? 3 : 1)) * 210, s, '三段真实音乐的带能量比时间轨迹');
 };
 FIG['22-axis-flow'] = async (M) => {
@@ -138,18 +150,18 @@ FIG['22-axis-flow'] = async (M) => {
 };
 
 FIG['23-centroid-bandwidth'] = async (M) => {
-  const lines = ['质心给出中心位置，带宽描述离中心有多远']; const top = headerH(M, lines); const v = synthetic([[800, 220, .8], [2500, 500, 1], [4300, 380, .45]]); const [c, b] = weightedStats(v); const x = M.pad; const y = top + 30; const w = M.W - 2 * M.pad; const base = y + 194; const map = (f) => x + 18 + f / 6000 * (w - 36); let s = header(M, lines) + card(x, y, w, wide(M) ? 235 : 253); s += spectrum(x + 18, y + 30, w - 36, 145, v, BLUE); s += L(map(c), y + 20, map(c), base, { c: ORANGE, w: 3 }); s += L(map(Math.max(0, c - b)), base - 12, map(Math.min(6000, c + b)), base - 12, { c: GREEN, w: 9 }); s += T(map(c), y + 18, `质心约 ${Math.round(c)} Hz`, { size: M.body, weight: 700, fill: ORANGE, anchor: 'middle' }); s += wide(M) ? T(x + 18, y + 222, `绿色范围表示质心左右各一个带宽（约 ${Math.round(b)} Hz）`, { size: M.small, fill: MUTED }) : MT(x + 18, y + 220, ['绿色范围表示质心左右', `各一个带宽（约 ${Math.round(b)} Hz）`], { size: M.small, fill: MUTED, leading: 21 }); return svgDoc(M.W, y + (wide(M) ? 260 : 280), s, '同一频谱上的频谱质心与频谱带宽');
+  const lines = ['质心给出中心位置，带宽描述离中心有多远']; const top = headerH(M, lines); const v = synthetic([[800, 220, .8], [2500, 500, 1], [4300, 380, .45]]); const [c, b] = weightedStats(v); const x = M.pad; const y = top + 30; const w = M.W - 2 * M.pad; const base = y + 194; const map = (f) => x + 18 + f / 6000 * (w - 36); let s = header(M, lines) + card(x, y, w, wide(M) ? 258 : 276); s += spectrum(x + 18, y + 30, w - 36, 145, v, BLUE, 6000, { size: wide(M) ? 11.5 : 13.5 }); s += L(map(c), y + 20, map(c), base, { c: ORANGE, w: 3 }); s += L(map(Math.max(0, c - b)), base - 12, map(Math.min(6000, c + b)), base - 12, { c: GREEN, w: 9 }); s += T(map(c), y + 18, `质心约 ${Math.round(c)} Hz`, { size: M.body, weight: 700, fill: ORANGE, anchor: 'middle' }); s += wide(M) ? T(x + 18, y + 245, `绿色范围表示质心左右各一个带宽（约 ${Math.round(b)} Hz）`, { size: M.small, fill: MUTED }) : MT(x + 18, y + 243, ['绿色范围表示质心左右', `各一个带宽（约 ${Math.round(b)} Hz）`], { size: M.small, fill: MUTED, leading: 21 }); return svgDoc(M.W, y + (wide(M) ? 283 : 303), s, '同一频谱上的频谱质心与频谱带宽');
 };
 FIG['23-same-centroid'] = async (M) => {
-  const lines = ['两个频谱可以有相近质心，却有完全不同的带宽']; const top = headerH(M, lines); const qs = slots(M, 2, 2, 215); const vals = [synthetic([[2500, 280, 1]]), synthetic([[1300, 260, .8], [3700, 260, .8]])]; let s = header(M, lines);
-  qs.forEach((a, i) => { const yy = top + a.y; const [c, b] = weightedStats(vals[i]); s += T(a.x, yy + 21, i ? '分布铺在两侧' : '分布挤在中心', { size: 17, weight: 700, fill: i ? ORANGE : BLUE }) + card(a.x, yy + 35, a.w, 116); s += spectrum(a.x + 12, yy + 50, a.w - 24, 78, vals[i], i ? ORANGE : BLUE); const xx = a.x + 12 + c / 6000 * (a.w - 24); s += L(xx, yy + 45, xx, yy + 132, { c: GREEN, w: 2 }); s += T(a.x + 5, yy + 176, `质心约 ${Math.round(c)} Hz；带宽约 ${Math.round(b)} Hz`, { size: M.small, fill: MUTED }); }); return svgDoc(M.W, top + Math.ceil(2 / (wide(M) ? 2 : 1)) * 237, s, '相近质心但带宽不同的两个频谱');
+  const lines = ['两个频谱可以有相近质心，却有完全不同的带宽']; const top = headerH(M, lines); const qs = slots(M, 2, 2, 240); const vals = [synthetic([[2500, 280, 1]]), synthetic([[1300, 260, .8], [3700, 260, .8]])]; let s = header(M, lines);
+  qs.forEach((a, i) => { const yy = top + a.y; const [c, b] = weightedStats(vals[i]); s += T(a.x, yy + 21, i ? '分布铺在两侧' : '分布挤在中心', { size: 17, weight: 700, fill: i ? ORANGE : BLUE }) + card(a.x, yy + 35, a.w, 140); s += spectrum(a.x + 12, yy + 50, a.w - 24, 66, vals[i], i ? ORANGE : BLUE, 6000, { size: wide(M) ? 11.5 : 13.5 }); const xx = a.x + 12 + c / 6000 * (a.w - 24); s += L(xx, yy + 45, xx, yy + 120, { c: GREEN, w: 2 }); s += T(a.x + 5, yy + 200, `质心约 ${Math.round(c)} Hz；带宽约 ${Math.round(b)} Hz`, { size: M.small, fill: MUTED }); }); return svgDoc(M.W, top + Math.ceil(2 / (wide(M) ? 2 : 1)) * 262, s, '相近质心但带宽不同的两个频谱');
 };
 FIG['23-weight-convention'] = async (M) => {
-  const lines = wide(M) ? ['同一频谱改用不同权重，算出的质心会改变'] : ['同一频谱改用不同权重，', '算出的质心会改变']; const top = headerH(M, lines); const v = synthetic([[1000, 260, .55], [3600, 380, 1]]); const [cm] = weightedStats(v, false); const [cp] = weightedStats(v, true); const x = M.pad; const y = top + 25; const w = M.W - 2 * M.pad; const map = (f) => x + 18 + f / 6000 * (w - 36); let s = header(M, lines) + card(x, y, w, 220); s += spectrum(x + 18, y + 33, w - 36, 120, v, BLUE); s += L(map(cm), y + 23, map(cm), y + 171, { c: GREEN, w: 3 }) + L(map(cp), y + 23, map(cp), y + 171, { c: ORANGE, w: 3 }); s += T(map(cm), y + 197, `幅度加权 ${Math.round(cm)} Hz`, { size: M.small, fill: GREEN, anchor: 'middle' }); s += T(map(cp), y + 217, `功率加权 ${Math.round(cp)} Hz`, { size: M.small, fill: ORANGE, anchor: 'middle' }); return svgDoc(M.W, y + 246, s, '幅度加权与功率加权得到不同频谱质心');
+  const lines = wide(M) ? ['同一频谱改用不同权重，算出的质心会改变'] : ['同一频谱改用不同权重，', '算出的质心会改变']; const top = headerH(M, lines); const v = synthetic([[1000, 260, .55], [3600, 380, 1]]); const [cm] = weightedStats(v, false); const [cp] = weightedStats(v, true); const x = M.pad; const y = top + 25; const w = M.W - 2 * M.pad; const map = (f) => x + 18 + f / 6000 * (w - 36); let s = header(M, lines) + card(x, y, w, 244); s += spectrum(x + 18, y + 33, w - 36, 120, v, BLUE, 6000, { size: wide(M) ? 11.5 : 13.5 }); s += L(map(cm), y + 23, map(cm), y + 171, { c: GREEN, w: 3 }) + L(map(cp), y + 23, map(cp), y + 171, { c: ORANGE, w: 3 }); s += T(map(cm), y + 221, `幅度加权 ${Math.round(cm)} Hz`, { size: M.small, fill: GREEN, anchor: 'middle' }); s += T(map(cp), y + 241, `功率加权 ${Math.round(cp)} Hz`, { size: M.small, fill: ORANGE, anchor: 'middle' }); return svgDoc(M.W, y + 270, s, '幅度加权与功率加权得到不同频谱质心');
 };
 FIG['23-tracks'] = async (M) => {
   const lines = ['真实音乐中，质心与带宽都随时间起伏']; const top = headerH(M, lines); const qs = slots(M, 3, 3, 250); let s = header(M, lines);
-  qs.forEach((a, i) => { const yy = top + a.y; const [name, d, c] = DATA[i]; s += T(a.x, yy + 21, name, { size: 17, weight: 700, fill: c }); s += curve(a.x, yy + 36, a.w, 82, d.centroid, 0, 5000, c); s += T(a.x + 5, yy + 135, '质心（0—5000 Hz）', { size: M.small, fill: MUTED }); s += curve(a.x, yy + 150, a.w, 65, d.bandwidth, 0, 3000, GREEN); s += T(a.x + 5, yy + 238, '带宽（0—3000 Hz）', { size: M.small, fill: MUTED }); }); return svgDoc(M.W, top + Math.ceil(3 / (wide(M) ? 3 : 1)) * 272, s, '三段真实音乐的频谱质心和带宽时间轨迹');
+  qs.forEach((a, i) => { const yy = top + a.y; const [name, d, c] = DATA[i]; a.x += 26; a.w -= 26; s += T(a.x - 26, yy + 21, name, { size: 17, weight: 700, fill: c }); s += curve(a.x, yy + 36, a.w, 82, d.centroid, 0, 5000, c, false, { yticks: [[0, '0'], [2500, '2.5k'], [5000, '5k']], unit: 'Hz', size: wide(M) ? 11.5 : 13.5 }); s += T(a.x - 21, yy + 135, '质心，横轴为时间', { size: M.small, fill: MUTED }); s += curve(a.x, yy + 150, a.w, 65, d.bandwidth, 0, 3000, GREEN, false, { yticks: [[0, '0'], [1500, '1.5k'], [3000, '3k']], unit: 'Hz', size: wide(M) ? 11.5 : 13.5 }); s += T(a.x - 21, yy + 238, '带宽，横轴为时间', { size: M.small, fill: MUTED }); }); return svgDoc(M.W, top + Math.ceil(3 / (wide(M) ? 3 : 1)) * 272, s, '三段真实音乐的频谱质心和带宽时间轨迹');
 };
 
 for (const [mode, M] of Object.entries(MODES)) {

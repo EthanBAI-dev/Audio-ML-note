@@ -162,6 +162,43 @@ export function colorbar(x, y, w, h, cmap, o = {}) {
   return s;
 }
 
+/**
+ * 横轴刻度。图上写了「质心约 2510 Hz」，读者就得能在轴上找到 2510 的位置——
+ * 没有刻度的曲线图只是示意，不能称为数据图。
+ *
+ * @param x,y,w   绘图区左上角与宽度（y 传绘图区底边）
+ * @param ticks   [[值, 标签], ...] 或 [值, ...]
+ * @param min,max 轴的数值范围
+ */
+export function axisX(x, y, w, ticks, min, max, o = {}) {
+  const { size = 11.5, fill = PALETTE.muted, unit = '', grid = false, top = null } = o;
+  let s = L(x, y, x + w, y, { c: PALETTE.grid, w: 1 });
+  for (const t of ticks) {
+    const [v, lab] = Array.isArray(t) ? t : [t, String(t)];
+    const px = x + ((v - min) / (max - min)) * w;
+    s += L(px, y, px, y + 4, { c: PALETTE.muted, w: 1 });
+    if (grid && top !== null) s += L(px, top, px, y, { c: PALETTE.grid, w: 1 });
+    s += T(px, y + size + 6, lab, { size, fill, anchor: 'middle' });
+  }
+  if (unit) s += T(x + w, y + size * 2 + 10, unit, { size, fill, anchor: 'end' });
+  return s;
+}
+
+/** 纵轴刻度。用法与 axisX 对称，x 传绘图区左边。 */
+export function axisY(x, y, h, ticks, min, max, o = {}) {
+  const { size = 11.5, fill = PALETTE.muted, unit = '', grid = false, right = null } = o;
+  let s = L(x, y, x, y + h, { c: PALETTE.grid, w: 1 });
+  for (const t of ticks) {
+    const [v, lab] = Array.isArray(t) ? t : [t, String(t)];
+    const py = y + h - ((v - min) / (max - min)) * h;
+    s += L(x - 4, py, x, py, { c: PALETTE.muted, w: 1 });
+    if (grid && right !== null) s += L(x, py, right, py, { c: PALETTE.grid, w: 1 });
+    s += T(x - 7, py + size * 0.36, lab, { size, fill, anchor: 'end' });
+  }
+  if (unit) s += T(x, y - 7, unit, { size, fill });
+  return s;
+}
+
 /** 把密集波形降采样成上下包络，避免几万个点塞进 SVG。 */
 export function envelopePath(samples, x, y, w, h, o = {}) {
   const { c = PALETTE.s1, opacity = 1 } = o;

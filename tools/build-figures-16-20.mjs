@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { readWav, resample, stft, melFilterbank } from './lib/dsp.mjs';
 import {
-  svgDoc, T, R, L, P, envelopePath, spectrogramPng, image, colorbar, PALETTE, COLORMAPS,
+  svgDoc, T, R, L, P, envelopePath, spectrogramPng, image, colorbar, axisX, axisY, PALETTE, COLORMAPS,
 } from './lib/figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -163,12 +163,20 @@ FIGURES['17-perception'] = async (M) => {
 };
 
 FIGURES['17-hz-mel'] = async (M) => {
-  const head = ['梅尔刻度重新分配间距：', '低频变化占更多位置，高频逐渐压缩']; const top = headerH(M, head); const w = M.W - 2 * M.pad; const x = M.pad; const h = wide(M) ? 300 : 326; const hz = Array.from({ length: 240 }, (_, i) => i / 239 * 8000); const mel = hz.map((f) => 2595 * Math.log10(1 + f / 700)); let s = header(M, head); s += linePlot(x, top, w, 190, mel, { min: 0, max: 3000, c: BLUE }); s += T(x + 8, top + 220, '横轴：0 → 8000 Hz', { size: M.body, fill: MUTED }); s += wide(M) ? T(x + 8, top + 250, '纵轴：梅尔值；曲线越平，代表同样 Hz 差占的位置越少', { size: M.body, fill: GREEN }) : MT(x + 8, top + 250, ['纵轴：梅尔值；曲线越平，', '同样 Hz 差占的位置越少'], { size: M.body, fill: GREEN }); return svgDoc(M.W, top + h, s, '赫兹到梅尔刻度的非线性映射');
+  const head = ['梅尔刻度重新分配间距：', '低频变化占更多位置，高频逐渐压缩']; const top = headerH(M, head); const w = M.W - 2 * M.pad; const x = M.pad; const h = wide(M) ? 300 : 326; const hz = Array.from({ length: 240 }, (_, i) => i / 239 * 8000); const mel = hz.map((f) => 2595 * Math.log10(1 + f / 700)); const tick = wide(M) ? 11.5 : 13.5;
+  let s = header(M, head); s += linePlot(x + 34, top, w - 34, 190, mel, { min: 0, max: 3000, c: BLUE });
+  s += axisX(x + 40, top + 190, w - 46, [[0, '0'], [2000, '2k'], [4000, '4k'], [6000, '6k'], [8000, '8k']], 0, 8000, { size: tick, unit: 'Hz' });
+  s += axisY(x + 40, top + 6, 178, [[0, '0'], [1500, '1500'], [3000, '3000']], 0, 3000, { size: tick, unit: '梅尔' });
+  s += wide(M) ? T(x + 8, top + 250, '曲线越平，代表同样的 Hz 差在梅尔轴上占的位置越少', { size: M.body, fill: GREEN }) : MT(x + 8, top + 250, ['曲线越平，同样的 Hz 差', '在梅尔轴上占的位置越少'], { size: M.body, fill: GREEN }); return svgDoc(M.W, top + h, s, '赫兹到梅尔刻度的非线性映射');
 };
 
 FIGURES['17-filterbank'] = async (M) => {
   const head = ['一组重叠三角形，', '把线性频率箱汇总成较少的梅尔频带']; const top = headerH(M, head); const w = M.W - 2 * M.pad; const x = M.pad; const H = melFilterbank(10, 1024, SR, 50, 8000); let s = header(M, head) + card(x, top, w, 245);
-  H.forEach((row, m) => { const pts = Array.from(row, (v, k) => [x + 18 + k / (row.length - 1) * (w - 36), top + 190 - v * 145]); s += P(pts, { c: [BLUE, WARM, GREEN, GOLD][m % 4], w: 1.7 }); }); s += T(x + 18, top + 222, '低频三角形较窄', { size: M.body, fill: MUTED }); s += T(x + w - 18, top + 222, '高频三角形较宽', { size: M.body, fill: MUTED, anchor: 'end' }); return svgDoc(M.W, top + 265, s, '十个梅尔三角滤波器');
+  const tick = wide(M) ? 11.5 : 13.5;
+  // 十个滤波器是同一种东西，用同一个颜色；相邻用深浅区分，不轮换色相
+  H.forEach((row, m) => { const pts = Array.from(row, (v, k) => [x + 18 + k / (row.length - 1) * (w - 36), top + 178 - v * 132]); s += P(pts, { c: m % 2 ? BLUE : '#6aa9d8', w: 1.7 }); });
+  s += axisX(x + 18, top + 178, w - 36, [[0, '0'], [2000, '2k'], [4000, '4k'], [6000, '6k'], [8000, '8k']], 0, SR / 2, { size: tick, unit: 'Hz' });
+  s += T(x + 18, top + 232, '低频三角形较窄', { size: M.body, fill: MUTED }); s += T(x + w - 18, top + 232, '高频三角形较宽', { size: M.body, fill: MUTED, anchor: 'end' }); return svgDoc(M.W, top + 265, s, '十个梅尔三角滤波器');
 };
 
 FIGURES['17-matrix-map'] = async (M) => {
