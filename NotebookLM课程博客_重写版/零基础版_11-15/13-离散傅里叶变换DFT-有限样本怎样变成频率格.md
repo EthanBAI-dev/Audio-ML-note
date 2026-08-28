@@ -34,19 +34,19 @@ $$
 
 ## 数组位置怎样换成 Hz
 
-设采样率为 $f_s$，也就是一秒记录 $f_s$ 个样本。第 $k$ 个 DFT 结果对应
+设采样率为 $f_{\mathrm{s}}$，也就是一秒记录 $f_{\mathrm{s}}$ 个样本。第 $k$ 个 DFT 结果对应
 
 $$
-f_k=\frac{k f_s}{N}
+f_k=\frac{k f_{\mathrm{s}}}{N}
 $$
 
 相邻频率格的间隔因此是
 
 $$
-\Delta f=\frac{f_s}{N}
+\Delta f=\frac{f_{\mathrm{s}}}{N}
 $$
 
-因为观察时间 $T=N/f_s$，它也可以写成 $\Delta f=1/T$。观察真实声音的时间越长，频率格越密。
+因为观察时间 $T=N/f_{\mathrm{s}}$，它也可以写成 $\Delta f=1/T$。观察真实声音的时间越长，频率格越密。
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/mobile/13-frequency-bins.svg">
@@ -99,4 +99,4 @@ DFT 定义了要计算什么；快速傅里叶变换（Fast Fourier Transform，
 
 ## 小结
 
-DFT 用 $N$ 种离散旋转方式分析 $N$ 个样本，频率间隔由 $f_s/N$ 决定。真实音频的后半边与前半边成镜像，所以 `rfft` 通常已经够用。得到这串复数之后，还不能直接把数组位置当作 Hz，也不能直接把模值当作可比较振幅；下一篇就处理这些实际代码问题。
+DFT 用 $N$ 种离散旋转方式分析 $N$ 个样本，频率间隔由 $f_{\mathrm{s}}/N$ 决定。真实音频的后半边与前半边成镜像，所以 `rfft` 通常已经够用。得到这串复数之后，还不能直接把数组位置当作 Hz，也不能直接把模值当作可比较振幅；下一篇就处理这些实际代码问题。

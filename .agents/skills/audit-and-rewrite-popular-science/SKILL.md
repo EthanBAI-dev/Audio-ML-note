@@ -68,6 +68,8 @@ Before any technical term enters the prose, it must pass all five checks:
 4. Does the explanation **introduce new unexplained terms**? If yes, rewrite the explanation.
 5. If the term were deleted, would the reader still get the core idea? If yes, delete it.
 
+Apply the same gate to mathematical symbols. Do not introduce a named variable that appears only once when the concrete numbers can show the relationship just as clearly. A one-off `$f_s$` is still jargon and still creates a rendering dependency.
+
 Order of introduction is always: **具体场景 → 日常解释 → 专业名称 → 简单例子**.
 
 - Wrong: 「分类器是一种将输入映射到离散类别的模型。」 It defines one unknown word with four more.
