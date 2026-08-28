@@ -57,7 +57,24 @@ function arrow(x1, y1, x2, y2, c = MUTED) {
   const a = Math.atan2(y2 - y1, x2 - x1); const z = 7;
   return L(x1, y1, x2, y2, { c, w: 1.7 }) + `<polygon points="${x2},${y2} ${x2 - z * Math.cos(a - .5)},${y2 - z * Math.sin(a - .5)} ${x2 - z * Math.cos(a + .5)},${y2 - z * Math.sin(a + .5)}" fill="${c}"/>`;
 }
-function icon(type, x, y, w, h, c) {
+// 文字取色：只有明显偏浅的颜色才压暗，其余原样返回，
+// 这样五个阶段的识别色不变，但小字都能读清。
+function inkOf(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return lum > 0.55 ? shade(hex, 0.72) : hex;
+}
+
+// 把颜色按比例压向黑色。浅色（尤其金色）直接画在白底上对比不足。
+function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v * k));
+  return '#' + ch.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+function icon(type, x, y, w, h, c0) {
+  const c = inkOf(c0);
   let s = '';
   if (type === 'views') {
     s += P([[x, y + h * .62], [x + w * .16, y + h * .25], [x + w * .3, y + h * .78], [x + w * .48, y + h * .38], [x + w * .65, y + h * .7], [x + w, y + h * .32]], { c, w: 2 });
@@ -71,8 +88,20 @@ function icon(type, x, y, w, h, c) {
     s += arrow(cx, cy, cx + r * .72, cy - r * .65, c);
     [0.08, .2, .42, .72, 1].forEach((v, i) => { const bw = w * .07; s += R(x + w * .57 + i * w * .085, y + h * .84 - v * h * .65, bw, v * h * .65, { fill: c, r: 1 }); });
   } else if (type === 'mel') {
-    for (let r = 0; r < 5; r += 1) for (let k = 0; k < 8; k += 1) s += R(x + k * w / 8, y + r * h / 5, w / 8 - 1, h / 5 - 1, { fill: c, opacity: .13 + .1 * ((r * 2 + k) % 6), r: 1 });
-    s += P([[x, y + h], [x + w * .15, y + h * .32], [x + w * .31, y + h], [x + w * .52, y + h * .2], [x + w * .74, y + h], [x + w, y + h * .45]], { c, w: 1.8 });
+    // 这一组做的事是"把很多行频率压成较少的行"，所以画的是压缩本身。
+    // 金色在白底上偏浅，图形一律用加深后的同色，避免糊成一片。
+    const d = inkOf(c);
+    const lw = w * .3;
+    for (let r = 0; r < 11; r += 1) {
+      const yy = y + 2 + r * (h - 4) / 10;
+      s += L(x, yy, x + lw, yy, { c: d, w: 1.1 });
+    }
+    s += arrow(x + lw + w * .07, y + h / 2, x + lw + w * .24, y + h / 2, d);
+    const rx = x + w - lw;
+    [.55, 1, .75, .35].forEach((v, i) => {
+      const bh = (h - 6) / 4;
+      s += R(rx, y + 3 + i * bh, lw * v, bh - 3, { fill: d, r: 1.5 });
+    });
   } else {
     s += P(Array.from({ length: 35 }, (_, i) => { const f = i / 34; const v = Math.exp(-45 * (f - .24) ** 2) + .7 * Math.exp(-28 * (f - .63) ** 2); return [x + f * w, y + h - v / 1.02 * h]; }), { c, w: 2 });
     s += L(x + w * .5, y, x + w * .5, y + h, { c: ORANGE, dash: '4 3' });
@@ -93,20 +122,20 @@ function desktop() {
     const x = pad + i * (colW + gap); const y = top;
     s += R(x, y, colW, stageH, { fill: i % 2 ? '#fbfcfd' : PLATE, stroke: GRID, sw: 1, r: 4 });
     s += R(x, y, colW, 6, { fill: d.color, r: 2 });
-    s += T(x + 12, y + 32, d.range, { size: 14, weight: 700, fill: d.color });
+    s += T(x + 12, y + 32, d.range, { size: 14, weight: 700, fill: inkOf(d.color) });
     s += MT(x + 12, y + 60, d.title, { size: 16.5, weight: 700, leading: 23 });
     s += icon(d.icon, x + 18, y + 111, colW - 36, 55, d.color);
-    s += MT(x + 12, y + 194, d.question, { size: 13.5, weight: 700, fill: d.color, leading: 20 });
+    s += MT(x + 12, y + 194, d.question, { size: 13.5, weight: 700, fill: inkOf(d.color), leading: 20 });
     s += L(x + 12, y + 239, x + colW - 12, y + 239, { c: GRID });
     d.lessons.forEach((v, k) => { s += T(x + 14, y + 263 + k * 23, `${String(d.start + k).padStart(2, '0')}  ${v}`, { size: 12.5, fill: INK }); });
     const ry = y + 385; s += L(x + 12, ry - 15, x + colW - 12, ry - 15, { c: d.color, w: 2 });
-    s += MT(x + 12, ry + 8, d.result, { size: 12.5, weight: 700, fill: d.color, leading: 19 });
+    s += MT(x + 12, ry + 8, d.result, { size: 12.5, weight: 700, fill: inkOf(d.color), leading: 19 });
     if (i < 4) s += arrow(x + colW + 2, y + 80, x + colW + gap - 2, y + 80, MUTED);
   });
 
   const oy = top + stageH + 35; s += T(pad, oy, '学完以后，读者能够', { size: 19, weight: 700 });
   const ow = (W - 2 * pad - 4 * gap) / 5;
-  outcomes.forEach((d, i) => { const x = pad + i * (ow + gap); s += L(x, oy + 23, x + ow, oy + 23, { c: stages[i].color, w: 4 }); s += T(x, oy + 51, d[0], { size: 16, weight: 700, fill: stages[i].color }); s += MT(x, oy + 75, [d[1]], { size: 12.5, fill: MUTED }); });
+  outcomes.forEach((d, i) => { const x = pad + i * (ow + gap); s += L(x, oy + 23, x + ow, oy + 23, { c: stages[i].color, w: 4 }); s += T(x, oy + 51, d[0], { size: 16, weight: 700, fill: inkOf(stages[i].color) }); s += MT(x, oy + 75, [d[1]], { size: 12.5, fill: MUTED }); });
   s += T(W / 2, oy + 128, '一条主线：听懂声音 → 切分声音 → 看见频率 → 构建表示 → 提取特征', { size: 15, weight: 700, anchor: 'middle' });
   return svgDoc(W, oy + 154, s, '从声音到机器学习特征的二十三课桌面课程总纲');
 }
@@ -125,19 +154,19 @@ function mobile() {
     s += L(spineX + 13, cy, boxX - 5, cy, { c: d.color, w: 2 });
     s += R(boxX, y, boxW, stageH, { fill: i % 2 ? '#fbfcfd' : PLATE, stroke: GRID, sw: 1, r: 4 });
     s += R(boxX, y, 6, stageH, { fill: d.color, r: 2 });
-    s += T(boxX + 17, y + 28, d.range, { size: 14, weight: 700, fill: d.color });
+    s += T(boxX + 17, y + 28, d.range, { size: 14, weight: 700, fill: inkOf(d.color) });
     s += MT(boxX + 87, y + 27, d.title, { size: 17, weight: 700, leading: 22 });
     s += icon(d.icon, boxX + boxW - 91, y + 17, 67, 48, d.color);
-    s += MT(boxX + 17, y + 82, d.question, { size: 14, weight: 700, fill: d.color, leading: 20 });
+    s += MT(boxX + 17, y + 82, d.question, { size: 14, weight: 700, fill: inkOf(d.color), leading: 20 });
     s += L(boxX + 17, y + 126, boxX + boxW - 17, y + 126, { c: GRID });
     const split = Math.ceil(d.lessons.length / 2);
     d.lessons.forEach((v, k) => { const col = k >= split ? 1 : 0; const row = col ? k - split : k; const xx = boxX + 17 + col * (boxW - 34) / 2; s += T(xx, y + 151 + row * 22, `• ${v}`, { size: 14 }); });
     s += L(boxX + 17, y + 214, boxX + boxW - 17, y + 214, { c: d.color, w: 2 });
-    s += MT(boxX + 17, y + 239, [`学会：${d.result[0]}`, d.result[1]], { size: 14, weight: 700, fill: d.color, leading: 20 });
+    s += MT(boxX + 17, y + 239, [`学会：${d.result[0]}`, d.result[1]], { size: 14, weight: 700, fill: inkOf(d.color), leading: 20 });
   });
 
   const oy = top + stages.length * (stageH + gap) + 18; s += MT(pad, oy, ['学完以后，你能够'], { size: 19, weight: 700 });
-  outcomes.forEach((d, i) => { const y = oy + 32 + i * 52; s += L(pad, y, pad + 36, y, { c: stages[i].color, w: 5 }); s += T(pad + 49, y + 5, d[0], { size: 15, weight: 700, fill: stages[i].color }); s += T(pad + 105, y + 5, d[1], { size: 14, fill: MUTED }); });
+  outcomes.forEach((d, i) => { const y = oy + 32 + i * 52; s += L(pad, y, pad + 36, y, { c: stages[i].color, w: 5 }); s += T(pad + 49, y + 5, d[0], { size: 15, weight: 700, fill: inkOf(stages[i].color) }); s += T(pad + 105, y + 5, d[1], { size: 14, fill: MUTED }); });
   const endY = oy + 318; s += R(pad, endY, W - 2 * pad, 69, { fill: '#fff8e5', stroke: '#f0d99d', sw: 1, r: 4 });
   s += MT(W / 2, endY + 27, ['课程终点：准备可信的模型输入', '不包含模型训练、网络结构与部署'], { size: 14, weight: 700, fill: '#7d5c00', leading: 22, anchor: 'middle' });
   return svgDoc(W, endY + 90, s, '从声音到机器学习特征的二十三课手机课程总纲');
