@@ -1,52 +1,53 @@
 #!/usr/bin/env node
+// 把 figures/<layout>/*.svg 拼成联系表，便于一次目视检查排版。
+//   node tools/build-figure-contact-sheets.mjs [desktop|mobile|both] [01-05|06-10]
+// 输出 tmp/contact/<系列>-<layout>-N.png
 
-import { mkdirSync, readdirSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { readdirSync, readFileSync, mkdirSync } from 'node:fs';
+import { join, dirname, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import sharp from '../audio-dsp-learning-site/node_modules/sharp/lib/index.js';
+import sharp from 'sharp';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const SRC = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_01-05', 'figures');
-const OUT = join(ROOT, 'tmp', 'figure-contact-sheets-mobile');
+const series = process.argv[3] ?? '01-05';
+const BASE = join(ROOT, 'NotebookLM课程博客_重写版', `零基础版_${series}`, 'figures');
+const OUT = join(ROOT, 'tmp', 'contact');
 mkdirSync(OUT, { recursive: true });
 
-const PANEL_WIDTH = 360;
-const SHEET_WIDTH = 420;
-const LEFT = 30;
-const LABEL_HEIGHT = 34;
+const arg = process.argv[2] ?? 'both';
+const layouts = arg === 'both' ? ['desktop', 'mobile'] : [arg];
+const PER_SHEET = 5;
+const GAP = 20;
+const PAD = 16;
 
-const escapeXml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-for (const lesson of ['01', '02', '03', '04', '05']) {
-  const files = readdirSync(SRC).filter((f) => f.startsWith(`${lesson}-`) && f.endsWith('.svg')).sort();
-  const panels = [];
-  let totalHeight = 28;
-
-  for (const file of files) {
-    const png = await sharp(join(SRC, file), { density: 180 }).png().toBuffer();
-    const meta = await sharp(png).metadata();
-    const width = PANEL_WIDTH;
-    const height = Math.round((meta.height ?? 1) * width / (meta.width ?? width));
-    const resized = await sharp(png).resize({ width }).png().toBuffer();
-    panels.push({ file, image: resized, width, height, top: totalHeight + LABEL_HEIGHT });
-    totalHeight += LABEL_HEIGHT + height + 28;
+for (const layout of layouts) {
+  const dir = join(BASE, layout);
+  const files = readdirSync(dir).filter((f) => f.endsWith('.svg')).sort();
+  for (let sheet = 0; sheet * PER_SHEET < files.length; sheet += 1) {
+    const group = files.slice(sheet * PER_SHEET, (sheet + 1) * PER_SHEET);
+    // eslint-disable-next-line no-await-in-loop
+    const tiles = await Promise.all(group.map(async (f) => {
+      const buf = await sharp(Buffer.from(readFileSync(join(dir, f))), { density: 96 }).png().toBuffer();
+      const meta = await sharp(buf).metadata();
+      return { name: basename(f, '.svg'), buf, w: meta.width, h: meta.height };
+    }));
+    const W = Math.max(...tiles.map((t) => t.w)) + PAD * 2;
+    const H = tiles.reduce((a, t) => a + t.h + GAP + 22, 0) + PAD * 2;
+    const composites = [];
+    let y = PAD;
+    for (const t of tiles) {
+      const label = Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${W - PAD * 2}" height="20">`
+        + `<text x="0" y="14" font-size="13" font-family="Consolas,monospace" fill="#c8553d">${t.name}</text></svg>`,
+      );
+      composites.push({ input: label, left: PAD, top: y });
+      composites.push({ input: t.buf, left: PAD, top: y + 22 });
+      y += t.h + GAP + 22;
+    }
+    const name = `${series}-${layout}-${sheet + 1}.png`;
+    // eslint-disable-next-line no-await-in-loop
+    await sharp({ create: { width: W, height: H, channels: 3, background: '#eef1f4' } })
+      .composite(composites).png().toFile(join(OUT, name));
+    console.log(`${name}  ${W}x${H}  ${group.join(', ')}`);
   }
-
-  const overlays = [];
-  for (const panel of panels) {
-    const label = Buffer.from(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${PANEL_WIDTH}" height="${LABEL_HEIGHT}">` +
-      `<rect width="${PANEL_WIDTH}" height="${LABEL_HEIGHT}" fill="#f4f7fa"/>` +
-      `<text x="12" y="23" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" font-weight="600" fill="#24303b">${escapeXml(basename(panel.file))}</text>` +
-      `</svg>`,
-    );
-    overlays.push({ input: label, left: LEFT, top: panel.top - LABEL_HEIGHT });
-    overlays.push({ input: panel.image, left: LEFT, top: panel.top });
-  }
-
-  const output = join(OUT, `${lesson}-figures.png`);
-  await sharp({
-    create: { width: SHEET_WIDTH, height: totalHeight, channels: 3, background: '#ffffff' },
-  }).composite(overlays).png().toFile(output);
-  console.log(output);
 }

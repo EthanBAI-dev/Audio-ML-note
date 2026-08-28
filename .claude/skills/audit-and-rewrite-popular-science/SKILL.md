@@ -23,7 +23,7 @@ Every other rule in this skill exists to serve that reader. When accuracy and si
 4. Classify concrete issues P0-P3. Mark uncertain claims `需要外部核验`; never invent a citation, date, quotation, or result.
 5. Score all dimensions using `references/rubric.md`. Every original-score row must cite a concrete passage, explain the reader impact, and prescribe a specific edit.
 6. Produce title candidates and pick one, with reasons tied to scope, audience, and search intent. Make the chosen title carry both a beginner-facing question and the article's technical anchors. Add a two- or three-sentence content guide under it.
-7. Recommend visuals only when they clarify a mechanism, comparison, sequence, scale, or data relationship. For mobile reading, follow `references/mobile-figures.md`: prefer 360–420-wide vertical SVGs, preserve both useful explanatory labels and mechanism-bearing graphics by increasing height and reflowing vertically, render them at 360 px, and run `node scripts/check-svg-mobile.mjs <path>`.
+7. Recommend visuals only when they clarify a mechanism, comparison, sequence, scale, or data relationship. Any figure that claims to show what a sound actually looks like must be computed from real audio or from a signal matching the text exactly — never assembled from decorative shapes; follow `references/data-figures.md` for that, and `references/mobile-figures.md` for the narrow-screen layout. Ship a desktop and a mobile variant of every figure from one generator, and run `node scripts/check-svg-mobile.mjs <path>`.
 8. Publish a modification plan before rewriting. Every keep, delete, add, reorder, simplify, exemplify, verify and visualize decision maps back to a diagnosed issue.
 9. Rewrite using the invisible depth order and knowledge-point spine in `references/article-shape.md`. Let concepts drive the section order; use scenes and analogies only underneath the concept they explain.
 10. Run `node scripts/check-readability.mjs <file>` on the rewrite. Fix every ERROR. Justify or fix every WARN.
@@ -48,6 +48,14 @@ Close with a short 小结 that answers the opening question. No glossary table, 
 ## Knowledge-point spine
 
 Before drafting, write the article's core concepts as a dependency chain. Each H2 must name a knowledge point and the question, mechanism, or consequence it resolves. A reader scanning only the H2 headings should be able to reconstruct the lesson. Scenes, anecdotes, and analogies support that spine; they never replace it or become a parallel narrative.
+
+Three failure modes to check the spine against:
+
+- **One article doing two jobs.** If the opening question is fully answered by section four and six more sections follow, the rest is a second article. Demote it under one H2 with H3s, or split the piece. Around six H2s is a working ceiling for one lesson.
+- **The heading formula becoming its own template.** 「知识点：它解决的问题」 is a good default, not a mold to press all thirty headings through. When an article has a natural shape of its own — two parallel decisions, three phenomena, a four-step pipeline — let its headings follow that shape instead. A series where every article scans identically reads as generated.
+- **Concepts explained twice across the series.** If a later lesson is entirely about a concept, an earlier lesson mentions it in one sentence and links forward. Never give the same concept an H2 in two articles.
+
+Cross-link inside the prose, at the moment the reader would want more depth — not in a 延伸阅读 list at the end.
 
 ## Term admission
 
@@ -114,7 +122,8 @@ Any bad answer means that paragraph is not yet popular science.
 
 - `references/zero-basis-rules.md` — term admission, opening rules, density check, reader simulation. Read before rewriting.
 - `references/article-shape.md` — the natural article shape and a worked before/after example. Read before outlining.
-- `references/mobile-figures.md` — narrow-screen SVG layout, font and 360 px validation rules. Read before creating or revising figures.
+- `references/data-figures.md` — real-data requirement, raster-in-SVG technique, colormap convention, two-layout rule, caption rule. Read before creating or revising any figure.
+- `references/mobile-figures.md` — narrow-screen SVG layout, font and 360 px validation rules.
 - `references/rubric.md` — scoring dimensions, weights and the publication gate. Read before scoring.
 - `references/report-template.md` — sections A-K of the audit report.
 - `references/terms-zh.json` — jargon dictionary used by the checker; extend it per domain.

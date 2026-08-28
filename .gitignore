@@ -2,3 +2,4 @@ tmp/
 source_course/
 __pycache__/
 *.pyc
+node_modules/

@@ -29,13 +29,27 @@
 
 ## 配图
 
-每篇有 4 张手机端优先的 SVG 图，共 20 张，位于 `figures/`。所有图采用 420 px 竖向画布与单列布局；缩到 360 px 正文宽度后，最小有效字号不低于 12 px。生成与验收命令：
+每篇 4 张，共 20 张，位于 `figures/`。每张同时有电脑版和手机版，由同一份数据、同一段代码生成：
+
+| | 目录 | 画布 | 排布 |
+|---|---|---|---|
+| 电脑版 | `figures/desktop/` | 880 px | 并排横排 |
+| 手机版 | `figures/mobile/` | 420 px | 竖向单列，360 px 正文宽度下最小字号约 12 px |
+
+正文用 `<picture>` 按屏幕宽度切换，GitHub 的 Markdown 渲染支持这个标签。
+
+**波形、频谱、声谱图全部来自真实计算**，不再用色块摆出"看起来像"的图：
+
+- 素材优先取 `source_course/audio_resources/` 里的课程音频（piano_c、violin_c、scale、voice 等），其次是与正文例子严格对应的合成信号；
+- 声谱图按 magma 色标渲染成 PNG 再嵌进 SVG，坐标轴和中文标注仍是真实 `<text>`，所以手机上不糊，单张仍在几十 KB；
+- magma 是 librosa 与音频论文里画声谱图的常用色标，感知均匀、色觉障碍下可读；线图与卡片用蓝 `#0878b9` / 暖 `#c65a3d` / 绿 `#3b8f68`，已通过色觉障碍与对比度校验。
+
+生成与验收：
 
 ```bash
 node tools/build-figures.mjs
 node tools/build-figure-contact-sheets.mjs
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" \
-  "NotebookLM课程博客_重写版/零基础版_01-05/figures"
+node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs"   "NotebookLM课程博客_重写版/零基础版_01-05/figures/mobile"
 ```
 
 ## 写作规则与检查
@@ -46,6 +60,7 @@ Claude Code 可直接读取项目内的 skill：
 .claude/skills/audit-and-rewrite-popular-science/
 ├─ SKILL.md
 ├─ references/article-shape.md
+├─ references/data-figures.md
 ├─ references/mobile-figures.md
 ├─ references/zero-basis-rules.md
 ├─ references/rubric.md

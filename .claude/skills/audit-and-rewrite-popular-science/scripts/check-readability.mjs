@@ -66,6 +66,7 @@ function parse(md) {
   let buf = [];
   let bufStart = 0;
   let inFence = false;
+  let inHtml = false;
   let skipSection = false;
   // 深度不靠标题判断，按位置推断：
   //   L1 = 第一个二级标题之前的开场段落，必须零未经解释术语
@@ -87,6 +88,13 @@ function parse(md) {
   lines.forEach((raw, idx) => {
     if (/^\s*```/.test(raw)) { flush(); inFence = !inFence; if (layer !== 'tail') layer = 'L3'; return; }
     if (inFence) return;
+    // 跳过原始 HTML 块（例如 <picture> 两版式），alt 文本不属于正文
+    if (/^s*<(picture|figure|div|source|img)/i.test(raw)) { flush(); inHtml = true; }
+    if (inHtml) {
+      const low = raw.toLowerCase();
+      if (low.includes('</picture>') || low.includes('</figure>') || low.includes('</div>')) inHtml = false;
+      return;
+    }
     if (/^\s*\$\$/.test(raw) && layer !== 'tail') { flush(); layer = 'L3'; }
 
     const h = /^(#{1,6})\s/.exec(raw);

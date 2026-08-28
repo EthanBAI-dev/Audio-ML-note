@@ -1,0 +1,11 @@
+# 画图与验证用的 Python 环境
+# 正式配图走 Node 管线；这套环境用于核对 DSP 结果，
+# 以及验证文章里的 librosa 示例代码真的能跑通。
+#
+#   python -m pip install -r tools/requirements.txt
+
+numpy>=2.0
+scipy>=1.13
+matplotlib>=3.9
+librosa>=1.0
+soundfile>=0.12
