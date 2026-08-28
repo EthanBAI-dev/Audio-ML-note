@@ -92,6 +92,7 @@ Simple language is not permission to be vague or wrong.
 - State the domain of every formula and the assumptions behind every approximation. An idealized result (free field, ideal quantizer, band-limited signal) must say so where it appears.
 - Verify arithmetic examples and array shapes by hand or by running them.
 - Distinguish a convention or library default from a universal definition.
+- Distinguish a teaching shortcut from a hard technical limit. For example, a radix-2 teaching implementation may require a power-of-two length, while a modern FFT library can support many other lengths; state which claim belongs to which implementation.
 - Never turn correlation into causation, or a task-specific heuristic into a law.
 - Prefer primary course material, standards, official documentation and original papers.
 - Label every analogy as an analogy and state where it breaks down when that matters.
