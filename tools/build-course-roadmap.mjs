@@ -57,6 +57,16 @@ function arrow(x1, y1, x2, y2, c = MUTED) {
   const a = Math.atan2(y2 - y1, x2 - x1); const z = 7;
   return L(x1, y1, x2, y2, { c, w: 1.7 }) + `<polygon points="${x2},${y2} ${x2 - z * Math.cos(a - .5)},${y2 - z * Math.sin(a - .5)} ${x2 - z * Math.cos(a + .5)},${y2 - z * Math.sin(a + .5)}" fill="${c}"/>`;
 }
+// 在两色之间取值，用于画有深浅的热力格。
+function mix(a, b, t) {
+  const p1 = parseInt(a.slice(1), 16); const p2 = parseInt(b.slice(1), 16);
+  const ch = [16, 8, 0].map((sh) => {
+    const v1 = (p1 >> sh) & 255; const v2 = (p2 >> sh) & 255;
+    return Math.round(v1 + (v2 - v1) * Math.max(0, Math.min(1, t)));
+  });
+  return '#' + ch.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
 // 文字取色：只有明显偏浅的颜色才压暗，其余原样返回，
 // 这样五个阶段的识别色不变，但小字都能读清。
 function inkOf(hex) {
@@ -88,20 +98,23 @@ function icon(type, x, y, w, h, c0) {
     s += arrow(cx, cy, cx + r * .72, cy - r * .65, c);
     [0.08, .2, .42, .72, 1].forEach((v, i) => { const bw = w * .07; s += R(x + w * .57 + i * w * .085, y + h * .84 - v * h * .65, bw, v * h * .65, { fill: c, r: 1 }); });
   } else if (type === 'mel') {
-    // 这一组做的事是"把很多行频率压成较少的行"，所以画的是压缩本身。
-    // 金色在白底上偏浅，图形一律用加深后的同色，避免糊成一片。
-    const d = inkOf(c);
-    const lw = w * .3;
-    for (let r = 0; r < 11; r += 1) {
-      const yy = y + 2 + r * (h - 4) / 10;
-      s += L(x, yy, x + lw, yy, { c: d, w: 1.1 });
+    // 这一组的产出就是梅尔声谱图，直接画一张缩略图：
+    // 横轴时间、纵轴频率（惯例），几条持续的横向亮带 + 一次短促的竖向事件。
+    // 低处的带密、高处的带疏，正是梅尔刻度重新分带的样子。
+    const rows = 8; const cols = 10;
+    const cw = w / cols; const ch = h / rows;
+    const dark = shade(c, 0.45);
+    // 每行的持续强度：低频（下方）几条明显，高频（上方）弱而散
+    const band = [0.12, 0.2, 0.1, 0.34, 0.18, 0.7, 0.45, 0.9];
+    for (let r = 0; r < rows; r += 1) {
+      for (let k = 0; k < cols; k += 1) {
+        // 沿时间只做轻微起伏，横向的带才连得起来
+        let t = band[r] * (0.82 + 0.18 * Math.sin(k * 0.8 + r));
+        if (k === 6) t = Math.max(t, 0.75);            // 一次短促事件：一整列变亮
+        s += R(x + k * cw, y + r * ch, cw - 0.5, ch - 0.5, { fill: mix('#ffffff', dark, t), r: 0.5 });
+      }
     }
-    s += arrow(x + lw + w * .07, y + h / 2, x + lw + w * .24, y + h / 2, d);
-    const rx = x + w - lw;
-    [.55, 1, .75, .35].forEach((v, i) => {
-      const bh = (h - 6) / 4;
-      s += R(rx, y + 3 + i * bh, lw * v, bh - 3, { fill: d, r: 1.5 });
-    });
+    s += R(x, y, w, h, { fill: 'none', stroke: GRID, sw: 1 });
   } else {
     s += P(Array.from({ length: 35 }, (_, i) => { const f = i / 34; const v = Math.exp(-45 * (f - .24) ** 2) + .7 * Math.exp(-28 * (f - .63) ** 2); return [x + f * w, y + h - v / 1.02 * h]; }), { c, w: 2 });
     s += L(x + w * .5, y, x + w * .5, y + h, { c: ORANGE, dash: '4 3' });
