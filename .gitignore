@@ -3,3 +3,8 @@ source_course/
 __pycache__/
 *.pyc
 node_modules/
+
+# 本地草稿与站点，不进版本库
+audio-dsp-learning-site/
+notebooklm博客/
+课程博客/
