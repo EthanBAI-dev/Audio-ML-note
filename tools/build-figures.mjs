@@ -487,40 +487,6 @@ FIGURES['01-evidence'] = async (M) => {
   return svg(M.W, h + (wide ? 30 : 52), s2, '波形频谱和声谱图对敲击与嗡声的保留差异');
 };
 
-FIGURES['01-framing'] = async (M) => {
-  const head = ['分帧：把长录音变成', '许多次短时间观察'];
-  const y0 = headerH(M, head);
-  const wide = isWide(M);
-  const W = M.W - M.pad * 2;
-  let s = header(M, head);
-  let y = y0;
-  s += T(M.pad, y + 14, '10 秒录音：160000 个采样点', { size: M.body, weight: 700 });
-  y += 24;
-  s += card(M.pad, y, W, 72, { fill: PALE });
-  s += wavePanel(M.pad + 8, y + 8, W - 16, 56, VOICE10, { xlabel: '' });
-  y += 72;
-  s += ARROW(M.pad + W / 2, y + 6, M.pad + W / 2, y + 32, { color: WARM });
-  y += 44;
-  s += T(M.pad, y + 12, '放大其中一小段，再反复移动观察窗口', { size: M.body, weight: 700 });
-  y += 24;
-  const n = 4;
-  const fw = wide ? 300 : 260;
-  const stepX = wide ? 96 : 24;
-  const fh = 34;
-  for (let i = 0; i < n; i += 1) {
-    const x = M.pad + 14 + i * stepX;
-    const yy = y + i * (wide ? 40 : 44);
-    s += R(x, yy, fw, fh, { fill: i % 2 ? '#ffffff' : SOFT, stroke: BLUE, sw: 1.4, radius: 6 });
-    s += T(x + 14, yy + 23, `第 ${i + 1} 帧`, { size: M.small, weight: 700, fill: BLUE });
-  }
-  y += n * (wide ? 40 : 44) + 14;
-  s += MT(M.pad, y + 12, ['每帧 25 ms：400 个采样点', '每隔 10 ms 开始下一帧', '相邻两帧因此重叠 15 ms'],
-    { size: M.body, fill: MUTED, leading: 24 });
-  return svg(M.W, y + 12 + 24 * 2 + 20, s, '把十秒录音切成互相重叠的短帧');
-};
-
-// ---- 02 ----
-
 FIGURES['02-air-to-numbers'] = async (M) => {
   const head = ['空气的变化怎样变成', '录音里的数字'];
   const steps = [
