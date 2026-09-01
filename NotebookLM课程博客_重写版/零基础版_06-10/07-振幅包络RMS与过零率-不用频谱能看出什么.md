@@ -1,10 +1,12 @@
 # 振幅包络、RMS 与过零率：不用频谱能从声音里看出什么？
 
 > **导读：** 不把声音拆成高低成分，也能观察它随时间怎样变化。本文比较三种常用的时域特征：最高峰、整体强弱和翻越零线的频繁程度。
+>
+> **读完能做到：** 说出振幅包络、RMS、过零率各回答什么问题　·　判断哪一种对当前任务真的有用　·　知道三条曲线都不足以单独认出声音
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/mobile/00-course-position-07.svg">
-  <img src="figures/desktop/00-course-position-07.svg" alt="第 7 课在二十三课课程路线中的位置">
+  <img src="figures/desktop/00-course-position-07.svg" alt="第 7 课属于第 2 组「把录音变成可计算片段」，本组共 5 课">
 </picture>
 
 观察一段录音时，我们很容易注意到哪里突然变大、哪里持续很响、哪里抖动得很密。

@@ -1,10 +1,12 @@
 # 用 Python 提取对数梅尔频谱：怎样固定参数与输出形状？
 
 > **导读：** `librosa.feature.melspectrogram()` 看起来只是一行代码，背后却包含分帧、功率计算和梅尔频带汇总。本文沿着数据形状走完这条处理链，并说明采样率、`n_fft`、帧移、频带数、频率范围和 dB 参考值分别控制什么。
+>
+> **读完能做到：** 写出参数完整、形状明确的实现　·　分清梅尔汇总与对数压缩解决的是两件事　·　记下足以复现同一张图的全部设置
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/mobile/00-course-position-18.svg">
-  <img src="figures/desktop/00-course-position-18.svg" alt="第 18 课在二十三课课程路线中的位置">
+  <img src="figures/desktop/00-course-position-18.svg" alt="第 18 课属于第 4 组「把频谱整理成模型输入」，本组共 5 课">
 </picture>
 
 许多声音识别程序接收的不是一长列录音数字，而是一张二维数字表。每一列对应一个短时间片段，每一行汇总一段从低到高的声音成分。

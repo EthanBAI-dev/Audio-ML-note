@@ -1,10 +1,12 @@
 # 离散傅里叶变换（DFT）：有限样本怎样变成一格一格的频率？
 
 > **导读：** 电脑既拿不到无限长的声音，也不能检查无限多个频率。本文从一小段有限样本出发，说明 DFT 为什么只检查一组固定频率、频率间隔怎样计算，以及真实音频为什么通常只看频谱前半边。
+>
+> **读完能做到：** 把数组位置正确换算成 Hz　·　说出频率格间隔由什么决定　·　解释真实音频为什么只看前半边
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/mobile/00-course-position-13.svg">
-  <img src="figures/desktop/00-course-position-13.svg" alt="第 13 课在二十三课课程路线中的位置">
+  <img src="figures/desktop/00-course-position-13.svg" alt="第 13 课属于第 3 组「从波形进入时间—频率」，本组共 5 课">
 </picture>
 
 现实中的振动看起来是一条连续曲线，录音文件保存的却不是曲线本身。麦克风和声卡会在一个个时刻记录数字，电脑最终只拿到有限长的数字序列。

@@ -1,10 +1,12 @@
 # 用 Python 构建 MFCC 动态特征：Delta 与 39 维拼接
 
 > **导读：** 一列 MFCC 只能描述一个短时间片段“现在的频谱轮廓”，没有直接说明它正怎样变化。本文用 Python 计算 13 维 MFCC、一阶 Delta 和二阶 Delta，解释差分窗口与边界处理，并把三组结果拼成每帧 39 维的特征。
+>
+> **读完能做到：** 算出 Delta 与 Delta-Delta　·　处理首尾帧的边界　·　拼出每帧 39 维的特征
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/mobile/00-course-position-20.svg">
-  <img src="figures/desktop/00-course-position-20.svg" alt="第 20 课在二十三课课程路线中的位置">
+  <img src="figures/desktop/00-course-position-20.svg" alt="第 20 课属于第 4 组「把频谱整理成模型输入」，本组共 5 课">
 </picture>
 
 说出一个音节时，嘴形和口腔内部不会停在一个位置：它们会进入、过渡，再离开。若只看某一帧 MFCC，我们能知道这一刻各种声音成分的强弱轮廓，却不容易区分“正在上升”和“正在下降”。

@@ -1,10 +1,12 @@
 # 用 Python 正确读取 FFT 频谱：频率轴、单边幅值与归一化
 
 > **导读：** `np.fft.rfft` 只用一行就能返回结果，但数组下标不是 Hz，复数的模也不一定等于原信号振幅。本文用可运行代码依次处理频率轴、单边幅值、窗函数归一化和分贝显示，并说明规则音与噪声应该怎样比较。
+>
+> **读完能做到：** 建立与变换配套的频率轴　·　按窗系数归一化，得到可比较的幅值　·　分清幅度、相对分贝与功率不是同一个量
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/mobile/00-course-position-14.svg">
-  <img src="figures/desktop/00-course-position-14.svg" alt="第 14 课在二十三课课程路线中的位置">
+  <img src="figures/desktop/00-course-position-14.svg" alt="第 14 课属于第 3 组「从波形进入时间—频率」，本组共 5 课">
 </picture>
 
 让程序分析一段声音，只写 `np.fft.rfft(y)` 就能得到一串结果，但这些结果不会自动告诉我们该怎样阅读。第几个位置对应现实中的多少次振动，峰的高度又代表多强，都需要结合录音和计算时使用的设置来判断。
