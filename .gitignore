@@ -8,3 +8,6 @@ node_modules/
 audio-dsp-learning-site/
 notebooklm博客/
 课程博客/
+
+# Manim 渲染产物，体积大且可重建
+tools/manim/media/
