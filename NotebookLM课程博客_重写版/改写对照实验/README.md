@@ -11,8 +11,6 @@
 
 另有 `../khazix-writer对照实验/`，是更早一次用 khazix-writer 风格对第 01 课的试写。
 
-曾经有一版 `A-叙事主干`（ABT 叙事主干），效果不好，已撤掉；对应的 `references/narrative-spine.md` 和检查器里的叙事主干检查也一并删除。
-
 ## B 教程式改了什么
 
 固定十三段，逐篇套用：

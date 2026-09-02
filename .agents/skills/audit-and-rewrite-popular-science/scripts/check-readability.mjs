@@ -60,7 +60,7 @@ const MARKERS = dict.explainMarkers ?? [];
 // ---------- 解析 ----------
 
 // 把 markdown 切成块：跳过代码块、术语表小节、来源小节。
-// HTML 注释（叙事主干、exercise 标记）读者看不到，不该算进正文。
+// HTML 注释（exercise 标记等）读者看不到，不该算进正文。
 // 换成等量的空行，行号才不会错位。
 function stripComments(md) {
   return md.replace(/<!--[\s\S]*?-->/g, (m) => '\n'.repeat((m.match(/\n/g) || []).length));
@@ -268,7 +268,7 @@ function collect(p) {
   const st = statSync(p);
   if (st.isDirectory()) {
     return readdirSync(p)
-      // README 是索引页，不是文章：没有导读，也不该要求叙事主干
+      // README 是索引页，不是文章：没有导读，也不该套文章的规矩
       .filter((f) => f.endsWith('.md') && f.toLowerCase() !== 'readme.md')
       .map((f) => join(p, f))
       .flatMap(collect);
