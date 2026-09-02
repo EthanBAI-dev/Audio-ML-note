@@ -25,17 +25,16 @@ Every other rule in this skill exists to serve that reader. When accuracy and si
 6. Produce title candidates and pick one, with reasons tied to scope, audience, and search intent. Make the chosen title carry both a beginner-facing question and the article's technical anchors. Add a two- or three-sentence content guide under it.
 7. Recommend visuals only when they clarify a mechanism, comparison, sequence, scale, or data relationship. Any figure that claims to show what a sound actually looks like must be computed from real audio or from a signal matching the text exactly — never assembled from decorative shapes; follow `references/data-figures.md` for that, and `references/mobile-figures.md` for the narrow-screen layout. Ship a desktop and a mobile variant of every figure from one generator, and run `node scripts/check-svg-mobile.mjs <path>`.
 8. Publish a modification plan before rewriting. Every keep, delete, add, reorder, simplify, exemplify, verify and visualize decision maps back to a diagnosed issue.
-9. Write the article's ABT sentence before drafting a single section, per `references/narrative-spine.md`, and put it at the top of the file as `<!-- abt: … -->`. If the **But** clause names nothing that actually breaks, there is no article yet — rethink before writing.
-10. Rewrite using the invisible depth order and knowledge-point spine in `references/article-shape.md`. Let concepts drive the section order; use scenes and analogies only underneath the concept they explain. Every section must end by creating the need for the next one, and every heading must state a finding rather than name a topic.
-11. Run `node scripts/check-markdown-math.mjs <file>` on any article containing formulas; follow `references/markdown-math.md` and fix every ERROR.
-12. Run `node scripts/check-readability.mjs <file>` on the rewrite. Fix every ERROR. Justify or fix every WARN.
-13. Rescore independently. Do not raise a score without evidence in the revised artifact. List resolved, unresolved and newly introduced risks, then recommend publish or no-publish against the gate above.
+9. Rewrite using the invisible depth order and knowledge-point spine in `references/article-shape.md`. Let concepts drive the section order; use scenes and analogies only underneath the concept they explain.
+10. Run `node scripts/check-markdown-math.mjs <file>` on any article containing formulas; follow `references/markdown-math.md` and fix every ERROR.
+11. Run `node scripts/check-readability.mjs <file>` on the rewrite. Fix every ERROR. Justify or fix every WARN.
+12. Rescore independently. Do not raise a score without evidence in the revised artifact. List resolved, unresolved and newly introduced risks, then recommend publish or no-publish against the gate above.
 
 ## Depth order — invisible, never labeled
 
 Do not ship two parallel versions of the same article. Ship one article that deepens as it goes, so a beginner and a practitioner read the same page and stop at different points.
 
-The order is real, but **the reader must never see it announced.** Headings like 「第一层：生活中的问题」, a 「怎么读这篇文章」 preface, or any other scaffolding that narrates the article's own structure is forbidden — nobody writes that way, and it makes the piece read like a generated template instead of an article. Every heading names *content* — but content means the finding, not the topic: 「最老实的记法：每一个瞬间都记下来」, never 「波形：保留每一个瞬间的变化」.
+The order is real, but **the reader must never see it announced.** Headings like 「第一层：生活中的问题」, a 「怎么读这篇文章」 preface, or any other scaffolding that narrates the article's own structure is forbidden — nobody writes that way, and it makes the piece read like a generated template instead of an article. Every heading names *content*: what that section is actually about.
 
 The invisible order:
 
@@ -46,13 +45,6 @@ The invisible order:
 The transition between these has to be a sentence of prose, not a label. Nothing about the finished article should tell the reader it was built in stages.
 
 Close with a short 小结 that answers the opening question. No glossary table, no 课程来源 / 复现材料 appendix, no "further reading" scaffolding unless the user asks for it.
-
-## Narrative spine
-
-A correct knowledge chain still reads as a catalogue if nothing pushes the reader forward. Before drafting, write the ABT sentence; while drafting, make each section break the answer the previous one gave. Full rules, worked examples and the three sources they come from are in `references/narrative-spine.md`. The two rules that get violated most:
-
-- **Anything another lesson owns gets one sentence and a link — never an H2 or an H3.** Coherence beats completeness: material that is relevant but not required still competes for the reader's attention.
-- **Examples come from the course's own recordings and running project first.** Generic industry examples read professional and teach nothing the reader can check.
 
 ## Knowledge-point spine
 
@@ -133,7 +125,6 @@ Any bad answer means that paragraph is not yet popular science.
 ## Resources
 
 - `references/zero-basis-rules.md` — term admission, opening rules, density check, reader simulation. Read before rewriting.
-- `references/narrative-spine.md` — the ABT sentence, section transitions, heading rules, coherence pruning. Read before outlining.
 - `references/article-shape.md` — the natural article shape and a worked before/after example. Read before outlining.
 - `references/data-figures.md` — real-data requirement, raster-in-SVG technique, colormap convention, two-layout rule, caption rule. Read before creating or revising any figure.
 - `references/mobile-figures.md` — narrow-screen SVG layout, font and 360 px validation rules.

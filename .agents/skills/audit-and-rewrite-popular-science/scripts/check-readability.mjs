@@ -198,24 +198,6 @@ function check(file) {
     add('WARN', 1, '文末出现「课程来源 / 复现材料」小节，除非用户明确要求，否则删掉');
   }
 
-  // 叙事主干。写不出「但是」的那一半，就说明这篇还没有存在的理由。
-  // 见 references/narrative-spine.md。
-  const abt = /<!--\s*abt:\s*([\s\S]*?)-->/.exec(md);
-  if (!abt) {
-    if (isArticle) {
-      // 先记为 WARN：叙事主干这套写法还在对照实验里，没有定案
-      add('WARN', 1, '文件顶部缺少 <!-- abt: … --> 叙事主干：动笔前先写出「而且…但是…所以…」那一句');
-    }
-  } else {
-    const spine = abt[1].trim();
-    const missing = ['而且', '但是', '所以'].filter((w) => !spine.includes(w));
-    if (missing.length) {
-      add('ERROR', 1, `叙事主干缺少「${missing.join('」「')}」；三段缺一段就不成其为主干`);
-    }
-    if (spine.length < 30) {
-      add('WARN', 1, '叙事主干太短，多半只写了口号，没写清「但是」那里到底什么坏掉了');
-    }
-  }
 
   const body = blocks.filter((b) => !b.skipped && !/^>/.test(b.text.trim()));
   let bodyParaSeen = 0;
