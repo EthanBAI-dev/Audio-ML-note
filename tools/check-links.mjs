@@ -11,7 +11,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 function walk(dir) {
   return readdirSync(dir).flatMap((f) => {
-    if (f === 'node_modules' || f.startsWith('.git') || f === 'tmp') return [];
+    // 对照实验里放的是各种写法的试写稿，相对链接按正式稿的位置写的，
+    // 在这里必然指不到，不参与检查。
+    if (f === 'node_modules' || f.startsWith('.git') || f === 'tmp' || f.endsWith('对照实验')) return [];
     const p = join(dir, f);
     if (statSync(p).isDirectory()) return walk(p);
     return f.endsWith('.md') ? [p] : [];

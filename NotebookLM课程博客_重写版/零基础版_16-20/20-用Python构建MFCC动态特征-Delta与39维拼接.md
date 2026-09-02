@@ -1,8 +1,6 @@
 # 用 Python 构建 MFCC 动态特征：Delta 与 39 维拼接
 
 > **导读：** 一列 MFCC 只能描述一个短时间片段“现在的频谱轮廓”，没有直接说明它正怎样变化。本文用 Python 计算 13 维 MFCC、一阶 Delta 和二阶 Delta，解释差分窗口与边界处理，并把三组结果拼成每帧 39 维的特征。
->
-> **读完能做到：** 算出 Delta 与 Delta-Delta　·　处理首尾帧的边界　·　拼出每帧 39 维的特征
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/mobile/00-course-position-20.svg">

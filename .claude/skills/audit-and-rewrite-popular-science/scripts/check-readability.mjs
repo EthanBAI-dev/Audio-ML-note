@@ -60,6 +60,12 @@ const MARKERS = dict.explainMarkers ?? [];
 // ---------- 解析 ----------
 
 // 把 markdown 切成块：跳过代码块、术语表小节、来源小节。
+// HTML 注释（叙事主干、exercise 标记）读者看不到，不该算进正文。
+// 换成等量的空行，行号才不会错位。
+function stripComments(md) {
+  return md.replace(/<!--[\s\S]*?-->/g, (m) => '\n'.repeat((m.match(/\n/g) || []).length));
+}
+
 function parse(md) {
   const lines = md.split(/\r?\n/);
   const blocks = [];
@@ -169,7 +175,7 @@ function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 function check(file) {
   const md = readFileSync(file, 'utf8');
-  const { blocks, headings, labeled } = parse(md);
+  const { blocks, headings, labeled } = parse(stripComments(md));
   const findings = [];
   const introduced = new Map(); // term -> {line, explained}
   const add = (level, line, msg) => findings.push({ level, line, msg });
@@ -183,11 +189,32 @@ function check(file) {
     add('ERROR', 1, '出现了讲解文章自身结构的导读段落，删掉；文章要像文章，不要像模板');
   }
   const openingLines = md.split(/\r?\n/).slice(0, 12).join('\n');
-  if (!/^>\s*(?:\*\*)?导读[：:]/m.test(openingLines)) {
+  // 有导读才当成一篇文章看：索引页和流程文档没有导读，也不该套文章的规矩
+  const isArticle = /^>\s*(?:\*\*)?导读[：:]/m.test(openingLines);
+  if (!isArticle) {
     add('WARN', 1, '标题下缺少两到三句内容导读：应说明现实问题、技术重点和阅读收获');
   }
   if (/课程来源|复现材料/.test(titles)) {
     add('WARN', 1, '文末出现「课程来源 / 复现材料」小节，除非用户明确要求，否则删掉');
+  }
+
+  // 叙事主干。写不出「但是」的那一半，就说明这篇还没有存在的理由。
+  // 见 references/narrative-spine.md。
+  const abt = /<!--\s*abt:\s*([\s\S]*?)-->/.exec(md);
+  if (!abt) {
+    if (isArticle) {
+      // 先记为 WARN：叙事主干这套写法还在对照实验里，没有定案
+      add('WARN', 1, '文件顶部缺少 <!-- abt: … --> 叙事主干：动笔前先写出「而且…但是…所以…」那一句');
+    }
+  } else {
+    const spine = abt[1].trim();
+    const missing = ['而且', '但是', '所以'].filter((w) => !spine.includes(w));
+    if (missing.length) {
+      add('ERROR', 1, `叙事主干缺少「${missing.join('」「')}」；三段缺一段就不成其为主干`);
+    }
+    if (spine.length < 30) {
+      add('WARN', 1, '叙事主干太短，多半只写了口号，没写清「但是」那里到底什么坏掉了');
+    }
   }
 
   const body = blocks.filter((b) => !b.skipped && !/^>/.test(b.text.trim()));
@@ -259,7 +286,8 @@ function collect(p) {
   const st = statSync(p);
   if (st.isDirectory()) {
     return readdirSync(p)
-      .filter((f) => f.endsWith('.md'))
+      // README 是索引页，不是文章：没有导读，也不该要求叙事主干
+      .filter((f) => f.endsWith('.md') && f.toLowerCase() !== 'readme.md')
       .map((f) => join(p, f))
       .flatMap(collect);
   }
