@@ -30,7 +30,7 @@
 面向零基础读者的写作与审校规则、评分标准和检查脚本，放在项目内的 skill 里，Claude Code 可以直接加载：
 
 ```
-.claude/skills/audit-and-rewrite-popular-science/
+.claude/skills/audio-course-lesson/
 ```
 
 核心约定是让文章**自然加深，但不把写作结构写在标题里**：从生活问题出发，先用日常语言讲清机制，专业名称在需要时逐个出现，公式、代码与适用边界顺着内容放到后文。第 01～05 课的新改写见 [零基础版_01-05](NotebookLM课程博客_重写版/零基础版_01-05/README.md)。

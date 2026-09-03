@@ -36,15 +36,15 @@ npm run --prefix tools contact:21-23
 ## 验收命令
 
 ```bash
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-readability.mjs" \
   "NotebookLM课程博客_重写版/零基础版_21-23/21-频域特征怎样概括一帧声音-带能量比质心与带宽.md" \
   "NotebookLM课程博客_重写版/零基础版_21-23/22-用Python实现带能量比BER-怎样正确切分频率箱.md" \
   "NotebookLM课程博客_重写版/零基础版_21-23/23-频谱质心与带宽怎么计算-声音频率的中心与扩散.md"
 
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-markdown-math.mjs" \
   "NotebookLM课程博客_重写版/零基础版_21-23"
 
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" \
   "NotebookLM课程博客_重写版/零基础版_21-23/figures/mobile"
 ```
 

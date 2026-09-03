@@ -40,8 +40,8 @@
 node tools/build-figures.mjs            # 01-05，其余分组见 build-figures-06-10.mjs 等
 node tools/apply-exercises.mjs          # 把「动手做」写进 23 篇文章
 node tools/build-figure-contact-sheets.mjs both all
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" <文章路径>
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" <figures/mobile 目录>
+node ".claude/skills/audio-course-lesson/scripts/check-readability.mjs" <文章路径>
+node ".claude/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" <figures/mobile 目录>
 ```
 
 验收线：正文与公式检查 ERROR 清零；配图除自动检查外，还要目视检查桌面与手机联系表。

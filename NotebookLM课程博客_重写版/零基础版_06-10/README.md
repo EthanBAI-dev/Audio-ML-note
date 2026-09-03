@@ -32,7 +32,7 @@
 ```bash
 node tools/build-figures-06-10.mjs
 node tools/build-figure-contact-sheets.mjs both 06-10
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" \
   "NotebookLM课程博客_重写版/零基础版_06-10/figures/mobile"
 ```
 
@@ -41,7 +41,7 @@ Claude Code 可以把上面命令中的 `.agents/skills/` 换成 `.claude/skills
 ## 正文验收
 
 ```bash
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-readability.mjs" \
   "NotebookLM课程博客_重写版/零基础版_06-10/06-分帧加窗与聚合-怎样把整段录音变成可计算的小段.md" \
   "NotebookLM课程博客_重写版/零基础版_06-10/07-振幅包络RMS与过零率-不用频谱能看出什么.md" \
   "NotebookLM课程博客_重写版/零基础版_06-10/08-振幅包络怎么计算-从逐帧最大值到可靠时间轴.md" \
@@ -50,7 +50,7 @@ node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability
 ```
 
 ```bash
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-markdown-math.mjs" \
   "NotebookLM课程博客_重写版/零基础版_06-10"
 ```
 

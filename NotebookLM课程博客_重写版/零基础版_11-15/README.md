@@ -33,7 +33,7 @@
 npm install --prefix tools
 npm run --prefix tools figures:11-15
 npm run --prefix tools contact:11-15
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" \
   "NotebookLM课程博客_重写版/零基础版_11-15/figures/mobile"
 ```
 
@@ -42,7 +42,7 @@ Claude Code 可以把 `.agents/skills/` 换成 `.claude/skills/`；两份项目 
 ## 正文验收
 
 ```bash
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-readability.mjs" \
   "NotebookLM课程博客_重写版/零基础版_11-15/11-复数的模与相位-为什么声音中的振动需要二维坐标.md" \
   "NotebookLM课程博客_重写版/零基础版_11-15/12-傅里叶变换为什么使用复数-同时测出频率强度与起始位置.md" \
   "NotebookLM课程博客_重写版/零基础版_11-15/13-离散傅里叶变换DFT-有限样本怎样变成频率格.md" \
@@ -51,7 +51,7 @@ node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability
 ```
 
 ```bash
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-markdown-math.mjs" \
   "NotebookLM课程博客_重写版/零基础版_11-15"
 ```
 

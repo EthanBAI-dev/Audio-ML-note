@@ -35,7 +35,7 @@
 npm install --prefix tools
 npm run --prefix tools figures:16-20
 npm run --prefix tools contact:16-20
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" \
   "NotebookLM课程博客_重写版/零基础版_16-20/figures/mobile"
 ```
 
@@ -44,7 +44,7 @@ Claude Code 可以把 `.agents/skills/` 换成 `.claude/skills/`；两份项目 
 ## 正文验收
 
 ```bash
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-readability.mjs" \
   "NotebookLM课程博客_重写版/零基础版_16-20/16-功率声谱图与相对分贝-怎样把STFT画得可信.md" \
   "NotebookLM课程博客_重写版/零基础版_16-20/17-梅尔刻度与三角滤波器组-为什么频率要按听感重新分带.md" \
   "NotebookLM课程博客_重写版/零基础版_16-20/18-用Python提取对数梅尔频谱-怎样固定参数与输出形状.md" \
@@ -53,7 +53,7 @@ node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-readability
 ```
 
 ```bash
-node ".agents/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+node ".agents/skills/audio-course-lesson/scripts/check-markdown-math.mjs" \
   "NotebookLM课程博客_重写版/零基础版_16-20"
 ```
 

@@ -52,7 +52,7 @@
 ```bash
 node tools/build-figures.mjs
 node tools/build-figure-contact-sheets.mjs
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs"   "NotebookLM课程博客_重写版/零基础版_01-05/figures/mobile"
+node ".claude/skills/audio-course-lesson/scripts/check-svg-mobile.mjs"   "NotebookLM课程博客_重写版/零基础版_01-05/figures/mobile"
 ```
 
 ## 写作规则与检查
@@ -60,7 +60,7 @@ node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.
 Claude Code 可直接读取项目内的 skill：
 
 ```text
-.claude/skills/audit-and-rewrite-popular-science/
+.claude/skills/audio-course-lesson/
 ├─ SKILL.md
 ├─ references/article-shape.md
 ├─ references/data-figures.md
@@ -74,7 +74,7 @@ Claude Code 可直接读取项目内的 skill：
 检查这 5 篇：
 
 ```bash
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" \
+node ".claude/skills/audio-course-lesson/scripts/check-readability.mjs" \
   "NotebookLM课程博客_重写版/零基础版_01-05/01-波形频谱与声谱图-电脑识别声音时该看什么.md" \
   "NotebookLM课程博客_重写版/零基础版_01-05/02-波形频率与音高-声音曲线记录了什么.md" \
   "NotebookLM课程博客_重写版/零基础版_01-05/03-分贝响度与音色-为什么音量一样听起来仍不同.md" \
@@ -85,7 +85,7 @@ node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-readability
 检查 Markdown 公式：
 
 ```bash
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-markdown-math.mjs" \
+node ".claude/skills/audio-course-lesson/scripts/check-markdown-math.mjs" \
   "NotebookLM课程博客_重写版/零基础版_01-05"
 ```
 

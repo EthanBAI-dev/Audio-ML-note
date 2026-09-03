@@ -3,7 +3,7 @@
 审校与改写用的 skill 已经移到项目内的标准位置，Claude Code 会自动发现并加载：
 
 ```
-.claude/skills/audit-and-rewrite-popular-science/
+.claude/skills/audio-course-lesson/
 ├─ SKILL.md                       写作与审校流程；最高优先级是「读者一无所知」
 ├─ references/
 │  ├─ zero-basis-rules.md         零基础读者规则：术语准入、开头规则、密度检查、读者模拟
@@ -19,18 +19,18 @@
 
 用法：
 
-- 在 Claude Code 里直接说「按 skill 审校第 06 课」，或 `/audit-and-rewrite-popular-science`。
+- 在 Claude Code 里直接说「按 skill 审校第 06 课」，或 `/audio-course-lesson`。
 - 想把规则贴给别的模型用，`references/zero-basis-rules.md` 的每一节都可以整段复制成提示词。
 - 改完任何一篇跑一次检查，ERROR 必须为 0：
 
 ```bash
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-readability.mjs" "NotebookLM课程博客_重写版/零基础版_01-05"
+node ".claude/skills/audio-course-lesson/scripts/check-readability.mjs" "NotebookLM课程博客_重写版/零基础版_01-05"
 ```
 
 改完配图后按 360 px 手机正文宽度检查：
 
 ```bash
-node ".claude/skills/audit-and-rewrite-popular-science/scripts/check-svg-mobile.mjs" "NotebookLM课程博客_重写版/零基础版_01-05/figures"
+node ".claude/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" "NotebookLM课程博客_重写版/零基础版_01-05/figures"
 ```
 
 第一批成果见 [零基础版_01-05](NotebookLM课程博客_重写版/零基础版_01-05/README.md)。

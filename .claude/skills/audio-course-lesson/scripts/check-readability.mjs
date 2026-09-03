@@ -171,6 +171,41 @@ function looksExplained(text, hit) {
 
 function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+// 显示宽度：中日韩全角字符占两列
+function displayWidth(s) {
+  let n = 0;
+  for (const ch of s) {
+    const c = ch.codePointAt(0);
+    n += (c >= 0x1100 && (c <= 0x115f || c === 0x2329 || c === 0x232a
+      || (c >= 0x2e80 && c <= 0xa4cf && c !== 0x303f)
+      || (c >= 0xac00 && c <= 0xd7a3) || (c >= 0xf900 && c <= 0xfaff)
+      || (c >= 0xfe30 && c <= 0xfe6f) || (c >= 0xff00 && c <= 0xff60)
+      || (c >= 0xffe0 && c <= 0xffe6))) ? 2 : 1;
+  }
+  return n;
+}
+
+// ```text 块只该放命令行和目录树。用它画流程图有三个坏处：
+// 手机上横向溢出、进不了小红书卡片、机检扫不到里面的内容。
+// 见 SKILL.md 第五节。
+const MOBILE_COLS = 40;
+function checkTextBlocks(md, add) {
+  const re = /^```text[^\n]*\n([\s\S]*?)^```/gm;
+  let m;
+  while ((m = re.exec(md)) !== null) {
+    const line = md.slice(0, m.index).split('\n').length;
+    const body = m[1];
+    const widest = Math.max(...body.split('\n').map(displayWidth), 0);
+    if (widest > MOBILE_COLS) {
+      add('WARN', line, `\`\`\`text 块宽 ${widest} 列，超过手机可用的 ${MOBILE_COLS} 列，会横向溢出`);
+    }
+    // 竖排箭头基本只出现在假流程图里；命令行和目录树不会用它
+    if (/[↓⇩]/.test(body)) {
+      add('WARN', line, '```text 块里在用箭头画流程图，应改成真正的配图（卡片版吃不到它，机检也扫不到）');
+    }
+  }
+}
+
 // ---------- 检查 ----------
 
 function check(file) {
@@ -197,6 +232,10 @@ function check(file) {
   if (/课程来源|复现材料/.test(titles)) {
     add('WARN', 1, '文末出现「课程来源 / 复现材料」小节，除非用户明确要求，否则删掉');
   }
+  if (/^>\s*\*\*读完能做到/m.test(md)) {
+    add('ERROR', 1, '开头出现「读完能做到」那一行：和导读、小结互相复述，删掉，只留导读');
+  }
+  checkTextBlocks(md, add);
 
 
   const body = blocks.filter((b) => !b.skipped && !/^>/.test(b.text.trim()));
