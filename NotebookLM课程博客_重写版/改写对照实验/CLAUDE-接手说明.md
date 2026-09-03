@@ -58,8 +58,8 @@
 |---|---|---|---|---|
 | 02 | `source_course/02 - Sound and waveforms/Sound and waveforms.pdf` | `B-教程式/02-声音与波形-振动怎样变成录音里那条线.md` | `课程代码/lessons/lesson02_pitch_and_hz.py` | 物体振动 → 空气压力变化 → 声波 → 波形 → 周期 / 正弦 → 听觉范围 → 音高的对数关系 |
 | 03 | `source_course/03 - Intensity, loudness, and timbre/Intensity, loudness, and timbre.pdf`；同目录 `intensity_and_timbre.ipynb` | `B-教程式/03-强弱响度与音色-音量一样为什么听起来不同.md` | `课程代码/lessons/lesson03_loudness.py` | 声功率 → 声强 → 分贝 → 响度 → 音色 → 包络 / 泛音 / 调频 / 调幅 |
-| 04 | `source_course/04 - Understanding audio signals/Understanding audio signals.pdf` | `B-教程式/04-采样率与位深-44.1kHz和16bit决定了什么.md` | `课程代码/lessons/lesson04_sampling_and_bitdepth.py` | 模拟信号 → ADC → 采样与量化 → PCM → 混叠 → 位深 → ADC / DAC 完整链 |
-| 05 | `source_course/05 - Types of audio features for ML/Types of Audio Features for ML.pdf` | `B-教程式/05-音频特征怎么选-抽象层级时间尺度与模型输入.md` | `课程代码/lessons/lesson05_feature_choices.py` | 按源课建立五个分类维度，不能继续写成“四个选择” |
+| 04 | `source_course/04 - Understanding audio signals/Understanding audio signals.pdf` | `B-教程式/04-模拟声到数字录音-连续的声音怎样变成一串数字.md` | `课程代码/lessons/lesson04_sampling_and_bitdepth.py` | 模拟信号 → ADC → 采样与量化 → PCM → 混叠 → 位深 → ADC / DAC 完整链 |
+| 05 | `source_course/05 - Types of audio features for ML/Types of Audio Features for ML.pdf` | `B-教程式/05-音频特征的分类-该从录音里算出什么交给模型.md` | `课程代码/lessons/lesson05_feature_choices.py` | 按源课建立五个分类维度，不能继续写成“四个选择” |
 | 06 | `source_course/06 - How to extract audio features/How to extract audio features.pdf` | `B-教程式/06-分帧加窗与聚合-怎样把整段录音变成可计算的小段.md` | `课程代码/lessons/lesson06_framing.py` | 时域流水线 → 频域流水线 → 泄漏 → 加窗 → 重叠和帧移；聚合不是正文主线 |
 | 07 | `source_course/07 - Time-domain audio features/Time-domain audio features.pdf` | `B-教程式/07-振幅包络RMS与过零率-不用频谱能看出什么.md` | `课程代码/lessons/lesson07_three_time_features.py` | 只负责 AE、RMS、ZCR 的定义、公式、优缺点和应用，不抢 08 / 09 的完整实现 |
 | 08 | `source_course/08 - Implementing the amplitude envelope/Implementing the amplitude envelope.ipynb` | `B-教程式/08-振幅包络怎么计算-从逐帧最大值到可靠时间轴.md` | `课程代码/lessons/lesson08_amplitude_envelope.py` | 严格按 notebook 完成三段音乐、波形、手写 AE、时间轴和叠加比较 |

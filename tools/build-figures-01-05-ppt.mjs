@@ -631,6 +631,337 @@ FIG['03-tremolo'] = (M) => {
   return doc(M.W, y, s, 'tremolo.wav 的振幅包络与起伏周期');
 };
 
+// ================================================================ 04
+
+// PPT p5–p7：模拟信号处处连续，数字信号只在有限个时刻取有限个档位。
+FIG['04-analog-vs-digital'] = (M) => {
+  const head = ['模拟信号有两个「无穷」，', '数字信号两个都砍掉了'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const f = (u) => Math.sin(u * 7.5) * (0.5 + 0.42 * Math.sin(u * 2.1));
+  const cw = w ? (pw - 22) / 2 : pw;
+  const ph = w ? 128 : 112;
+  const LEVELS = 8;
+
+  const drawOne = (bx, by, digital) => {
+    let o = '';
+    const pn = panel(bx, by, cw, ph, {
+      yr: [-1.15, 1.15],
+      title: digital ? '数字信号' : '模拟信号',
+      tfill: digital ? GREEN : WARM, tsize: M.h2, zero: true,
+    });
+    o += pn.s;
+    if (digital) {
+      // 档位横线：取值只能落在这些线上
+      for (let i = 0; i <= LEVELS; i += 1) {
+        const v = -1 + (2 * i) / LEVELS;
+        o += L(bx + 2, pn.sy(v), bx + cw - 2, pn.sy(v), { c: '#e6ecf1', w: 1 });
+      }
+      const N = 26;
+      for (let i = 0; i < N; i += 1) {
+        const u = i / (N - 1);
+        const raw = f(u);
+        // 靠到最近的档位上
+        const q = Math.round(((raw + 1) / 2) * LEVELS) / LEVELS * 2 - 1;
+        const xx = bx + 4 + u * (cw - 8);
+        o += L(xx, pn.sy(0), xx, pn.sy(q), { c: GREEN, w: 1.4 });
+        o += O(xx, pn.sy(q), 2.8, { fill: GREEN });
+      }
+    } else {
+      const vals = [];
+      for (let i = 0; i < 260; i += 1) vals.push(f(i / 259));
+      o += curve(pn, vals, { c: WARM, w: 1.8 });
+    }
+    return o;
+  };
+
+  s += drawOne(px, y, false);
+  s += drawOne(w ? px + cw + 22 : px, w ? y : y + ph + 60, true);
+
+  const noteY = w ? y + ph + 20 : y + ph * 2 + 80;
+  const notes = [
+    ['模拟信号', WARM, ['时间上连续：任意两个时刻之间还有无穷多个时刻',
+      '取值上连续：0.31 和 0.32 之间还有无穷多个数']],
+    ['数字信号', GREEN, ['时间上离散：只在一格一格的时刻上有值',
+      '取值上离散：每个值都被推到最近的横格线上']],
+  ];
+  let ny = noteY;
+  notes.forEach((n2) => {
+    s += T(px, ny, n2[0], { size: M.small, weight: 700, fill: n2[1] });
+    s += MT(px + (w ? 70 : 68), ny, n2[2], { size: tiny(M), fill: MUTED, leading: 19 });
+    ny += 46;
+  });
+
+  s += T(px, ny + 4, '砍掉第一个无穷叫「采样」，砍掉第二个叫「量化」——ADC 只做这两件事。',
+    { size: M.small, weight: 700, fill: INK });
+  return doc(M.W, ny + 22, s, '模拟信号处处连续，数字信号只在有限个时刻取有限个档位');
+};
+
+// PPT p39–p45：录音走 ADC，放音走 DAC，两条链互为逆过程但信息不对称。
+FIG['04-record-playback'] = (M) => {
+  const head = ['录音这条链走 ADC，', '放音那条链走 DAC'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 16;
+
+  const rows = [
+    {
+      tag: '录音', color: WARM, fill: '#fbf0ec',
+      steps: ['空气振动', '麦克风', '抗混叠滤波', 'ADC 采样＋量化'],
+      end: '一串数字',
+      note: '滤波那一步砍掉了超过一半采样率的成分',
+    },
+    {
+      tag: '放音', color: GREEN, fill: '#eef7f2',
+      steps: ['一串数字', 'DAC 还原电压', '平滑滤波', '功放推音箱'],
+      end: '空气振动',
+      note: '砍掉的东西补不回来，听到的是拼起来的版本',
+    },
+  ];
+
+  rows.forEach((r) => {
+    const items = r.steps.concat([r.end]);
+    const rowH = w ? 108 : 40 + items.length * 36;
+    s += R(px, y, pw, rowH, { fill: r.fill, stroke: r.color, sw: 1.6, r: 10 });
+    s += T(px + 16, y + 25, r.tag, { size: M.h2, weight: 700, fill: r.color });
+    if (w) {
+      const bw = (pw - 32 - (items.length - 1) * 20) / items.length;
+      items.forEach((label, i) => {
+        const bx = px + 16 + i * (bw + 20);
+        const last = i === items.length - 1;
+        s += R(bx, y + 38, bw, 32, {
+          fill: '#fff', stroke: last ? r.color : GRID, sw: last ? 2 : 1, r: 6,
+        });
+        s += T(bx + bw / 2, y + 58, label, {
+          size: tiny(M), weight: last ? 700 : 400, fill: last ? r.color : INK, anchor: 'middle',
+        });
+        if (!last) s += ARROW(bx + bw + 3, y + 54, bx + bw + 16, y + 54, { c: r.color });
+      });
+      s += T(px + 16, y + 92, r.note, { size: tiny(M), fill: MUTED });
+    } else {
+      items.forEach((label, i) => {
+        const by = y + 36 + i * 36;
+        const last = i === items.length - 1;
+        s += R(px + 16, by, pw - 32, 26, {
+          fill: '#fff', stroke: last ? r.color : GRID, sw: last ? 2 : 1, r: 6,
+        });
+        s += T(px + 26, by + 18, label, {
+          size: tiny(M), weight: last ? 700 : 400, fill: last ? r.color : INK,
+        });
+        if (!last) s += ARROW(px + 30, by + 27, px + 30, by + 34, { c: r.color, head: 5 });
+      });
+    }
+    y += rowH + 16;
+  });
+
+  if (!w) {
+    s += MT(px, y + 2, rows.map((r) => r.tag + '：' + r.note),
+      { size: tiny(M), fill: MUTED, leading: 20 });
+    y += 44;
+  }
+
+  s += MT(px, y + 6, w
+    ? ['两条链读起来对称，信息上并不对称：录音那一侧砍掉的两样东西——超过一半采样率的成分、',
+      '档位之间的那点差值——放音时都补不回来。所以你听到的永远是「砍完再拼起来」的版本。']
+    : ['两条链读着对称，信息上不对称：录音砍掉的',
+      '两样东西——超过一半采样率的成分、档位之间',
+      '那点差值——放音都补不回来。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 10;
+  return doc(M.W, y, s, '录音经过麦克风与 ADC，放音经过 DAC 与音箱');
+};
+
+// ================================================================ 05
+
+// PPT p5：五个分类维度。不是五选一，是五条各自独立的问题。
+FIG['05-five-dimensions'] = (M) => {
+  const head = ['一个音频特征，', '在这五条上各占一个位置'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 18;
+
+  const dims = [
+    { n: '抽象层级', q: '离原始测量有多远', v: ['低层', '中层', '高层'], c: BLUE },
+    { n: '时间范围', q: '一次概括多长', v: ['瞬时 ~50ms', '片段级 几秒', '全局'], c: GREEN },
+    { n: '音乐属性', q: '描述音乐哪个方面', v: ['节拍', '音色', '音高', '和声'], c: GOLD },
+    { n: '信号域', q: '从哪个角度观察', v: ['时域', '频域', '时频'], c: WARM },
+    { n: '算法来源', q: '人算还是程序学', v: ['按公式算', '从数据里学'], c: MUTED },
+  ];
+
+  const rowH = w ? 52 : 66;
+  dims.forEach((d, i) => {
+    const by = y + i * (rowH + 8);
+    s += R(px, by, pw, rowH, { fill: PLATE, stroke: d.c, sw: 1.5, r: 8 });
+    s += T(px + 14, by + (w ? 22 : 21), d.n, { size: M.h2, weight: 700, fill: d.c });
+    s += T(px + 14, by + (w ? 40 : 40), d.q, { size: tiny(M), fill: MUTED });
+    // 取值摆在右半边
+    const startX = w ? px + pw * 0.42 : px + 14;
+    const vy = w ? by + rowH / 2 + 5 : by + 58;
+    let vx = startX;
+    d.v.forEach((v) => {
+      const bw = v.length * (w ? 13.5 : 14) + 18;
+      s += R(vx, vy - 14, bw, 22, { fill: '#fff', stroke: d.c, sw: 1, r: 11 });
+      s += T(vx + bw / 2, vy + 1, v, { size: tiny(M), fill: d.c, anchor: 'middle' });
+      vx += bw + 8;
+    });
+  });
+  y += dims.length * (rowH + 8) + 10;
+
+  s += MT(px, y, w
+    ? ['五条互相独立：换一条不影响另外四条。看到一个陌生的特征名字，就在这五条上各定一次位。',
+      '反过来，面对一个新任务，也按这五个问题依次问一遍，答案就是该算什么。']
+    : ['五条互相独立，换一条不影响另外四条。',
+      '看到陌生的特征名字，在这五条上各定一次位；',
+      '面对新任务，按这五个问题依次问一遍。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 8;
+  return doc(M.W, y, s, '音频特征的五个分类维度');
+};
+
+// PPT p8：音乐属性的四个方面。
+FIG['05-music-aspect'] = (M) => {
+  const head = ['同一段音乐，', '可以从四个方面分别描述'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const items = [
+    { n: '节拍', c: BLUE, q: '什么时候有一下，快慢如何',
+      draw: (bx, by, bw2, bh2) => {
+        let o = '';
+        const cy = by + bh2 / 2;
+        o += L(bx + 8, cy, bx + bw2 - 8, cy, { c: GRID });
+        [0.08, 0.3, 0.52, 0.74, 0.94].forEach((u) => {
+          const xx = bx + 8 + u * (bw2 - 16);
+          o += L(xx, cy + 12, xx, cy - 14, { c: BLUE, w: 2.4 });
+          o += O(xx, cy - 14, 3, { fill: BLUE });
+        });
+        return o;
+      } },
+    { n: '音色', c: WARM, q: '听起来像什么乐器',
+      draw: (bx, by, bw2, bh2) => {
+        let o = '';
+        const base = by + bh2 - 10;
+        [1, 0.55, 0.78, 0.3, 0.42, 0.18].forEach((v, j) => {
+          const xx = bx + 14 + j * ((bw2 - 28) / 6);
+          o += L(xx, base, xx, base - v * (bh2 - 26), { c: WARM, w: 2.2 });
+          o += O(xx, base - v * (bh2 - 26), 2.6, { fill: WARM });
+        });
+        o += L(bx + 8, base, bx + bw2 - 8, base, { c: GRID });
+        return o;
+      } },
+    { n: '音高', c: GREEN, q: '这个音有多高',
+      draw: (bx, by, bw2, bh2) => {
+        const pn = panel(bx + 8, by + 8, bw2 - 16, bh2 - 18, { yr: [0, 1] });
+        const vals = [0.2, 0.2, 0.45, 0.45, 0.7, 0.7, 0.55, 0.55, 0.85, 0.85];
+        return curve(pn, vals, { c: GREEN, w: 2.2 });
+      } },
+    { n: '和声', c: GOLD, q: '同时响的几个音什么关系',
+      draw: (bx, by, bw2, bh2) => {
+        let o = '';
+        const cx = bx + bw2 / 2;
+        [-1, 0, 1].forEach((k, j) => {
+          const cy = by + bh2 / 2 + k * 15;
+          o += L(cx - 30, cy, cx + 30, cy, { c: GOLD, w: 2.2 });
+          o += O(cx - 30, cy, 3, { fill: GOLD });
+        });
+        return o;
+      } },
+  ];
+
+  const cols = w ? 4 : 2;
+  const bw = (pw - (cols - 1) * 12) / cols;
+  const bh = w ? 132 : 122;
+  items.forEach((it, i) => {
+    const bx = px + (i % cols) * (bw + 12);
+    const by = y + Math.floor(i / cols) * (bh + 12);
+    s += R(bx, by, bw, bh, { fill: '#fff', stroke: it.c, sw: 1.5, r: 8 });
+    s += T(bx + 12, by + 24, it.n, { size: M.h2, weight: 700, fill: it.c });
+    s += T(bx + 12, by + 43, it.q, { size: tiny(M) - 0.5, fill: MUTED });
+    s += it.draw(bx, by + 50, bw, bh - 58);
+  });
+  y += Math.ceil(items.length / cols) * (bh + 12) + 10;
+
+  s += MT(px, y, w
+    ? ['四个方面互相独立。同一段音乐换个乐器演奏，音色变了，节拍、音高、和声都没变。',
+      '这一维决定往哪儿找特征：课程的三分类里，古典和摇滚差在节拍和音色上，不差在音高上。']
+    : ['四个方面互相独立：换个乐器演奏，音色变了，',
+      '节拍、音高、和声都没变。这一维决定往哪儿',
+      '找特征——古典和摇滚差在节拍和音色上。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 8;
+  return doc(M.W, y, s, '音乐属性的四个方面：节拍、音色、音高、和声');
+};
+
+// PPT p31–p35：三类能听懂声音的系统，按「特征从哪儿来」排开。
+FIG['05-three-systems'] = (M) => {
+  const head = ['按「特征从哪儿来」，', '能听懂声音的系统分三类'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const sys = [
+    { n: 'DSP / 规则系统', c: GREEN, mk: '人写死判断规则',
+      rows: [['特征', '不需要'], ['数据', '不需要'], ['可解释', '完全']] },
+    { n: '传统机器学习', c: BLUE, mk: '人做特征工程',
+      rows: [['特征', '人手工算'], ['数据', '较少'], ['可解释', '高']] },
+    { n: '深度学习', c: WARM, mk: '程序自动提特征',
+      rows: [['特征', '程序自己学'], ['数据', '较多'], ['可解释', '低']] },
+  ];
+
+  const bw = w ? (pw - 24) / 3 : pw;
+  const bh = w ? 156 : 128;
+  sys.forEach((it, i) => {
+    const bx = w ? px + i * (bw + 12) : px;
+    const by = w ? y : y + i * (bh + 12);
+    const here = i === 1;
+    s += R(bx, by, bw, bh, {
+      fill: here ? '#eef4f8' : PLATE, stroke: it.c, sw: here ? 2.2 : 1.5, r: 9,
+    });
+    s += T(bx + 12, by + 25, it.n, { size: M.h2, weight: 700, fill: it.c });
+    s += T(bx + 12, by + 45, it.mk, { size: tiny(M), fill: MUTED });
+    it.rows.forEach((r, j) => {
+      const ry = by + 72 + j * 22;
+      s += T(bx + 12, ry, r[0], { size: tiny(M), fill: MUTED });
+      s += T(bx + bw - 12, ry, r[1], { size: tiny(M), weight: 700, fill: INK, anchor: 'end' });
+    });
+    if (here) {
+      s += T(bx + bw / 2, by + bh - 12, '← 这门课在这里',
+        { size: tiny(M), weight: 700, fill: BLUE, anchor: 'middle' });
+    }
+  });
+  y += (w ? bh : (bh + 12) * 3 - 12) + 22;
+
+  // 一条方向轴，说明从左到右在变什么
+  s += L(px, y, px + pw, y, { c: GRID, w: 1.4 });
+  s += ARROW(px, y, px + pw, y, { c: MUTED, w: 1.4 });
+  s += T(px, y + 18, '人写的越来越少', { size: tiny(M), fill: MUTED });
+  s += T(px + pw, y + 18, '要的数据越来越多，越难解释',
+    { size: tiny(M), fill: MUTED, anchor: 'end' });
+  y += 34;
+
+  s += T(px, y + 4, '这门课手工算特征，把它整理成一张可信的表；表交给哪种算法，不在这 23 课范围内。',
+    { size: M.small, weight: 700, fill: INK });
+  return doc(M.W, y + 22, s, 'DSP 规则系统、传统机器学习与深度学习三类系统');
+};
+
 // ================================================================
 
 mkdirSync(join(BASE, 'desktop'), { recursive: true });
