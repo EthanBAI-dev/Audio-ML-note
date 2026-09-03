@@ -16,6 +16,8 @@ sys.stdout.reconfigure(encoding="utf-8")
 import numpy as np
 
 from soundlab import io
+from soundlab.config import FRAME_LENGTH, HOP_LENGTH
+from soundlab.figdata import dump, thin
 from soundlab.config import SR, SPEECH_FRAME_LENGTH, SPEECH_HOP_LENGTH
 from soundlab.framing import frame
 from soundlab.time_features import (
@@ -24,6 +26,88 @@ from soundlab.time_features import (
 N, H = SPEECH_FRAME_LENGTH, SPEECH_HOP_LENGTH     # 400 / 160，18.1 与 7.3 毫秒
 CLIPS = [("debussy", "古典"), ("duke", "爵士"), ("redhot", "摇滚"),
          ("voice", "语音"), ("noise", "噪声")]
+
+
+def nb1_rms_librosa():
+    """notebook cell 5–7：先用 librosa 现成的 rms 算一遍。"""
+    print("[正文] notebook 第 1 步 · 先用 librosa 现成的算")
+    import librosa
+    y, sr = io.load("debussy", seconds=3)
+    r = librosa.feature.rms(y=y, frame_length=FRAME_LENGTH,
+                            hop_length=HOP_LENGTH, center=False)[0]
+    print(f"  librosa.feature.rms(frame_length={FRAME_LENGTH}, "
+          f"hop_length={HOP_LENGTH}, center=False)")
+    print(f"  形状 {r.shape}，前 5 帧 {[round(float(v), 5) for v in r[:5]]}")
+    print("  一行就出结果。但它内部到底做了什么，得自己写一遍才知道。")
+    print()
+    return y, sr, r
+
+
+def nb2_rms_from_scratch(y, sr, lib_rms):
+    """notebook cell 9：从零手写 RMS，然后和 librosa 对齐。
+
+    对齐是这一课最要紧的一步：数值对不上，说明两边对「一帧是哪些样本」
+    的理解不一样，后面所有比较都不成立。
+    """
+    print("[正文] notebook 第 2 步 · 从零手写，再和 librosa 对齐")
+    f = frame(y, FRAME_LENGTH, HOP_LENGTH)
+    mine = rms(f)
+    print(f"  手写的形状 {mine.shape}，librosa 的形状 {lib_rms.shape}")
+    n = min(len(mine), len(lib_rms))
+    diff = np.abs(mine[:n] - lib_rms[:n])
+    print(f"  逐帧最大差 {diff.max():.3e}")
+    print(f"  两者是否在浮点误差内一致：{bool(diff.max() < 1e-6)}")
+    print("  能对上，说明我们对「第 t 帧是哪 1024 个样本」的理解和 librosa 一致。")
+    print("  对不上的话先查两件事：center 是不是都关了，帧长帧移是不是同一对。")
+    print()
+    return mine
+
+
+def nb3_zcr_librosa_vs_mine():
+    """notebook cell 12–15：ZCR 也走一遍，这次两边对不上。"""
+    print("[正文] notebook 第 3 步 · 过零率：这次两边对不上")
+    import librosa
+    y, sr = io.load("debussy", seconds=3)
+    lib = librosa.feature.zero_crossing_rate(
+        y, frame_length=FRAME_LENGTH, hop_length=HOP_LENGTH, center=False)[0]
+    f = frame(y, FRAME_LENGTH, HOP_LENGTH)
+    mine = zero_crossing_rate(f)
+    n = min(len(lib), len(mine))
+    ratio = float(np.median(mine[:n] / np.maximum(lib[:n], 1e-12)))
+    print(f"  librosa 前 5 帧 {[round(float(v), 5) for v in lib[:5]]}")
+    print(f"  手写的前 5 帧 {[round(float(v), 5) for v in mine[:5]]}")
+    print(f"  两者的比值（中位数）{ratio:.6f}")
+    print(f"  理论上应该正好是 K/(K-1) = {FRAME_LENGTH}/{FRAME_LENGTH - 1} = "
+          f"{FRAME_LENGTH / (FRAME_LENGTH - 1):.6f}")
+    print(f"  对得上：{abs(ratio - FRAME_LENGTH / (FRAME_LENGTH - 1)) < 1e-6}")
+    print("  第 07 课手算八个数时就看到了这个差：librosa 除以帧长 K，")
+    print("  本课程除以相邻对的个数 K−1。帧长 1024 时差 0.1%，")
+    print("  但两批数字混在一起就不再可比——所以必须挑一个，然后一直用它。")
+    print()
+    return lib, mine, ratio
+
+
+def dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio):
+    """这一课要上图的数：对齐结果、五段素材、直流偏置。"""
+    y, sr = io.load("debussy", seconds=3)
+    n = min(len(lib_zcr), len(mine_zcr))
+    path = dump(9, {
+        "frame_length": FRAME_LENGTH, "hop_length": HOP_LENGTH,
+        "speech_frame": SPEECH_FRAME_LENGTH, "speech_hop": SPEECH_HOP_LENGTH,
+        "wave": thin(y, 700),
+        "rms": mine_rms,
+        "zcr_lib": lib_zcr[:n],
+        "zcr_mine": mine_zcr[:n],
+        "zcr_ratio": ratio,
+        "zcr_ratio_theory": FRAME_LENGTH / (FRAME_LENGTH - 1),
+        "clips": {k: {"zh": v["zh"],
+                      "rms_mean": float(np.mean(v["rms"])),
+                      "zcr_mean": float(np.mean(v["zcr"])),
+                      "rms": thin(v["rms"], 320),
+                      "zcr": thin(v["zcr"], 320)}
+                  for k, v in clips.items()},
+    })
+    print(f"[配图数据] 写好了 {path}")
 
 
 def step1_four_numbers():
@@ -170,11 +254,22 @@ def write_features(clips, path="features.csv"):
 
 
 if __name__ == "__main__":
+    # 先按 notebook 的顺序：库函数 → 手写 → 对齐。对齐是这一课的核心，
+    # 数值对不上就说明两边对「一帧是哪些样本」的理解不一样。
+    y0, sr0, lib_rms = nb1_rms_librosa()
+    mine_rms = nb2_rms_from_scratch(y0, sr0, lib_rms)
+    lib_zcr, mine_zcr, ratio = nb3_zcr_librosa_vs_mine()
+
+    # 公式本身的两个小例子
     step1_four_numbers()
     step2_outlier()
+
     clips = load_clips()
     step3_real(clips)
     level_dc_offset(clips)
     level_threshold(clips)
     level_joint(clips)
     write_features(clips)
+
+    if "--dump" in sys.argv:
+        dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio)

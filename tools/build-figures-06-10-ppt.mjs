@@ -26,6 +26,7 @@ const tiny = (M) => (wide(M) ? 12.5 : 14);
 const d06 = D('06');
 const d07 = D('07');
 const d08 = D('08');
+const d09 = D('09');
 const FIG = {};
 
 // ================================================================ 06
@@ -505,6 +506,155 @@ FIG['08-abs-per-frame'] = (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '整段最大值看不出取绝对值的差别，逐帧才看得见');
+};
+
+// ================================================================ 09
+
+// notebook cell 9：手写 RMS 和 librosa 逐帧对齐，差在浮点误差量级。
+FIG['09-align-rms'] = (M) => {
+  const head = ['手写的和 librosa 的，', '逐帧最大差 8×10⁻⁹'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const r = d09.rms;
+  const mx = Math.max.apply(null, r);
+  const pn = panel(px, y, pw, w ? 120 : 100, {
+    yr: [0, mx * 1.15], title: '两条曲线画在一起（完全重合）',
+    tsize: M.small, tfill: INK,
+  });
+  s += pn.s;
+  // 两条重合，一条粗一条细，读者能看出是两条
+  s += curve(pn, r, { c: '#9fc4dd', w: 4 });
+  s += curve(pn, r, { c: WARM, w: 1.4 });
+  s += legend(px + 8, y + 18,
+    [{ name: 'librosa', c: '#9fc4dd' }, { name: '手写', c: WARM }], { gap: 82 });
+  y += (w ? 120 : 100) + 26;
+
+  s += R(px, y, pw, w ? 58 : 68, { fill: PLATE, stroke: GREEN, sw: 1.6, r: 9 });
+  s += T(px + 14, y + 24, '逐帧最大差', { size: M.small, weight: 700, fill: GREEN });
+  s += T(px + pw - 14, y + 26, '7.963 × 10⁻⁹',
+    { size: w ? 19 : 17, weight: 700, fill: GREEN, anchor: 'end' });
+  s += T(px + 14, y + (w ? 46 : 52), '这个量级纯粹是浮点舍入，两边算的是同一件事',
+    { size: tiny(M), fill: MUTED });
+  y += (w ? 58 : 68) + 22;
+
+  s += MT(px, y, w
+    ? ['对上了，证明的不只是「公式写对了」，更是「我和 librosa 对第 t 帧是哪 1024 个样本的理解一致」。',
+      '对不上的话先查两件事：center 是不是两边都关了，帧长和帧移是不是同一对。']
+    : ['对上了，证明的不只是公式写对了，更是我和',
+      'librosa 对「第 t 帧是哪 1024 个样本」理解一致。',
+      '对不上先查：center 关了没，帧长帧移是不是同一对。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 8;
+  return doc(M.W, y, s, '手写 RMS 与 librosa 的结果逐帧完全重合');
+};
+
+// ZCR 两边差一个恒定的 K/(K-1)，是口径不是 bug。
+FIG['09-align-zcr'] = (M) => {
+  const head = ['过零率这次对不上，', '比值恒等于 1024/1023'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const a = d09.zcr_lib;
+  const b = d09.zcr_mine;
+  const mx = Math.max(Math.max.apply(null, a), Math.max.apply(null, b));
+  const pn = panel(px, y, pw, w ? 104 : 90, {
+    yr: [0, mx * 1.18], title: '两条曲线（几乎贴在一起）',
+    tsize: M.small, tfill: INK,
+  });
+  s += pn.s + curve(pn, a, { c: '#9fc4dd', w: 3.4 }) + curve(pn, b, { c: WARM, w: 1.3 });
+  s += legend(px + 8, y + 18,
+    [{ name: 'librosa（除以 K）', c: '#9fc4dd' },
+      { name: '手写（除以 K−1）', c: WARM }], { gap: w ? 150 : 0 });
+  y += (w ? 104 : 90) + 26;
+
+  // 比值那条线：稳定不抖
+  const ratio = b.map((v, i) => v / Math.max(a[i], 1e-12));
+  const th = d09.zcr_ratio_theory;
+  const pn2 = panel(px, y, pw, w ? 74 : 66, {
+    yr: [th - 0.004, th + 0.004],
+    title: '两者的比值（纵轴放大到 ±0.004）', tsize: M.small, tfill: GREEN,
+  });
+  s += pn2.s;
+  s += L(px, pn2.sy(th), px + pw, pn2.sy(th), { c: GREEN, dash: '4 4' });
+  s += curve(pn2, ratio, { c: GREEN, w: 1.6 });
+  s += T(px + pw - 8, y + 18, `理论值 ${th.toFixed(6)}`,
+    { size: tiny(M), weight: 700, fill: GREEN, anchor: 'end' });
+  y += (w ? 74 : 66) + 26;
+
+  s += MT(px, y - 4, w
+    ? ['比值不抖——它是一个确定的常数，正好等于 K/(K−1) = 1024/1023 = 1.000978。',
+      'librosa 除以帧长 K，本课程除以相邻对的个数 K−1。两个都对，只是口径不同。',
+      '差 0.1% 看着可以忽略，但两批不同口径的数字混进同一张表就不再可比，而且不会报错。']
+    : ['比值不抖，是个确定的常数，正好 1024/1023。',
+      'librosa 除以帧长 K，本课程除以相邻对数 K−1。',
+      '两个都对，只是口径不同。差 0.1% 看着能忽略，',
+      '但两批混进同一张表就不可比了，而且不报错。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '手写过零率与 librosa 的比值恒等于 K 除以 K 减一');
+};
+
+// notebook cell 17–19：五段素材的 RMS 与 ZCR。
+FIG['09-five-clips'] = (M) => {
+  const head = ['五段素材各两个数，', '语音和噪声那一对分不开'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 24;
+
+  const order = Object.keys(d09.clips);
+  const bh = w ? 108 : 92;
+  const cw = w ? (pw - 20) / 2 : pw;
+
+  [['RMS 平均', 'rms_mean', BLUE], ['ZCR 平均', 'zcr_mean', GOLD]].forEach((q, qi) => {
+    const bx = w ? px + qi * (cw + 20) : px;
+    const by = w ? y : y + qi * (bh + 62);
+    s += T(bx, by - 8, q[0], { size: M.h2, weight: 700, fill: q[2] });
+    let mx = 0;
+    order.forEach((k) => { mx = Math.max(mx, d09.clips[k][q[1]]); });
+    s += L(bx, by + bh, bx + cw, by + bh, { c: GRID });
+    order.forEach((k, i) => {
+      const it = d09.clips[k];
+      const slot = cw / order.length;
+      const v = it[q[1]];
+      const hgt = (v / (mx * 1.2)) * bh;
+      const x0 = bx + i * slot + slot / 2 - 11;
+      // 语音和噪声这一对标成暖色，它们是要重点看的
+      const hot = (k === 'voice' || k === 'noise');
+      s += R(x0, by + bh - hgt, 22, hgt,
+        { fill: hot ? WARM : q[2], stroke: 'none', r: 2 });
+      // 手机版 5 根柱，槽宽 76 px，14 px 的四位小数放得下；
+      // 写成 13 px 会被 check-svg-mobile 判不合格（缩完只有 11.1 px）
+      s += T(x0 + 11, by + bh - hgt - 5, v.toFixed(4),
+        { size: tiny(M), fill: hot ? WARM : q[2], anchor: 'middle' });
+      s += T(x0 + 11, by + bh + 17, it.zh,
+        { size: tiny(M), fill: MUTED, anchor: 'middle' });
+    });
+  });
+  y += (w ? bh + 40 : (bh + 62) * 2 - 20) + 8;
+
+  s += MT(px, y, w
+    ? ['橙色那两根是语音和噪声。原 notebook 用这一对说明过零率能分辨它们，但实测差不开：',
+      '语音 0.0922、噪声 0.1141，只差两成。倒是古典 0.0655 和摇滚 0.1260 差了近一倍。',
+      '真正的清浊音判断是在一句话内部逐帧比元音和摩擦音，不是拿两整段比平均值。']
+    : ['橙色那两根是语音和噪声。原 notebook 用这一对',
+      '说明过零率能分辨它们，实测却差不开：0.0922',
+      '对 0.1141，只差两成。古典 0.0655 和摇滚 0.1260',
+      '倒是差了近一倍。换个素材结论就变了。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '五段素材的均方根与过零率对比');
 };
 
 // ================================================================
