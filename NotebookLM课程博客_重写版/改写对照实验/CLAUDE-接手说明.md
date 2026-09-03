@@ -16,7 +16,7 @@
 
 第 01 课已完成首轮重写：
 
-- 正文：`NotebookLM课程博客_重写版/改写对照实验/B-教程式/01-课程导论-程序要分辨三种音乐先得跨过哪一步.md`
+- 正文：`NotebookLM课程博客_重写版/改写对照实验/B-教程式/01-课程导论-电脑要怎么分辨音乐类型.md`
 - 章节任务卡：`NotebookLM课程博客_重写版/改写对照实验/章节任务卡/01-课程导论.md`
 - 实验脚本：`NotebookLM课程博客_重写版/课程代码/lessons/lesson01_course_map.py`
 - 新图：`NotebookLM课程博客_重写版/零基础版_01-05/figures/desktop/01-course-problem.svg`
@@ -56,7 +56,7 @@
 
 | 课 | 源材料 | 当前草稿 | 当前脚本 | 本课必须守住的主线 |
 |---|---|---|---|---|
-| 02 | `source_course/02 - Sound and waveforms/Sound and waveforms.pdf` | `B-教程式/02-波形频率与音高-声音曲线记录了什么.md` | `课程代码/lessons/lesson02_pitch_and_hz.py` | 物体振动 → 空气压力变化 → 声波 → 波形 → 周期 / 正弦 → 听觉范围 → 音高的对数关系 |
+| 02 | `source_course/02 - Sound and waveforms/Sound and waveforms.pdf` | `B-教程式/02-声音与波形-振动怎样变成录音里那条线.md` | `课程代码/lessons/lesson02_pitch_and_hz.py` | 物体振动 → 空气压力变化 → 声波 → 波形 → 周期 / 正弦 → 听觉范围 → 音高的对数关系 |
 | 03 | `source_course/03 - Intensity, loudness, and timbre/Intensity, loudness, and timbre.pdf`；同目录 `intensity_and_timbre.ipynb` | `B-教程式/03-分贝响度与音色-为什么音量一样听起来仍不同.md` | `课程代码/lessons/lesson03_loudness.py` | 声功率 → 声强 → 分贝 → 响度 → 音色 → 包络 / 泛音 / 调频 / 调幅 |
 | 04 | `source_course/04 - Understanding audio signals/Understanding audio signals.pdf` | `B-教程式/04-采样率与位深-44.1kHz和16bit决定了什么.md` | `课程代码/lessons/lesson04_sampling_and_bitdepth.py` | 模拟信号 → ADC → 采样与量化 → PCM → 混叠 → 位深 → ADC / DAC 完整链 |
 | 05 | `source_course/05 - Types of audio features for ML/Types of Audio Features for ML.pdf` | `B-教程式/05-音频特征怎么选-抽象层级时间尺度与模型输入.md` | `课程代码/lessons/lesson05_feature_choices.py` | 按源课建立五个分类维度，不能继续写成“四个选择” |
@@ -108,7 +108,7 @@ node .agents/skills/audio-course-lesson/scripts/check-svg-mobile.mjs "<mobile SV
 1. 阅读 `source_course/02 - Sound and waveforms/Sound and waveforms.pdf` 全部页面。
 2. 新建 `NotebookLM课程博客_重写版/改写对照实验/章节任务卡/02-声音与波形.md`。
 3. 检查并修改 `NotebookLM课程博客_重写版/课程代码/lessons/lesson02_pitch_and_hz.py`。
-4. 完整重写 `NotebookLM课程博客_重写版/改写对照实验/B-教程式/02-波形频率与音高-声音曲线记录了什么.md`。
+4. 完整重写 `NotebookLM课程博客_重写版/改写对照实验/B-教程式/02-声音与波形-振动怎样变成录音里那条线.md`。
 5. 重点补齐“物体振动怎样变成空气压力变化，再变成波形”这一段；不要从频率或频谱直接开讲。
 6. 完成后回看第 03 课开头，只校准承接关系，不顺手重写第 03 课。
 

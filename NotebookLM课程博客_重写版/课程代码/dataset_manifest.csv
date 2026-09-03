@@ -1,0 +1,4 @@
+﻿file,label,duration_s,sample_rate_hz,channels
+debussy.wav,古典,30.0,22050,1
+duke.wav,爵士,30.0,22050,1
+redhot.wav,摇滚,30.0,22050,1
