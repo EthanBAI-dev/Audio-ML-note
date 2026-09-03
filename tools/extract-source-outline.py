@@ -30,6 +30,8 @@ import pymupdf
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "source_course")
 OUT = os.path.join(ROOT, "NotebookLM课程博客_重写版", "原始素材大纲.md")
+# 逐页全文，一课一个文件。大纲只够检索，写作时要看这一份。
+FULL_DIR = os.path.join(ROOT, "NotebookLM课程博客_重写版", "PPT内容")
 
 
 def norm(t):
@@ -106,6 +108,48 @@ def notebook(path):
     return out
 
 
+def write_full(num, title, files):
+    """把一课的 PPT 逐页全文和 notebook 逐格原文写成一个文件。
+
+    大纲那份把一页压成一行，够检索但不够写作——写的时候需要看到这一页
+    到底写了哪几行、公式旁边标注了什么。这里每页单独成段，保留原始换行。
+    """
+    out = [f"# 第 {num} 课 · {title}", "",
+           "> 由 `tools/extract-source-outline.py` 生成，**不要手改**。",
+           "> 这是逐页全文。写这一课之前先通读一遍，"
+           "**文章的主线必须是这里的顺序**。",
+           "> 图、公式的配色标注抽不出来，需要时按页码翻原始 PDF。", ""]
+    for f in files:
+        name = os.path.basename(f)
+        if f.lower().endswith(".pdf"):
+            groups = slides(f)
+            out += [f"## {name}", "", f"共 {len(groups)} 张有效幻灯片"
+                    f"（逐条淡入的中间态已折叠）。", ""]
+            for page, g in groups:
+                out.append(f"### p{page}")
+                out.append("")
+                for ln in g:
+                    out.append(ln)
+                out.append("")
+        elif f.lower().endswith(".ipynb"):
+            nb = json.load(open(f, encoding="utf-8"))
+            out += [f"## {name}", ""]
+            for i, c in enumerate(nb.get("cells", []), 1):
+                src = "".join(c["source"]).rstrip()
+                if not src.strip():
+                    continue
+                if c["cell_type"] == "markdown":
+                    out += [f"### cell {i}（markdown）", "", src, ""]
+                else:
+                    out += [f"### cell {i}（code）", "", "```python", src, "```", ""]
+    os.makedirs(FULL_DIR, exist_ok=True)
+    slug = re.sub(r"[^\w\-]+", "-", title).strip("-")
+    path = os.path.join(FULL_DIR, f"{num}-{slug}.md")
+    with open(path, "w", encoding="utf-8", newline="\n") as fp:
+        fp.write("\n".join(out).rstrip() + "\n")
+    return os.path.basename(path)
+
+
 def main():
     lessons = sorted(d for d in os.listdir(SRC)
                      if os.path.isdir(os.path.join(SRC, d)) and d[:2].isdigit())
@@ -113,8 +157,11 @@ def main():
             "",
             "> 这份文件由 `tools/extract-source-outline.py` 生成，**不要手改**。",
             "> 它用于快速检索每课出现过什么；写任何一课之前先在这里查一遍。",
-            "> **它不能代替直接查看 PDF 页序和 notebook 单元格。** 课程脉络以源文件为准。",
+            "> 每课末尾有一条「逐页全文」链接，写这一课之前读那一份；",
+            "> 这里的一页一行只够检索。图和公式旁的配色标注两份都抽不出来，",
+            "> 需要时按页码翻原始 PDF。",
             ""]
+    full_written = []
     for d in lessons:
         num = d[:2]
         title = d[5:] if " - " in d else d
@@ -144,10 +191,18 @@ def main():
         if not got:
             body.append("（没有素材）")
             body.append("")
+            continue
+        # 同一次扫描顺便写出逐页全文，两份产物永远不会不同步
+        fn = write_full(num, title, files)
+        body.append(f"逐页全文：[{fn}](PPT内容/{fn})")
+        body.append("")
+        full_written.append(fn)
+
     with open(OUT, "w", encoding="utf-8", newline="\n") as fp:
         fp.write("\n".join(body).rstrip() + "\n")
     print(f"写好了：{OUT}")
     print(f"{len(lessons)} 课，{sum(1 for l in body if l.startswith('- '))} 条")
+    print(f"逐页全文 {len(full_written)} 份：{FULL_DIR}")
 
 
 if __name__ == "__main__":

@@ -24,6 +24,7 @@ import numpy as np
 
 from soundlab import io
 from soundlab.config import SR, FRAME_LENGTH, HOP_LENGTH
+from soundlab.figdata import dump, thin
 from soundlab.framing import frame
 from soundlab.time_features import (
     amplitude_envelope, rms, zero_crossing_rate, all_three)
@@ -187,6 +188,43 @@ def extra_zcr_threshold():
     print()
 
 
+def dump_figures():
+    """把这一课要上图的数写成 JSON，画图脚本只读它，不重算。"""
+    sign = np.sign(TOY).astype(int)
+    crossings = [int(abs(sign[k] - sign[k + 1]) // 2) for k in range(len(TOY) - 1)]
+    y, _ = io.load("debussy", seconds=3)
+    r = all_three(y)
+    path = dump(7, {
+        "toy": {
+            "values": TOY,
+            "ae_ppt": float(np.max(TOY)),
+            "ae_abs": float(amplitude_envelope(TOY[None, :])[0]),
+            "squares": TOY ** 2,
+            "sq_sum": float(np.sum(TOY ** 2)),
+            "sq_mean": float(np.mean(TOY ** 2)),
+            "rms": float(rms(TOY[None, :])[0]),
+            "plain_mean": float(np.mean(TOY)),
+            "signs": sign,
+            "crossings": crossings,
+            "zcr_count": int(sum(crossings)),
+            "zcr_by_pairs": float(sum(crossings) / (len(TOY) - 1)),
+            "zcr_by_length": float(sum(crossings) / len(TOY)),
+        },
+        "clip": {
+            "source": "debussy.wav 前 3 秒",
+            "samples": int(len(y)),
+            "n_frames": int(r["n_frames"]),
+            "frame_length": FRAME_LENGTH,
+            "hop_length": HOP_LENGTH,
+            "wave": thin(y, 900),
+            "ae": r["ae"],
+            "rms": r["rms"],
+            "zcr": r["zcr"],
+        },
+    })
+    print(f"[配图数据] 写好了 {path}")
+
+
 if __name__ == "__main__":
     print(f"采样率 {SR}，帧长 {FRAME_LENGTH}，帧移 {HOP_LENGTH}\n")
     step1_amplitude_envelope()
@@ -196,3 +234,5 @@ if __name__ == "__main__":
     extra_zcr_is_amplitude_blind()
     extra_frame_length()
     extra_zcr_threshold()
+    if "--dump" in sys.argv:
+        dump_figures()
