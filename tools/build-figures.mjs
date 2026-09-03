@@ -320,12 +320,12 @@ function icon(kind, x, y, w = 74, h = 58) {
       const py = plotTop + plotH * (1 - f(u));
       out += L(px, mid, px, py, { color: BLUE, width: 1.1 });
       out += C(px, py, 2.4, { fill: BLUE });
-      out += L(px, axisY, px, axisY + 3, { color: MUTED, width: 1 });
     }
-    // 只画箭头和等距刻度，不写「时间」两个字：这个小图放不下 14 px 的字，
-    // 写小了手机上缩到 7 px 就不合格了。卡片正文已经说明「按时间连起来」。
-    out += ARROW(x + padX - 3, axisY, x + w - padX + 3, axisY,
-      { color: MUTED, width: 1.2, head: 4 });
+    // 横轴就是一条线。刻度和「时间」两个字都不画：这个小图放不下 14 px 的
+    // 字（写 8.5 px 手机上缩到 7.3 px 会被 check-svg-mobile 判不合格），
+    // 刻度线又和上面的采样竖线撞在一起，反而看不清。
+    out += L(x + padX - 3, axisY, x + w - padX + 3, axisY,
+      { color: MUTED, width: 1.2 });
   }
   if (kind === 'decision') {
     [0, 1, 2].forEach((i) => {
