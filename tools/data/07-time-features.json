@@ -554,6 +554,26 @@
    "n_frames": 429
   }
  },
+ "music_norm": {
+  "debussy": {
+   "ae_mean": 0.2709,
+   "rms_mean": 0.0975,
+   "zcr_mean": 0.0612,
+   "n_frames": 429
+  },
+  "duke": {
+   "ae_mean": 0.2603,
+   "rms_mean": 0.089,
+   "zcr_mean": 0.0633,
+   "n_frames": 429
+  },
+  "redhot": {
+   "ae_mean": 0.3195,
+   "rms_mean": 0.0962,
+   "zcr_mean": 0.1332,
+   "n_frames": 429
+  }
+ },
  "curves": {
   "ae": [
    0.14209,

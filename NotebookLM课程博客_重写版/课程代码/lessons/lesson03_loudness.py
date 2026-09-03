@@ -224,7 +224,29 @@ def dump_figures():
     ok = (fx > 0.3) & (fx < 20)
     rate = float(fx[ok][int(np.argmax(sp[ok]))])
 
+    # 等响曲线（PPT p19）不能凭手感画。这里用 A 计权的闭式公式算：
+    # A 计权本来就是从 40 方那条等响曲线反推出来的，把它取负号，得到的
+    # 就是「要让各个频率听起来一样响，分别需要多给多少 dB」——形状和
+    # 等响曲线一致。公式是 IEC 61672 的标准式，不是估的。
+    def a_weighting_db(f):
+        f2 = f * f
+        num = (12194.0 ** 2) * (f2 ** 2)
+        den = ((f2 + 20.6 ** 2)
+               * np.sqrt((f2 + 107.7 ** 2) * (f2 + 737.9 ** 2))
+               * (f2 + 12194.0 ** 2))
+        return 20 * np.log10(num / den) + 2.00
+
+    eq_f = np.logspace(np.log10(20), np.log10(16000), 90)
+    eq_need = [-float(a_weighting_db(f) - a_weighting_db(1000.0)) for f in eq_f]
+    most_sensitive = float(eq_f[int(np.argmin(eq_need))])
+
     path = dump(3, {
+        "equal_loudness": {
+            "freqs": [round(float(v), 1) for v in eq_f],
+            "need_db": [round(v, 2) for v in eq_need],
+            "most_sensitive_hz": round(most_sensitive),
+            "note": "A 计权取负、以 1 kHz 为 0 dB 基准；近似 40 方等响曲线的形状",
+        },
         "ladder": [{"name": n, "wm2": v, "db": d} for n, v, d in ladder],
         "toh": TOH, "top": TOP,
         "ratio": TOP / TOH,

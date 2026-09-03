@@ -14,13 +14,13 @@ const { ink: INK, muted: MUTED, grid: GRID, plate: PLATE } = PALETTE;
 
 const stages = [
   {
-    range: '01—05', title: ['认识声音', '与数字录音'], question: ['电脑拿到声音时，', '到底能看见什么？'],
-    lessons: ['三种声音表示', '波形、频率与音高', '分贝、响度与音色', '采样率与位深', '按任务选择特征'],
-    result: ['读懂基本声音图形', '理解录音参数'], color: BLUE, icon: 'views', start: 1,
+    range: '01—05', title: ['认识声音', '与数字录音'], question: ['声音分类要解决什么，', '声音怎样变成数字？'],
+    lessons: ['课程导论与任务', '声音、波形与音高', '分贝、响度与音色', '模拟声怎样数字化', '五种特征分类方法'],
+    result: ['认清课程问题与路线', '理解声音和录音参数'], color: BLUE, icon: 'views', start: 1,
   },
   {
     range: '06—10', title: ['把录音变成', '可计算片段'], question: ['怎样沿时间切开声音，', '再提取基础证据？'],
-    lessons: ['分帧、加窗与聚合', '三种时域特征', '实现振幅包络', '实现 RMS 与过零率', '建立傅里叶直觉'],
+    lessons: ['两条特征提取流水线', '三种时域特征', '实现振幅包络', '实现 RMS 与过零率', '建立傅里叶直觉'],
     result: ['会分帧和建立时间轴', '会计算时域特征'], color: ORANGE, icon: 'frames', start: 6,
   },
   {

@@ -72,18 +72,34 @@ for nm, f in [("一下尖峰", spike), ("持续振动", hum)]:
 print(f"  AE 之比 尖峰/振动 = {rows[0]['ae'] / rows[1]['ae']:.1f}")
 print(f"  RMS 之比 振动/尖峰 = {rows[1]['rms'] / rows[0]['rms']:.1f}")
 
+# 两套都要：原样读进来的，和按第 03 课统一过电平的。
+# 只给原样那一套，会把「录得响」当成「风格不同」——这一课整篇就是在防这个。
+def norm_rms(y, target_dbfs=-20.0):
+    r = np.sqrt(np.mean(y ** 2))
+    return y * (10 ** (target_dbfs / 20) / max(r, 1e-12))
+
+
 music = {}
+music_norm = {}
 for nm in ["debussy", "duke", "redhot"]:
     y, _ = librosa.load(f"{AUD}/{nm}.wav", sr=SR, mono=True)
     y = y[:10 * SR]
-    fr = frame(y)
-    music[nm] = {
-        "ae_mean": round(float(ae(fr).mean()), 4),
-        "rms_mean": round(float(rms(fr).mean()), 4),
-        "zcr_mean": round(float(zcr(fr).mean()), 4),
-        "n_frames": int(fr.shape[0]),
-    }
-    print(f"  {nm}: {music[nm]}")
+    for tag, yy in [("raw", y), ("norm", norm_rms(y))]:
+        fr = frame(yy)
+        rec = {
+            "ae_mean": round(float(ae(fr).mean()), 4),
+            "rms_mean": round(float(rms(fr).mean()), 4),
+            "zcr_mean": round(float(zcr(fr).mean()), 4),
+            "n_frames": int(fr.shape[0]),
+        }
+        (music if tag == "raw" else music_norm)[nm] = rec
+    print(f"  {nm} 原样  : {music[nm]}")
+    print(f"  {nm} 统一后: {music_norm[nm]}")
+
+for tag, tbl in [("原样", music), ("统一电平后", music_norm)]:
+    sp = {k: round(tbl["redhot"][k] / tbl["debussy"][k], 2)
+          for k in ("ae_mean", "rms_mean", "zcr_mean")}
+    print(f"  摇滚 / 古典 倍数（{tag}）: AE {sp['ae_mean']}× RMS {sp['rms_mean']}× ZCR {sp['zcr_mean']}×")
 
 y_d, _ = librosa.load(f"{AUD}/debussy.wav", sr=SR, mono=True)
 seg = y_d[:3 * SR]
@@ -96,6 +112,7 @@ dump("07-time-features", {
         "hum": [round(float(v), 5) for v in hum[::4]],
     },
     "music": music,
+    "music_norm": music_norm,
     "curves": {
         "ae": [round(float(v), 5) for v in ae(fr)],
         "rms": [round(float(v), 5) for v in rms(fr)],
@@ -146,6 +163,26 @@ for nn in (256, 1024, 4096):
     print(f"  帧长 {nn} ({sizes[str(nn)]['ms']} ms): {len(e)} 帧, 数出 {peaks(e)} 个峰")
 print(f"  两下敲击真实间隔 {gap_ms} ms")
 
+# 08-envelope-steps 那张图要的数据：一小段真实波形、它被切成的帧、每帧的
+# 最大绝对值。图上要把「切段 → 每段取一个数 → 连成曲线」三步画在同一条
+# 时间轴上，所以三样必须来自同一次分帧，不能在 Node 里再切一遍。
+# 素材用 duke 的第 3.489 秒那一小段，不用 debussy：钢琴曲在 100 毫秒的尺度上
+# 太平了，八帧的包络从 0.18 到 0.21，画出来是一条直线，看不出「包络贴着外沿走」。
+# 这一段里有一次明显的起音，八帧的包络从 0.034 涨到 0.395，差 11.5 倍。
+STEP_N, STEP_HOP = 512, 256
+_dk, _ = librosa.load(f"{AUD}/duke.wav", sr=SR, mono=True)
+step_seg = _dk[76928:76928 + 8 * STEP_HOP + (STEP_N - STEP_HOP)]
+step_fr = frame(step_seg, STEP_N, STEP_HOP)
+envsteps = {
+    "src": "duke.wav @ 3.489s", "n": STEP_N, "hop": STEP_HOP,
+    "wave": [round(float(v), 5) for v in step_seg],
+    "frames": int(step_fr.shape[0]),
+    "ae": [round(float(v), 5) for v in ae(step_fr)],
+    "argmax": [int(i) for i in np.argmax(np.abs(step_fr), axis=1)],
+}
+print(f"  包络三步图：{len(step_seg)} 个样本切成 {envsteps['frames']} 帧，"
+      f"每帧取一个最大绝对值")
+
 c_true = librosa.util.frame(np.pad(seg, 512, mode="constant"),
                             frame_length=1024, hop_length=512).shape[1]
 c_false = librosa.util.frame(seg, frame_length=1024, hop_length=512).shape[1]
@@ -153,6 +190,7 @@ print(f"  center=True {c_true} 帧 / center=False {c_false} 帧，差 {c_true - 
 shift_ms = round(1024 / 2 / SR * 1000, 2)
 print(f"  帧中心比帧起点晚 {shift_ms} ms")
 dump("08-envelope", {"sr": SR, "four": four.tolist(), "tail": tail, "sizes": sizes,
+                     "envsteps": envsteps,
                      "gap_ms": gap_ms,
                      "two_wave": [round(float(v), 5) for v in two[:SR // 4:4]],
                      "center": {"true": int(c_true), "false": int(c_false)},
@@ -196,6 +234,14 @@ print(f"  零线阈值的影响: {thr}")
 # 配图不能画凭空编的波形：取一小段真实语音存进 JSON，三张小图画的是同一段，
 # 只是纵向平移，读者才验证得了「声音没变，只是位置变了」。
 clip = yv[int(0.9 * SR):int(0.9 * SR) + 900]
+# 07-zcr-definition 那张图要在真实波形上标出每一个过零点。交叉点的位置
+# 也在这里算好存进 JSON——Node 那边只负责画，不重新判断哪里算穿过。
+clip_thin = clip[::5]
+sgn = np.sign(clip_thin)
+cross = [int(i) for i in range(len(clip_thin) - 1)
+         if sgn[i] != 0 and sgn[i + 1] != 0 and sgn[i] != sgn[i + 1]]
+print(f"  配图这一小段抽稀到 {len(clip_thin)} 个点，其中 {len(cross)} 处穿过中线")
+
 clip_zcr = {str(d): round(float(zcr((clip + d)[None, :])[0]), 4) for d in (0.0, 0.02, 0.05)}
 print(f"  配图这一小段自己的过零率: {clip_zcr}")
 
@@ -234,7 +280,8 @@ dump("09-rms-zcr", {"sr": SR, "quad": q.tolist(),
                     "quad_rms": round(float(np.sqrt(np.mean(q ** 2))), 4),
                     "pair": pair, "offset": off, "threshold": thr,
                     "clip": [round(float(v), 5) for v in clip[::5]],
-                    "clip_zcr": clip_zcr, "sep": sep})
+                    "clip_zcr": clip_zcr, "sep": sep,
+                    "clip_cross": cross})
 
 # ---------------------------------------------------------------- 10
 print("== 10 频率试探 ==")

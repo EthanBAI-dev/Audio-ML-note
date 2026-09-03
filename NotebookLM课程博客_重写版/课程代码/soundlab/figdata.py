@@ -21,7 +21,14 @@ def _plain(o):
     if isinstance(o, np.ndarray):
         return [_plain(v) for v in o.tolist()]
     if isinstance(o, (np.floating, float)):
-        return round(float(o), 6)
+        v = float(o)
+        # 按**有效数字**舍入，不是小数位。按小数位舍入会把 1e-12 直接压成 0，
+        # 第 03 课的听阈就是这么被写成 0 的，配图上算出 log10(0) = -Infinity。
+        if v == 0 or not np.isfinite(v):
+            return v
+        from math import floor, log10
+        digits = 6 - int(floor(log10(abs(v)))) - 1
+        return round(v, max(digits, 0)) if digits >= 0 else float(f"{v:.5e}")
     if isinstance(o, (np.integer, int)):
         return int(o)
     if isinstance(o, dict):

@@ -57,7 +57,7 @@
 | 课 | 源材料 | 当前草稿 | 当前脚本 | 本课必须守住的主线 |
 |---|---|---|---|---|
 | 02 | `source_course/02 - Sound and waveforms/Sound and waveforms.pdf` | `B-教程式/02-声音与波形-振动怎样变成录音里那条线.md` | `课程代码/lessons/lesson02_pitch_and_hz.py` | 物体振动 → 空气压力变化 → 声波 → 波形 → 周期 / 正弦 → 听觉范围 → 音高的对数关系 |
-| 03 | `source_course/03 - Intensity, loudness, and timbre/Intensity, loudness, and timbre.pdf`；同目录 `intensity_and_timbre.ipynb` | `B-教程式/03-分贝响度与音色-为什么音量一样听起来仍不同.md` | `课程代码/lessons/lesson03_loudness.py` | 声功率 → 声强 → 分贝 → 响度 → 音色 → 包络 / 泛音 / 调频 / 调幅 |
+| 03 | `source_course/03 - Intensity, loudness, and timbre/Intensity, loudness, and timbre.pdf`；同目录 `intensity_and_timbre.ipynb` | `B-教程式/03-强弱响度与音色-音量一样为什么听起来不同.md` | `课程代码/lessons/lesson03_loudness.py` | 声功率 → 声强 → 分贝 → 响度 → 音色 → 包络 / 泛音 / 调频 / 调幅 |
 | 04 | `source_course/04 - Understanding audio signals/Understanding audio signals.pdf` | `B-教程式/04-采样率与位深-44.1kHz和16bit决定了什么.md` | `课程代码/lessons/lesson04_sampling_and_bitdepth.py` | 模拟信号 → ADC → 采样与量化 → PCM → 混叠 → 位深 → ADC / DAC 完整链 |
 | 05 | `source_course/05 - Types of audio features for ML/Types of Audio Features for ML.pdf` | `B-教程式/05-音频特征怎么选-抽象层级时间尺度与模型输入.md` | `课程代码/lessons/lesson05_feature_choices.py` | 按源课建立五个分类维度，不能继续写成“四个选择” |
 | 06 | `source_course/06 - How to extract audio features/How to extract audio features.pdf` | `B-教程式/06-分帧加窗与聚合-怎样把整段录音变成可计算的小段.md` | `课程代码/lessons/lesson06_framing.py` | 时域流水线 → 频域流水线 → 泄漏 → 加窗 → 重叠和帧移；聚合不是正文主线 |

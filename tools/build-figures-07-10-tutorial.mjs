@@ -130,42 +130,176 @@ FIG['07-three-curves'] = (M) => {
 };
 
 FIG['07-music-compare'] = (M) => {
-  const head = ['三段音乐各 10 秒，', '三种特征只有一种真的分得开'];
+  const head = ['统一电平之后，', 'AE 和 RMS 的差别没了，ZCR 一点没变'];
   const top = headerH(M, head);
   const w = wide(M);
   const px = M.pad;
   const pw = M.W - M.pad * 2;
   let s = header(M, head);
-  let y = top + 22;
-  const names = { debussy: '德彪西 · 古典', duke: '艾灵顿 · 爵士', redhot: 'RHCP · 摇滚' };
+  let y = top + 26;
+  const order = ['debussy', 'duke', 'redhot'];
+  const short = { debussy: '古典', duke: '爵士', redhot: '摇滚' };
   const keys = ['ae_mean', 'rms_mean', 'zcr_mean'];
   const titles = ['AE 平均', 'RMS 平均', 'ZCR 平均'];
   const cols = [BLUE, GREEN, GOLD];
-  const bh = w ? 96 : 78;
+  const bh = w ? 82 : 70;
   const bwid = w ? (pw - 32) / 3 : pw;
-  keys.forEach((k, i) => {
-    const bx = w ? px + i * (bwid + 16) : px;
-    const by = w ? y : y + i * (bh + 60);
-    s += T(bx, by - 8, titles[i], { size: M.small, weight: 700, fill: cols[i] });
-    s += bars(bx, by, bwid, bh, Object.keys(names).map((n) => ({
-      name: names[n].split(' · ')[1],
-      vals: [{ v: d07.music[n][k], c: cols[i], t: d07.music[n][k].toFixed(4) }],
-    })), { bw: w ? 40 : 52, max: Math.max(...Object.keys(names).map((n) => d07.music[n][k])) * 1.25 });
+
+  [['原样读进来', d07.music], ['按 −20 dBFS 统一电平后', d07.music_norm]].forEach((row, ri) => {
+    const [rowName, tbl] = row;
+    s += T(px, y - 10, rowName, { size: M.h2, weight: 700, fill: INK });
+    keys.forEach((k, i) => {
+      const bx = w ? px + i * (bwid + 16) : px;
+      const by = w ? y + 12 : y + 12 + i * (bh + 58);
+      s += T(bx, by - 6, titles[i], { size: tiny(M), weight: 700, fill: cols[i] });
+      s += bars(bx, by, bwid, bh, order.map((n) => ({
+        name: short[n],
+        vals: [{ v: tbl[n][k], c: cols[i], t: tbl[n][k].toFixed(4) }],
+      })), { bw: w ? 40 : 52, max: Math.max(...order.map((n) => tbl[n][k])) * 1.3 });
+      // 摇滚是古典的几倍，直接标出来，读者不用自己去除
+      if (i === keys.length - 1 || w) {
+        s += T(bx + bwid, by - 6, `摇滚 / 古典 ${(tbl.redhot[k] / tbl.debussy[k]).toFixed(2)}×`, {
+          size: tiny(M), weight: 700, fill: MUTED, anchor: 'end',
+        });
+      }
+    });
+    y += (w ? bh + 62 : (bh + 58) * 3 + 26) + (ri === 0 ? 10 : 0);
   });
-  y += w ? bh + 44 : (bh + 60) * 3 - 16;
-  s += MT(px, y + 6, w
-    ? ['AE 和 RMS 上三段挨得很近——它们量的是「录得多响」，而三段录音本来就被统一过电平。',
-      'ZCR 上摇滚是古典的 2.2 倍：失真吉他和镲片让波形穿过中线的次数明显更多。这一条才有用。']
-    : ['AE 和 RMS 上三段挨得很近，因为电平',
-      '本来就统一过。ZCR 上摇滚是古典的',
-      '2.2 倍——失真吉他和镲片让波形穿过',
-      '中线的次数明显更多。这一条才有用。'],
+
+  s += MT(px, y - 6, w
+    ? ['统一电平这一步只是把整段乘一个数。AE 和 RMS 跟着一起变，摇滚对古典的倍数从 1.78 和 1.49',
+      '掉到 1.18 和 0.99——原来那点差别几乎全是「谁录得响」。ZCR 数的是穿过中线的次数，',
+      '整段乘一个正数一次也不会多、不会少，所以 2.18 倍纹丝不动。这一条才是风格本身的差别。']
+    : ['统一电平只是把整段乘一个数。AE 和 RMS',
+      '跟着变，摇滚对古典从 1.78 和 1.49 掉到',
+      '1.18 和 0.99——原来那点差别几乎全是',
+      '「谁录得响」。ZCR 数的是穿过中线的次数，',
+      '整段乘一个正数一次也不会多不会少，',
+      '所以 2.18 倍纹丝不动。这条才是风格差别。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 6) * 21 + 6;
+  return doc(M.W, y, s, '统一电平前后三段音乐在三种时域特征上的对比');
+};
+
+FIG['07-rms-steps'] = (M) => {
+  const q = d09.quad;
+  const sq = q.map((v) => +(v * v).toFixed(2));
+  const mean = +(sq.reduce((a, b) => a + b, 0) / sq.length).toFixed(4);
+  return chain(M,
+    ['四个数直接求平均等于 0，', '平方之后才不会互相抵消'],
+    [
+      { name: '原始四个数', color: MUTED, fill: PLATE, desc: [q.join('  '), '直接求平均 = 0'], mdesc: q.join('  ') + '，平均 = 0' },
+      { name: '① 方：每个数平方', color: BLUE, fill: '#eaf4fb', desc: [sq.join('  '), '负号没有了'], mdesc: sq.join('  ') + '，负号没有了' },
+      { name: '② 均：求平均', color: GREEN, fill: '#eef7f2', desc: [String(mean), '一帧塌成一个数'], mdesc: mean + '，一帧塌成一个数' },
+      { name: '③ 根：再开平方', color: WARM, fill: '#fbf0ec', desc: [String(d09.quad_rms), '量级回到和原数一样'], mdesc: d09.quad_rms + '，量级回到和原数一样' },
+    ],
+    '名字就是倒着念这三步：根 · 均 · 方',
+    '均方根的三步计算，从四个数得到 0.7906');
+};
+
+FIG['07-zcr-definition'] = (M) => {
+  const head = ['过零率数的不是峰，', '是波形穿过中线的次数'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 18;
+
+  const v = d09.clip;
+  const cross = d09.clip_cross;
+  const lim = Math.max(...v.map((x) => Math.abs(x))) * 1.15;
+  const h = w ? 170 : 150;
+  const pn = panel(px, y, pw, h, { fill: PLATE, yr: [-lim, lim], zero: true });
+  s += pn.s;
+  s += L(px, pn.sy(0), px + pw, pn.sy(0), { c: MUTED, w: 1.2 });
+  s += T(px + pw - 4, pn.sy(0) - 6, '中线（0）', { size: tiny(M), fill: MUTED, anchor: 'end' });
+  s += curve(pn, v, { c: BLUE, w: 1.6 });
+  // 每一处穿越画一个点。位置在 measure 脚本里算好，这里只负责画。
+  cross.forEach((i) => {
+    const cx = px + pw * (i / (v.length - 1));
+    s += O(cx, pn.sy(0), 3.4, { fill: GOLD });
+  });
+  y += h + 26;
+
+  s += T(px, y, `这一小段真实语音抽稀到 ${v.length} 个点，橙色的点是它穿过中线的位置，一共 ${cross.length} 处。`,
+    { size: M.small, fill: INK });
+  y += 24;
+  s += MT(px, y, w
+    ? ['过零率 = 穿过的次数 ÷ 相邻数字对的个数。注意它只看正负号有没有翻，完全不看数字有多大——',
+      '把整段乘以 2，每个点还在原地；把整段抬高一点，点就会少掉一批（第 09 课量过：抬 0.05 掉 37%）。']
+    : ['过零率 = 穿过的次数 ÷ 相邻数字对的个数。',
+      '它只看正负号翻没翻，不看数字多大：',
+      '整段乘 2，点全在原地；整段抬高 0.05，',
+      '点会少掉三成多（第 09 课量过）。'],
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 2 : 4) * 21 + 12;
-  return doc(M.W, y, s, '三段音乐在振幅包络、均方根和过零率上的对比');
+  return doc(M.W, y, s, '一小段真实语音上标出的每一个过零点');
 };
 
 // ================================================================ 08
+
+FIG['08-frame-to-envelope'] = (M) => {
+  const head = ['切成帧，每帧只留一个数，', '再把这些数连起来'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  const E = d08.envsteps;
+  let s = header(M, head);
+  let y = top + 18;
+
+  const lim = Math.max(...E.wave.map((x) => Math.abs(x))) * 1.12;
+  const h = w ? 130 : 110;
+
+  // ① 原始波形 + 帧的方框
+  s += T(px, y - 6, `① 把这一小段切成互相重叠的帧（${E.src}）`, {
+    size: tiny(M), weight: 700, fill: MUTED,
+  });
+  const p1 = panel(px, y, pw, h, { fill: PLATE, yr: [-lim, lim], zero: true });
+  s += p1.s;
+  s += curve(p1, E.wave, { c: BLUE, w: 1.3 });
+  const total = E.wave.length;
+  for (let i = 0; i < E.frames; i += 1) {
+    const x0 = px + pw * ((i * E.hop) / total);
+    const x1 = px + pw * ((i * E.hop + E.n) / total);
+    const off = (i % 2) * 9;
+    s += R(x0, y + 6 + off, x1 - x0, h - 12 - off * 2, {
+      stroke: i % 2 ? GREEN : WARM, sw: 1.2, fill: 'none', r: 4,
+    });
+  }
+  s += T(px + pw, y - 6, `帧长 ${E.n}、帧移 ${E.hop}，切出 ${E.frames} 帧`, {
+    size: tiny(M), weight: 700, fill: MUTED, anchor: 'end',
+  });
+  y += h + 30;
+
+  // ② 每帧那个最大绝对值
+  s += T(px, y - 6, '② 每一帧只留下离中线最远的那一个数', { size: tiny(M), weight: 700, fill: MUTED });
+  const p2 = panel(px, y, pw, h, { fill: PLATE, yr: [0, lim] });
+  s += p2.s;
+  E.ae.forEach((val, i) => {
+    const cx = px + pw * ((i * E.hop + E.n / 2) / total);
+    s += L(cx, p2.sy(0), cx, p2.sy(val), { c: GRID, w: 1.2 });
+    s += O(cx, p2.sy(val), 4, { fill: i % 2 ? GREEN : WARM });
+    s += T(cx, p2.sy(val) - 12, val.toFixed(2), {
+      size: 11.5, weight: 700, fill: i % 2 ? GREEN : WARM, anchor: 'middle',
+    });
+  });
+  s += curve(p2, E.ae, { c: WARM, w: 1.8, xr: undefined });
+  y += h + 30;
+
+  s += MT(px, y, w
+    ? ['③ 把这些点按时间连起来，就是振幅包络。这一小段里有一次起音，包络从 0.03 涨到 0.39，差 11.5 倍。',
+      '每个点标在它那一帧的中间，不是开头——标在开头，整条曲线会往左错半个帧长（这组参数下是 11.6 毫秒）。']
+    : ['③ 把这些点连起来就是振幅包络。',
+      '每个点标在它那一帧的中间，不是开头；',
+      '标错了整条曲线会往左错半个帧长。'],
+  { size: M.small, fill: INK, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 12;
+  return doc(M.W, y, s, '从分帧到每帧最大绝对值再连成振幅包络的三步');
+};
+
+
 
 FIG['08-abs-first'] = (M) => {
   const head = ['先取绝对值，', '还是直接取最大值'];
@@ -672,16 +806,65 @@ FIG['10-time-lost'] = (M) => twoRoutes(M,
     },
   ], '整段变换与分帧后逐帧变换的对比');
 
+FIG['10-two-sines-add'] = (M) => {
+  const head = ['两支干净的波加起来，', '得到的那条线两支都不像'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const a = d10.parts['440'];
+  const b = d10.parts['880'];
+  const sum = d10.wave;
+  const lim = Math.max(...sum.map((v) => Math.abs(v))) * 1.12;
+  const h = w ? 88 : 74;
+
+  const rows = [
+    ['440 Hz，幅度 1.0', a, BLUE],
+    ['880 Hz，幅度 0.5', b, GREEN],
+    ['两条相加，麦克风只输出这一条', sum, WARM],
+  ];
+  rows.forEach(([name, vals, c], i) => {
+    const ry = y + i * (h + 34);
+    s += T(px, ry - 6, name, { size: tiny(M), weight: 700, fill: c });
+    const pn = panel(px, ry, pw, h, { fill: PLATE, yr: [-lim, lim], zero: true });
+    s += pn.s;
+    s += L(px, pn.sy(0), px + pw, pn.sy(0), { c: GRID, w: 1 });
+    s += curve(pn, vals, { c, w: i === 2 ? 1.9 : 1.5 });
+    if (i === 1) {
+      s += T(px + pw, ry - 6, '＋', { size: M.h1, weight: 700, fill: MUTED, anchor: 'end' });
+    }
+  });
+  y += 3 * (h + 34) + 4;
+
+  s += MT(px, y, w
+    ? ['只给你最下面那条，很难说出它由哪两条组成——这就是第 10 课要解决的问题。',
+      '注意它们的时间轴完全相同：三条画的是同一段 0.05 秒，横轴一格对一格。']
+    : ['只给你最下面那条，很难说出它由哪两条',
+      '组成——这就是这一课要解决的问题。',
+      '三条画的是同一段 0.05 秒，横轴一格对一格。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 12;
+  return doc(M.W, y, s, '440 Hz 与 880 Hz 两条正弦相加得到的复杂波形');
+};
+
 // ================================================================
 
-mkdirSync(join(BASE, 'desktop'), { recursive: true });
-mkdirSync(join(BASE, 'mobile'), { recursive: true });
+// 内容没定稿之前只出电脑版：文章还在改，三版式一起出等于同一张图画三遍。
+// 定稿后加 --all 补手机版。
+const modes = process.argv.includes('--all') ? ['desktop', 'mobile'] : ['desktop'];
+// 只重建指定的几张：node build-figures-07-10-tutorial.mjs 07-rms-steps 08-envelope-steps
+const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+for (const mode of modes) mkdirSync(join(BASE, mode), { recursive: true });
 let n = 0;
 for (const [name, make] of Object.entries(FIG)) {
-  for (const mode of ['desktop', 'mobile']) {
+  if (only.length && !only.includes(name)) continue;
+  for (const mode of modes) {
     writeFileSync(join(BASE, mode, `${name}.svg`), make(MODES[mode]), 'utf8');
     n += 1;
   }
   console.log(`  ${name}`);
 }
-console.log(`${n} 个 SVG -> ${BASE}`);
+console.log(`${n} 个 SVG（${modes.join('、')}） -> ${BASE}`);
