@@ -18,6 +18,7 @@ import librosa
 
 from soundlab import io
 from soundlab.config import TARGET_DBFS
+from soundlab.figdata import dump, thin
 
 SR = 16000
 
@@ -178,6 +179,67 @@ def level_modulation():
     print()
 
 
+def dump_figures():
+    """这一课要上图的数：听阈到痛阈、三件乐器的包络与泛音、颤音的包络。"""
+    from soundlab.framing import frame
+    from soundlab.time_features import amplitude_envelope
+
+    # 听阈和痛阈，PPT p9 / p11。两者相差一万亿倍，正是分贝存在的理由。
+    TOH = 1e-12          # W/m^2，听阈，也是分贝的参考值
+    TOP = 10.0           # W/m^2，痛阈
+    ladder = [
+        ("刚能听见", TOH, 0),
+        ("安静的房间", 1e-10, 20),
+        ("正常交谈", 1e-6, 60),
+        ("繁忙街道", 1e-4, 80),
+        ("摇滚现场", 1e-1, 110),
+        ("开始感到疼", TOP, 130),
+    ]
+
+    inst = {}
+    for nm, zh in [("violin_c", "小提琴"), ("sax", "萨克斯"), ("piano_c", "钢琴")]:
+        y, sr = io.load(nm)
+        f0 = float(np.median(librosa.yin(y, fmin=80, fmax=1200, sr=sr)))
+        yn = io.rms_normalize(y)
+        env = amplitude_envelope(frame(yn, 1024, 512))
+        inst[nm] = {
+            "zh": zh,
+            "seconds": round(len(y) / sr, 2),
+            "f0": round(f0, 1),
+            "midi": round(69 + 12 * float(np.log2(f0 / 440)), 1),
+            # 包络按自身峰值归一，横轴按总时长归一：这张图比的是形状
+            "env": thin(env / max(env.max(), 1e-9), 240),
+            # 和 level_timbre() 打印的那个百分比必须用同一个式子算，
+            # 否则正文写 4%、图上标 1.9%，读者对不上
+            "peak_at": round(((int(np.argmax(env)) * 512 + 512) / sr)
+                             / (len(y) / sr), 3),
+            "harmonics": harmonics(yn, sr, f0),
+        }
+
+    y, sr = io.load("tremolo")
+    env = amplitude_envelope(frame(y, 1024, 256))
+    e = env - env.mean()
+    sp = np.abs(np.fft.rfft(e))
+    fx = np.fft.rfftfreq(len(e), d=256 / sr)
+    ok = (fx > 0.3) & (fx < 20)
+    rate = float(fx[ok][int(np.argmax(sp[ok]))])
+
+    path = dump(3, {
+        "ladder": [{"name": n, "wm2": v, "db": d} for n, v, d in ladder],
+        "toh": TOH, "top": TOP,
+        "ratio": TOP / TOH,
+        "instruments": inst,
+        "tremolo": {
+            "seconds": round(len(y) / sr, 2),
+            "rate_hz": round(rate, 2),
+            "period_s": round(1 / rate, 2),
+            "depth": round(float((env.max() - env.min()) / env.max()), 3),
+            "env": thin(env / max(env.max(), 1e-9), 420),
+        },
+    })
+    print(f"[配图数据] 写好了 {path}")
+
+
 if __name__ == "__main__":
     sine, noise = make_pair()
     step1_3_three_metrics(sine, noise)
@@ -186,3 +248,5 @@ if __name__ == "__main__":
     extra_frame_vs_global()
     level_timbre()
     level_modulation()
+    if "--dump" in sys.argv:
+        dump_figures()

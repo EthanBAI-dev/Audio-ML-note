@@ -305,12 +305,14 @@ function icon(kind, x, y, w = 74, h = 58) {
     // 原来没有横坐标轴，一串竖线看不出「按时间排列」。补一条时间轴，
     // 每个采样点在轴上留一个刻度，间隔相等——等间隔正是采样的定义。
     const padX = 8;
-    const axisY = y + h - 12;         // 时间轴的位置
-    const plotTop = y + 8;
-    const plotH = axisY - plotTop - 4;
+    const plotTop = y + 9;
+    const plotH = h - 18;
     const span = w - padX * 2;
     const f = (u) => 0.5 + 0.34 * Math.sin(u * 13);
+    // 横轴就是正弦的中线，画在正中间。画在底下是错的：采样竖线是从
+    // 中线往上下两边量的，轴跑到底下，竖线就没了参照。
     const mid = plotTop + plotH * 0.5;
+    const axisY = mid;
     out += curve(x + padX, plotTop, span, plotH, f, 160,
       { color: '#b6c4cf', width: 1.2 });
     const N = 9;
@@ -321,9 +323,8 @@ function icon(kind, x, y, w = 74, h = 58) {
       out += L(px, mid, px, py, { color: BLUE, width: 1.1 });
       out += C(px, py, 2.4, { fill: BLUE });
     }
-    // 横轴就是一条线。刻度和「时间」两个字都不画：这个小图放不下 14 px 的
-    // 字（写 8.5 px 手机上缩到 7.3 px 会被 check-svg-mobile 判不合格），
-    // 刻度线又和上面的采样竖线撞在一起，反而看不清。
+    // 就一条线。刻度和「时间」两个字都不画：这个小图放不下 14 px 的字
+    // （写 8.5 px 手机上缩到 7.3 px 会被 check-svg-mobile 判不合格）。
     out += L(x + padX - 3, axisY, x + w - padX + 3, axisY,
       { color: MUTED, width: 1.2 });
   }
