@@ -62,7 +62,7 @@
 | 05 | `source_course/05 - Types of audio features for ML/Types of Audio Features for ML.pdf` | `B-教程式/05-音频特征的分类-该从录音里算出什么交给模型.md` | `课程代码/lessons/lesson05_feature_choices.py` | 按源课建立五个分类维度，不能继续写成“四个选择” |
 | 06 | `source_course/06 - How to extract audio features/How to extract audio features.pdf` | `B-教程式/06-特征提取流水线-从整段录音到一串可比较的数.md` | `课程代码/lessons/lesson06_framing.py` | 时域流水线 → 频域流水线 → 泄漏 → 加窗 → 重叠和帧移；聚合不是正文主线 |
 | 07 | `source_course/07 - Time-domain audio features/Time-domain audio features.pdf` | `B-教程式/07-三个时域特征-不做频率分析能问出什么.md` | `课程代码/lessons/lesson07_three_time_features.py` | 只负责 AE、RMS、ZCR 的定义、公式、优缺点和应用，不抢 08 / 09 的完整实现 |
-| 08 | `source_course/08 - Implementing the amplitude envelope/Implementing the amplitude envelope.ipynb` | `B-教程式/08-振幅包络怎么计算-从逐帧最大值到可靠时间轴.md` | `课程代码/lessons/lesson08_amplitude_envelope.py` | 严格按 notebook 完成三段音乐、波形、手写 AE、时间轴和叠加比较 |
+| 08 | `source_course/08 - Implementing the amplitude envelope/Implementing the amplitude envelope.ipynb` | `B-教程式/08-实现振幅包络-把公式写成能跑的代码.md` | `课程代码/lessons/lesson08_amplitude_envelope.py` | 严格按 notebook 完成三段音乐、波形、手写 AE、时间轴和叠加比较 |
 | 09 | `source_course/09 - RMS energy and zero-crossing rate/RMS Energy and Zero-Crossing Rate.ipynb` | `B-教程式/09-RMS与过零率怎么计算-用整体强弱和翻越零线次数检查声音.md` | `课程代码/lessons/lesson09_rms_zcr.py` | librosa RMS → 波形叠加 → 手写对齐 → ZCR → 三段音乐 → voice / noise |
 | 10 | `source_course/10 - Fourier Transform The Intuition/Demystifying the Fourier Transform The Intuition.pdf`；同目录 `Fourier Transform.ipynb` | `B-教程式/10-傅里叶变换的直觉-电脑怎样从复杂波形里找出频率.md` | `课程代码/lessons/lesson10_fourier_intuition.py` | 拆分频率 → 正弦试探 → 选择频率 → 调相位 → 量强度 → 重建和逆变换 |
 

@@ -15,9 +15,152 @@ sys.stdout.reconfigure(encoding="utf-8")
 import numpy as np
 
 from soundlab import io
+from soundlab.figdata import dump, thin
 from soundlab.config import SR, FRAME_LENGTH, HOP_LENGTH
 from soundlab.framing import frame, n_frames, tail_samples, frame_times
 from soundlab.time_features import amplitude_envelope
+
+
+MUSIC = [("debussy", "古典"), ("duke", "爵士"), ("redhot", "摇滚")]
+
+
+def nb1_load_and_info():
+    """notebook cell 2–12：载入三段音乐，看它们的基本信息。"""
+    print("[正文] notebook 第 1 步 · 载入三段音乐，看基本信息")
+    got = {}
+    print(f"  {'':8}{'样本数':>10}{'采样率':>9}{'一个样本多久':>14}{'总时长':>10}")
+    for nm, zh in MUSIC:
+        y, sr = io.load(nm)
+        one = 1 / sr
+        got[nm] = {"zh": zh, "y": y, "sr": int(sr),
+                   "n": int(len(y)), "seconds": len(y) / sr}
+        print(f"  {zh:8}{len(y):10d}{sr:9d}{one * 1000:12.4f}ms"
+              f"{len(y) / sr:9.2f}s")
+    print("  三段的采样率一致，所以帧号和秒数之间用同一个换算——这是第 01 课定下的。")
+    print()
+    return got
+
+
+def nb2_amplitude_envelope(got):
+    """notebook cell 15–19：手写 AE，对三段各算一次。
+
+    原 notebook 写的是 max(signal[i:i+frame_size])，**没有取绝对值**。
+    这里按它的样子先算一遍，再算取了绝对值的，把差别摆出来。
+    """
+    print("[正文] notebook 第 2 步 · 手写振幅包络，对三段各算一次")
+    print("  原 notebook 的写法（照抄，注意它没有取绝对值）：")
+    print("    max(signal[i:i+frame_size]) for i in range(0, len(signal), hop)")
+    print()
+    # 差别要逐帧看。整段的最大值上两者几乎一样——一首 30 秒的曲子里，
+    # 最高的正峰和最深的负谷本来就差不多深，所以全局最大值掩盖了问题。
+    print(f"  {'':8}{'帧数':>7}{'有几帧被低估':>14}{'占比':>8}{'平均低估':>10}{'最多低估':>10}")
+    out = {}
+    for nm, zh in MUSIC:
+        y = got[nm]["y"]
+        f = frame(y, FRAME_LENGTH, HOP_LENGTH)
+        raw_env = np.max(f, axis=1)               # 照 notebook：不取绝对值
+        abs_env = amplitude_envelope(f)           # 本课程：先取绝对值
+        diff = abs_env - raw_env
+        hit = int((diff > 1e-9).sum())
+        out[nm] = {"n_frames": int(f.shape[0]),
+                   "peak_raw": float(raw_env.max()),
+                   "peak_abs": float(abs_env.max()),
+                   "under_frames": hit,
+                   "under_ratio": hit / len(diff),
+                   "under_mean": float(diff[diff > 1e-9].mean()) if hit else 0.0,
+                   "under_max": float(diff.max()),
+                   "env": abs_env}
+        print(f"  {zh:8}{f.shape[0]:7d}{hit:14d}{hit / len(diff):8.1%}"
+              f"{out[nm]['under_mean']:10.4f}{diff.max():10.4f}")
+    lo = min(r["under_ratio"] for r in out.values())
+    hi = max(r["under_ratio"] for r in out.values())
+    worst = max(r["under_max"] for r in out.values())
+    print(f"  三段各有 {lo:.0%} 到 {hi:.0%} 的帧被低估了，"
+          f"最多的一帧少算了 {worst:.4f}。")
+    print("  但如果只看整段的最大值，两种写法几乎一样：")
+    for nm, zh in MUSIC:
+        print(f"    {zh:8}不取绝对值 {out[nm]['peak_raw']:.4f}，"
+              f"取绝对值 {out[nm]['peak_abs']:.4f}")
+    print("  因为一首 30 秒的曲子里，最高的正峰和最深的负谷本来就差不多深。")
+    print("  全局最大值掩盖了问题，逐帧才看得见——而逐帧才是包络要用的。")
+    print("  所以本课程的实现是 np.max(np.abs(frame))，比 notebook 多一个 abs。")
+    print()
+    return out
+
+
+def nb3_frames_to_time(got, env):
+    """notebook cell 21：把帧编号换算成秒，包络才画得到波形上。"""
+    print("[正文] notebook 第 3 步 · 把帧编号换成时间")
+    nm = "debussy"
+    sr = got[nm]["sr"]
+    n = env[nm]["n_frames"]
+    print(f"  {got[nm]['zh']}切出 {n} 帧。帧编号是 0, 1, 2, …，得先换成秒才能画。")
+    print(f"  librosa.frames_to_time(frames, hop_length={HOP_LENGTH}) 做的就是这件事。")
+    for i in (0, 1, 2, n - 1):
+        t_start = i * HOP_LENGTH / sr
+        t_center = (i * HOP_LENGTH + FRAME_LENGTH / 2) / sr
+        print(f"    第 {i:4d} 帧：起点 {t_start:7.3f}s，中心 {t_center:7.3f}s")
+    print(f"  两种标法整条相差 {FRAME_LENGTH / 2 / sr * 1000:.2f} 毫秒，永远是半个帧长。")
+    print("  librosa 默认按起点标（frames_to_time 不加 center 偏移）；")
+    print("  本课程按帧中心标，因为一帧的读数概括的是整段，不是它开头那一瞬。")
+    print()
+
+
+def nb4_compare_three(got, env):
+    """notebook cell 22：三段音乐的波形和包络叠在一起比。"""
+    print("[正文] notebook 第 4 步 · 三段的包络放在一起比")
+    print(f"  {'':8}{'峰值':>9}{'包络平均':>11}{'平均/峰值':>11}")
+    rows = {}
+    for nm, zh in MUSIC:
+        e = env[nm]["env"]
+        peak = float(e.max())
+        mean = float(e.mean())
+        rows[nm] = {"zh": zh, "peak": peak, "mean": mean, "ratio": mean / peak}
+        print(f"  {zh:8}{peak:9.4f}{mean:11.4f}{mean / peak:11.4f}")
+    print("  最后一列是「包络平均值占自身峰值的比例」，它和录音音量无关——")
+    print("  分子分母同时缩放会约掉，所以三段之间可以直接比。")
+    hi = max(rows.values(), key=lambda r: r["ratio"])
+    lo = min(rows.values(), key=lambda r: r["ratio"])
+    print(f"  {hi['zh']} {hi['ratio']:.2f} 最高，说明它整段都更贴近自己的峰值，起伏小；")
+    print(f"  {lo['zh']} {lo['ratio']:.2f} 最低，说明它忽强忽弱的落差最大。")
+    print()
+    return rows
+
+
+def dump_figures(got, env, rows):
+    """这一课要上图的数：三段的波形与包络、绝对值差、时间轴、尾巴。"""
+    tracks = {}
+    for nm, zh in MUSIC:
+        y = got[nm]["y"]
+        e = env[nm]["env"]
+        tracks[nm] = {
+            "zh": zh,
+            "seconds": round(got[nm]["seconds"], 2),
+            "wave": thin(y, 800),
+            "env": thin(e, 400),
+            "peak": rows[nm]["peak"],
+            "mean": rows[nm]["mean"],
+            "ratio": rows[nm]["ratio"],
+            "peak_raw": env[nm]["peak_raw"],
+            "peak_abs": env[nm]["peak_abs"],
+            "n_frames": env[nm]["n_frames"],
+        }
+    four = [-0.2, 0.7, -0.9, 0.4]
+    y = got["debussy"]["y"]
+    sr = got["debussy"]["sr"]
+    used = (env["debussy"]["n_frames"] - 1) * HOP_LENGTH + FRAME_LENGTH
+    path = dump(8, {
+        "frame_length": FRAME_LENGTH, "hop_length": HOP_LENGTH, "sr": sr,
+        "tracks": tracks,
+        "four": four,
+        "four_raw": max(four),
+        "four_abs": max(abs(v) for v in four),
+        "shift_ms": round(FRAME_LENGTH / 2 / sr * 1000, 2),
+        "tail": {"total": int(len(y)), "used": int(used),
+                 "left": int(len(y) - used),
+                 "left_ms": round((len(y) - used) / sr * 1000, 2)},
+    })
+    print(f"[配图数据] 写好了 {path}")
 
 
 def step1_absolute_first():
@@ -190,11 +333,21 @@ def extra_speed():
 
 
 if __name__ == "__main__":
+    # 先严格按 notebook 的单元顺序走一遍：载入 → 基本信息 → 手写 AE →
+    # 帧号换成时间 → 三段对比。工程扩展一律排在这条主线后面。
+    got = nb1_load_and_info()
+    envs = nb2_amplitude_envelope(got)
+    nb3_frames_to_time(got, envs)
+    rows = nb4_compare_three(got, envs)
+
+    # 下面是原 notebook 没有、但真写代码时会撞上的几件事
     step1_absolute_first()
     y, env = step2_real_envelope()
     step3_time_axis(y, env)
     level_frame_length()
     level_tail_policy()
     level_librosa_center()
-    extra_three_music()
     extra_speed()
+
+    if "--dump" in sys.argv:
+        dump_figures(got, envs, rows)

@@ -25,6 +25,7 @@ const tiny = (M) => (wide(M) ? 12.5 : 14);
 
 const d06 = D('06');
 const d07 = D('07');
+const d08 = D('08');
 const FIG = {};
 
 // ================================================================ 06
@@ -396,6 +397,114 @@ FIG['07-ae-formula'] = (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '振幅包络公式逐项拆解，以及取不取绝对值的差别');
+};
+
+// ================================================================ 08
+
+// notebook cell 22：三段音乐的波形，包络叠在上面。
+FIG['08-three-envelopes'] = (M) => {
+  const head = ['三段音乐的波形，', '红线是算出来的振幅包络'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const order = ['debussy', 'duke', 'redhot'];
+  const ph = w ? 90 : 78;
+  let mx = 0;
+  order.forEach((k) => { d08.tracks[k].wave.forEach((v) => { if (Math.abs(v) > mx) mx = Math.abs(v); }); });
+
+  order.forEach((k) => {
+    const t = d08.tracks[k];
+    const pn = panel(px, y, pw, ph, {
+      yr: [-mx * 1.08, mx * 1.08], zero: true,
+      title: `${t.zh}　${t.seconds} 秒　峰值 ${t.peak.toFixed(4)}`,
+      tsize: M.small, tfill: INK,
+    });
+    s += pn.s;
+    s += curve(pn, t.wave, { c: '#b9c6d1', w: 0.7 });
+    // 包络画成上下对称的两条，贴着波形外沿
+    s += curve(pn, t.env, { c: WARM, w: 1.6 });
+    s += curve(pn, t.env.map((v) => -v), { c: WARM, w: 1.6 });
+    y += ph + 24;
+  });
+
+  s += MT(px, y - 2, w
+    ? ['灰色是原始波形，每段 661500 个数；红色是逐帧算出的包络，每段 1290 个数。',
+      '包络贴着波形的外沿走——这就是「包络」这个名字的来历。',
+      '三条的外形轮廓明显不同：摇滚最「满」，古典起伏最大。']
+    : ['灰色是原始波形（每段 661500 个数），红色是',
+      '逐帧算出的包络（每段 1290 个数），贴着外沿走。',
+      '摇滚最「满」，古典起伏最大。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 3) * 21 + 8;
+  return doc(M.W, y, s, '三段音乐的波形与叠在上面的振幅包络');
+};
+
+// 整段最大值看不出 abs 的影响，逐帧才看得见。
+FIG['08-abs-per-frame'] = (M) => {
+  const head = ['整段最大值几乎没差别，', '逐帧却有两三成的帧被低估'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 24;
+
+  const order = ['debussy', 'duke', 'redhot'];
+  const cw = w ? (pw - 20) / 2 : pw;
+  const bh = w ? 108 : 92;
+
+  // 左：整段最大值，两根柱几乎一样高
+  s += T(px, y - 8, '整段的最大值', { size: M.h2, weight: 700, fill: MUTED });
+  let maxPeak = 0;
+  order.forEach((k) => {
+    maxPeak = Math.max(maxPeak, d08.tracks[k].peak_abs, d08.tracks[k].peak_raw);
+  });
+  s += L(px, y + bh, px + cw, y + bh, { c: GRID });
+  order.forEach((k, i) => {
+    const t = d08.tracks[k];
+    const slot = cw / 3;
+    const x0 = px + i * slot + 10;
+    [[t.peak_raw, '#9fc4dd', '不取 abs'], [t.peak_abs, BLUE, '取 abs']].forEach((q, j) => {
+      const hgt = (q[0] / (maxPeak * 1.18)) * bh;
+      const bx = x0 + j * 22;
+      s += R(bx, y + bh - hgt, 18, hgt, { fill: q[1], stroke: 'none', r: 2 });
+    });
+    s += T(px + i * slot + slot / 2, y + bh + 17, t.zh,
+      { size: tiny(M), fill: MUTED, anchor: 'middle' });
+  });
+
+  // 右：逐帧被低估的比例
+  const rx = w ? px + cw + 20 : px;
+  const ry = w ? y : y + bh + 60;
+  s += T(rx, ry - 8, '逐帧：有多少帧被低估', { size: M.h2, weight: 700, fill: WARM });
+  s += L(rx, ry + bh, rx + cw, ry + bh, { c: GRID });
+  order.forEach((k, i) => {
+    const t = d08.tracks[k];
+    const slot = cw / 3;
+    const hgt = (t.under_ratio / 0.45) * bh;
+    const bx = rx + i * slot + slot / 2 - 16;
+    s += R(bx, ry + bh - hgt, 32, hgt, { fill: WARM, stroke: 'none', r: 2 });
+    s += T(bx + 16, ry + bh - hgt - 6, `${(t.under_ratio * 100).toFixed(1)}%`,
+      { size: tiny(M), weight: 700, fill: WARM, anchor: 'middle' });
+    s += T(bx + 16, ry + bh + 17, t.zh, { size: tiny(M), fill: MUTED, anchor: 'middle' });
+  });
+  y = (w ? y + bh : ry + bh) + 40;
+
+  s += MT(px, y, w
+    ? ['左边两根柱几乎一样高——一首 30 秒的曲子里最高的正峰和最深的负谷本来就差不多深，',
+      '整段最大值把问题掩盖了。右边是逐帧看：18% 到 36% 的帧被低估，最多一帧少算 0.2952。',
+      '而包络用的正是逐帧的结果，所以 abs 不能省。']
+    : ['左边两根柱几乎一样高：整段最大值把问题',
+      '掩盖了。右边逐帧看，18% 到 36% 的帧被低估，',
+      '最多一帧少算 0.2952。包络用的正是逐帧结果，',
+      '所以 abs 不能省。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '整段最大值看不出取绝对值的差别，逐帧才看得见');
 };
 
 // ================================================================
