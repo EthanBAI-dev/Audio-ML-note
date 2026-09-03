@@ -163,7 +163,10 @@ export function chain(M, head, steps, tail, label) {
     steps.forEach((st, i) => {
       s += R(px, y, pw, 54, { fill: st.fill ?? PLATE, stroke: st.color ?? GRID, sw: 1.6, r: 9 });
       s += T(px + 14, y + 24, st.name, { size: M.h2, weight: 700, fill: st.color ?? INK });
-      s += T(px + 14, y + 44, st.desc.join(''), { size: M.small, fill: MUTED });
+      // desc 的两行在电脑版是上下排的，手机版要挤成一行。多数图的两行本来就是
+      // 一句话拆开的（「声源每秒」+「放出多少」），直接接起来就通顺；接起来
+      // 读不通的图自己给一个 mdesc。
+      s += T(px + 14, y + 44, st.mdesc ?? st.desc.join(''), { size: M.small, fill: MUTED });
       if (i < steps.length - 1) {
         s += ARROW(px + 26, y + 56, px + 26, y + 70, { c: MUTED, w: 2, head: 6 });
         if (st.why) s += T(px + 40, y + 69, st.why, { size: M.small, fill: MUTED });
@@ -178,3 +181,68 @@ export function chain(M, head, steps, tail, label) {
   }
   return doc(M.W, y + 14, s, label);
 }
+
+/**
+ * 一块带边框和标题的画板，返回把「数据坐标 → 画布坐标」的两个换算函数。
+ * 07–10 课几乎每张图都要在真实曲线上再标注点和线，所以换算必须共用一套，
+ * 不能每张图各写各的——第 01 课就是因为两处各算各的，同一份数据画出过两个结论。
+ */
+export function panel(x, y, w, h, o = {}) {
+  const [x0, x1] = o.xr ?? [0, 1];
+  const [y0, y1] = o.yr ?? [0, 1];
+  const sx = (v) => x + ((v - x0) / (x1 - x0 || 1)) * w;
+  const sy = (v) => y + h - ((v - y0) / (y1 - y0 || 1)) * h;
+  let s = R(x, y, w, h, { fill: o.fill ?? '#fff', stroke: o.stroke ?? GRID, r: o.r ?? 6 });
+  if (o.title) s += T(x, y - 8, o.title, { size: o.tsize ?? 14, weight: 700, fill: o.tfill ?? INK });
+  if (o.zero && y0 < 0 && y1 > 0) s += L(x, sy(0), x + w, sy(0), { c: GRID, dash: '3 3' });
+  return { s, sx, sy, x, y, w, h };
+}
+
+/**
+ * 把一串等间距的数画成折线。
+ *
+ * 不给 xr 时，这串数就均匀铺满整块画板的宽度——**不要**回头去查 panel 的
+ * xr，那是给「数据自带横坐标」的图用的。这里踩过一次：curve 按 [0, n-1]
+ * 去调 sx，而 panel 的 xr 默认是 [0,1]，于是除第一个点以外全被推到画板
+ * 右边几百倍远的地方，画出来是一条贴着零线的平线，看着像数据本身是平的。
+ * 给了 xr，才按 panel 的坐标系放点。
+ */
+export function curve(pn, vals, o = {}) {
+  const n = vals.length;
+  const step = (i) => (n > 1 ? i / (n - 1) : 0);
+  const px = o.xr
+    ? (i) => pn.sx(o.xr[0] + (o.xr[1] - o.xr[0]) * step(i))
+    : (i) => pn.x + pn.w * step(i);
+  return P(vals.map((v, i) => [px(i), pn.sy(v)]), { c: o.c ?? BLUE, w: o.w ?? 1.6 });
+}
+
+/** 竖排的分组柱状图。每组一个标签，组里每根柱一个颜色和一个数值文字。 */
+export function bars(x, y, w, h, groups, o = {}) {
+  const max = o.max ?? Math.max(...groups.flatMap((g) => g.vals.map((v) => v.v)));
+  const gw = w / groups.length;
+  let s = L(x, y + h, x + w, y + h, { c: GRID });
+  groups.forEach((g, gi) => {
+    const k = g.vals.length;
+    const bw = Math.min(o.bw ?? 34, (gw - 18) / k);
+    const left = x + gi * gw + (gw - bw * k - (k - 1) * 6) / 2;
+    g.vals.forEach((v, i) => {
+      const bh = Math.max(1, (v.v / (max || 1)) * h);
+      const bx = left + i * (bw + 6);
+      s += R(bx, y + h - bh, bw, bh, { fill: v.c, stroke: 'none', r: 3 });
+      s += T(bx + bw / 2, y + h - bh - 6, v.t ?? String(v.v), {
+        size: o.vsize ?? 13.5, weight: 700, fill: v.c, anchor: 'middle',
+      });
+    });
+    s += T(x + gi * gw + gw / 2, y + h + 18, g.name, {
+      size: o.lsize ?? 14, fill: MUTED, anchor: 'middle',
+    });
+  });
+  return s;
+}
+
+/** 图例：一排小色块加名字。 */
+export const legend = (x, y, items, o = {}) => items.map((it, i) => {
+  const cx = x + i * (o.gap ?? 110);
+  return R(cx, y - 8, 14, 10, { fill: it.c, stroke: 'none', r: 2 })
+    + T(cx + 20, y, it.name, { size: o.size ?? 14, fill: MUTED });
+}).join('');
