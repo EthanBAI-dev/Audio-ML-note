@@ -269,11 +269,31 @@ function icon(kind, x, y, w = 74, h = 58) {
     [0, 14, 28].forEach((d) => { out += PATH(`M${x + (49 + d) * sx} ${cy - (18 - d * 0.15) * sy} Q${x + (62 + d) * sx} ${cy} ${x + (49 + d) * sx} ${cy + (18 - d * 0.15) * sy}`, { color: d === 28 ? WARM : BLUE, width: 1.8 }); });
   }
   if (kind === 'propagate') {
-    for (let i = 0; i < 7; i += 1) for (let j = 0; j < 3; j += 1) {
-      const dense = i < 3 ? 4 : 8;
-      out += C(x + 10 + i * dense, y + 15 + j * 13 + ((i + j) % 2) * 2, 2.2, { fill: i < 3 ? BLUE : '#a9cde5' });
+    // 疏密不能只画一组，那看着像「左边密右边疏」的静态分布。
+    // 按真实的纵波来画：每颗空气分子都在自己的位置附近来回动，位移取
+    // 正弦。位移一叠加，密的地方和疏的地方就沿着 x 轴连续交替出现，
+    // 一眼能看出这是一列波，而不是两堆点。
+    const CYCLES = 2.5;       // 画面里放下两组半疏密
+    const N = 20;             // 每行的分子数。再多点就挤成一条实线了
+    const rows = 3;
+    const padX = 8;
+    const span = w - padX * 2;
+    // 位移幅度取到间距的 0.45 倍：疏密拉得开，相邻两颗又不会交叉换位
+    const amp = (span / (N - 1)) * 0.45;
+    const top = y + 12;
+    const gapY = (h - 26) / (rows - 1);
+    for (let j = 0; j < rows; j += 1) {
+      for (let i = 0; i < N; i += 1) {
+        const u = i / (N - 1);
+        const d = amp * Math.sin(2 * Math.PI * CYCLES * u);
+        // 位移越往密处挤，颜色越深，疏密看得更清楚
+        const dense = Math.cos(2 * Math.PI * CYCLES * u) < 0;
+        out += C(x + padX + u * span + d, top + j * gapY, 2.1,
+          { fill: dense ? BLUE : '#a9cde5' });
+      }
     }
-    out += ARROW(x + 13, y + h - 9, x + w - 12, y + h - 9, { color: WARM, width: 1.5, head: 5 });
+    out += ARROW(x + padX + 2, y + h - 7, x + w - padX - 2, y + h - 7,
+      { color: WARM, width: 1.5, head: 5 });
   }
   if (kind === 'mic') {
     out += R(cx - 12, y + 9, 24, 30, { fill: PALE, stroke: BLUE, sw: 1.7, radius: 12 });
@@ -282,13 +302,30 @@ function icon(kind, x, y, w = 74, h = 58) {
     out += L(cx - 12, y + h - 4, cx + 12, y + h - 4, { color: MUTED, width: 1.7 });
   }
   if (kind === 'samples') {
-    out += curve(x + 7, y + 7, w - 14, h - 14, (u) => 0.5 + 0.34 * Math.sin(u * 13), 120, { color: '#b6c4cf', width: 1.2 });
-    for (let i = 0; i < 8; i += 1) {
-      const u = i / 7; const px = x + 7 + u * (w - 14); const v = 0.5 + 0.34 * Math.sin(u * 13);
-      const py = y + 7 + (h - 14) * (1 - v);
-      out += L(px, cy, px, py, { color: BLUE, width: 1.2 });
-      out += C(px, py, 2.7, { fill: BLUE });
+    // 原来没有横坐标轴，一串竖线看不出「按时间排列」。补一条时间轴，
+    // 每个采样点在轴上留一个刻度，间隔相等——等间隔正是采样的定义。
+    const padX = 8;
+    const axisY = y + h - 12;         // 时间轴的位置
+    const plotTop = y + 8;
+    const plotH = axisY - plotTop - 4;
+    const span = w - padX * 2;
+    const f = (u) => 0.5 + 0.34 * Math.sin(u * 13);
+    const mid = plotTop + plotH * 0.5;
+    out += curve(x + padX, plotTop, span, plotH, f, 160,
+      { color: '#b6c4cf', width: 1.2 });
+    const N = 9;
+    for (let i = 0; i < N; i += 1) {
+      const u = i / (N - 1);
+      const px = x + padX + u * span;
+      const py = plotTop + plotH * (1 - f(u));
+      out += L(px, mid, px, py, { color: BLUE, width: 1.1 });
+      out += C(px, py, 2.4, { fill: BLUE });
+      out += L(px, axisY, px, axisY + 3, { color: MUTED, width: 1 });
     }
+    // 只画箭头和等距刻度，不写「时间」两个字：这个小图放不下 14 px 的字，
+    // 写小了手机上缩到 7 px 就不合格了。卡片正文已经说明「按时间连起来」。
+    out += ARROW(x + padX - 3, axisY, x + w - padX + 3, axisY,
+      { color: MUTED, width: 1.2, head: 4 });
   }
   if (kind === 'decision') {
     [0, 1, 2].forEach((i) => {
@@ -508,13 +545,15 @@ FIGURES['02-air-to-numbers'] = async (M) => {
       s += T(p.x + p.w / 2, y + 31, i + 1, { size: 14, weight: 700, fill: '#fff', anchor: 'middle' });
       s += T(p.x + p.w / 2, y + 62, title, { size: M.h2 - 1, weight: 700, anchor: 'middle' });
       s += MT(p.x + p.w / 2, y + 84, lines, { size: 13, fill: MUTED, anchor: 'middle', leading: 18 });
-      s += icon(ic, p.x + p.w / 2 - 46, y + 116, 92, 60);
+      // 卡片还有富余，图画宽一点，疏密和采样点才数得清
+      const iw = Math.min(p.w - 24, 132);
+      s += icon(ic, p.x + (p.w - iw) / 2, y + 112, iw, 66);
     } else {
       s += C(p.x + 30, y + 34, 17, { fill: BLUE });
       s += T(p.x + 30, y + 40, i + 1, { size: 15, weight: 700, fill: '#fff', anchor: 'middle' });
       s += T(p.x + 58, y + 38, title, { size: M.h2, weight: 700 });
       s += MT(p.x + 58, y + 66, lines, { size: 14, fill: MUTED, leading: 20 });
-      s += icon(ic, p.x + p.w - 110, y + 16, 96, 72);
+      s += icon(ic, p.x + p.w - 128, y + 14, 114, 78);
     }
     if (i < 3) s += stepArrow(M, slots[i], slots[i + 1], y0);
   });
