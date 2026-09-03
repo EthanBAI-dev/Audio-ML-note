@@ -15,6 +15,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 import numpy as np
 
 from soundlab import io
+from soundlab.figdata import dump, thin
 from soundlab.config import SR, FRAME_LENGTH, HOP_LENGTH
 from soundlab.framing import frame, n_frames, tail_samples, get_window
 from soundlab.time_features import rms
@@ -121,11 +122,146 @@ def extra_overlap():
     print()
 
 
+def leakage():
+    """PPT p25-p29：频谱泄漏。一帧里装不下整数个周期，两端就接不上。
+
+    造两条正弦：一条在这一帧里正好装下整数个周期，另一条装不下。
+    对两条各做一次傅里叶变换，看能量是集中在一根线上，还是摊到了旁边。
+    """
+    print("[正文] 频谱泄漏：一帧里装不下整数个周期，会发生什么")
+    K = 1024
+    sr = 22050
+    # 频率取成 sr/K 的整数倍，这一帧里就正好是整数个周期
+    fit = 20 * sr / K            # 正好 20 个周期
+    miss = 20.5 * sr / K         # 20.5 个周期，两端接不上
+    n = np.arange(K)
+    # 给一个非零的初相位。从相位 0 起步的话，装得下和装不下整数个周期时
+    # 接缝处恰好都回到 0，那个落差就永远是 0，量不出两者的差别。
+    phi = np.pi / 3
+    out = {}
+    for name, f in [("正好装下整数个周期", fit), ("装不下整数个周期", miss)]:
+        x = np.sin(2 * np.pi * f * n / sr + phi)
+        S = np.abs(np.fft.rfft(x))
+        S = S / S.max()
+        peak = int(np.argmax(S))
+        # 峰两侧各 3 根以外还剩多少能量，就是「漏」出去的部分
+        mask = np.ones_like(S, dtype=bool)
+        mask[max(peak - 3, 0):peak + 4] = False
+        spill = float((S[mask] ** 2).sum() / (S ** 2).sum())
+        # 傅里叶变换是把这一帧当作无限重复来看的，所以真正的断点在
+        # 「这一帧结束、下一遍开始」的接缝上：比的是 x[K]（下一遍的第一个）
+        # 和 x[0]。装得下整数个周期时这两个值完全相等，接缝是平的。
+        nxt = float(np.sin(2 * np.pi * f * K / sr + phi))
+        gap = float(abs(nxt - x[0]))
+        out[name] = {"f": round(float(f), 1), "spill": spill, "gap": gap,
+                     "spec": S[:80]}
+        print(f"  {name}（{f:.1f} Hz）")
+        print(f"    接缝处的落差 {gap:.4f}，峰外能量占 {spill:.2%}")
+    print("  两端接不上的那一条，能量从一根线摊到了旁边一大片——这就是泄漏。")
+    print("  多出来的那些成分原信号里根本没有，是「切口」自己造出来的。")
+    print()
+    return out
+
+
+def windowed_leakage(lk):
+    """PPT p33-p35：加窗把两端压到零，泄漏就小了。"""
+    print("[正文] 加窗之后，泄漏小了多少")
+    K = 1024
+    sr = 22050
+    miss = 20.5 * sr / K
+    n = np.arange(K)
+    x = np.sin(2 * np.pi * miss * n / sr + np.pi / 3)
+    w = np.hanning(K)
+    out = {}
+    for name, sig in [("不加窗", x), ("加 Hann 窗", x * w)]:
+        S = np.abs(np.fft.rfft(sig))
+        S = S / S.max()
+        peak = int(np.argmax(S))
+        mask = np.ones_like(S, dtype=bool)
+        mask[max(peak - 3, 0):peak + 4] = False
+        spill = float((S[mask] ** 2).sum() / (S ** 2).sum())
+        out[name] = {"spill": spill, "spec": S[:80]}
+        print(f"  {name}：峰外能量占 {spill:.2%}")
+    a = out["不加窗"]["spill"]
+    b = out["加 Hann 窗"]["spill"]
+    print(f"  加窗把漏到旁边的能量从 {a:.2%} 压到 {b:.2%}，"
+          f"剩不到原来的 {a / b:.0f} 分之一。")
+    print("  代价是主峰变宽了一点：换来更少的假成分，付出频率分得没那么细。")
+    print()
+    return out
+
+
+def why_overlap():
+    """PPT p40-p57：加窗消掉了每帧两端，不重叠就等于把那些样本扔了。
+
+    Hann 窗在两端是 0。如果帧与帧不重叠，落在帧边界上的样本被乘成 0，
+    没有任何一帧真正「看到」过它。50% 重叠时，相邻两个 Hann 窗加起来
+    处处等于 1，每个样本的贡献才被完整保留——这个性质叫 COLA。
+    """
+    print("[正文] 为什么帧一定要重叠：加窗把两端消掉了")
+    K = 1024
+    w = np.hanning(K)
+    print(f"  Hann 窗两端的值：w[0] = {w[0]:.4f}，w[-1] = {w[-1]:.4f}")
+    print("  也就是说，正好落在帧边界上的样本，被乘成了 0。")
+    out = {}
+    for hop, tag in [(K, "不重叠"), (K // 2, "重叠 50%"), (K // 4, "重叠 75%")]:
+        nfr = 40
+        total = np.zeros(nfr * hop + K)
+        for i in range(nfr):
+            total[i * hop:i * hop + K] += w
+        mid = total[K:nfr * hop]          # 只看两端拼接完整的中间段
+        lo, hi = float(mid.min()), float(mid.max())
+        ripple = (hi - lo) / hi if hi else 0.0
+        out[tag] = {"hop": hop, "min": lo, "max": hi, "ripple": ripple}
+        print(f"  {tag:8}帧移 {hop:4d}：窗叠加后最小 {lo:.4f} 最大 {hi:.4f}，"
+              f"起伏 {ripple:.1%}")
+    print("  不重叠时叠加值在 0 和 1 之间来回摆——帧边界上的样本贡献是 0，")
+    print("  等于被扔掉了。50% 重叠时两个 Hann 窗加起来处处等于 1，")
+    print("  每个样本的贡献一样多，一个也没丢。这个性质叫 COLA。")
+    print()
+    return out
+
+
+def dump_figures(lk, wl, ov):
+    """这一课要上图的数：两条流水线、泄漏谱、窗叠加。"""
+    y, sr = io.load("debussy", seconds=1.0)
+    f = frame(y, FRAME_LENGTH, HOP_LENGTH)
+    K = 1024
+    path = dump(6, {
+        "sr": int(sr),
+        "frame_length": FRAME_LENGTH, "hop_length": HOP_LENGTH,
+        "n_frames": int(f.shape[0]),
+        "frame_ms": round(FRAME_LENGTH / sr * 1000, 1),
+        "hop_ms": round(HOP_LENGTH / sr * 1000, 1),
+        # PPT p9：一个采样点比人耳的时间分辨率短太多
+        "one_sample_ms_44k": round(1 / 44100 * 1000, 4),
+        "ear_resolution_ms": 10,
+        "sizes": [{"n": n, "ms44": round(n / 44100 * 1000, 1),
+                   "ms22": round(n / 22050 * 1000, 1)}
+                  for n in (256, 512, 1024, 2048, 4096, 8192)],
+        "leakage": {k: {"f": v["f"], "spill": v["spill"], "gap": v["gap"],
+                        "spec": v["spec"]} for k, v in lk.items()},
+        "windowed": {k: {"spill": v["spill"], "spec": v["spec"]}
+                     for k, v in wl.items()},
+        "hann": np.hanning(K)[::8],
+        "overlap": ov,
+        "wave": thin(y, 700),
+        "rms": rms(f),
+    })
+    print(f"[配图数据] 写好了 {path}")
+
+
 if __name__ == "__main__":
     y, f = step1_3_frame()
     level_window(y, f)
     r = level_per_frame(f)
     level_aggregate(r)
     level_tail()
+    # PPT p25–p57 那条线：泄漏 → 加窗 → 加窗消掉两端 → 所以要重叠
+    lk = leakage()
+    wl = windowed_leakage(lk)
+    ov = why_overlap()
     extra_stride_tricks()
     extra_overlap()
+    if "--dump" in sys.argv:
+        dump_figures(lk, wl, ov)
