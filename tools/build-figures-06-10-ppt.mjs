@@ -27,6 +27,7 @@ const d06 = D('06');
 const d07 = D('07');
 const d08 = D('08');
 const d09 = D('09');
+const d10 = D('10');
 const FIG = {};
 
 // ================================================================ 06
@@ -655,6 +656,58 @@ FIG['09-five-clips'] = (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '五段素材的均方根与过零率对比');
+};
+
+// ================================================================ 10
+
+// PPT p29：真实钢琴录音的频谱，主峰加上两个整数倍。
+FIG['10-piano-spectrum'] = (M) => {
+  const pk = d10.piano;
+  const head = ['真实钢琴录音扫一遍，', `主峰落在 ${pk.peak_hz} Hz`];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 22;
+
+  const ph = w ? 176 : 156;
+  const f0 = pk.freqs[0];
+  const f1 = pk.freqs[pk.freqs.length - 1];
+  const X = (f) => px + ((f - f0) / (f1 - f0)) * pw;
+  const pn = panel(px, y, pw, ph, { yr: [0, pk.peak_mag * 1.18] });
+  s += pn.s + curve(pn, pk.mag, { c: BLUE, w: 1.7 });
+
+  // 主峰和它的整数倍
+  [1, 2, 3].forEach((k) => {
+    const hz = pk.peak_hz * k;
+    if (hz > f1) return;
+    const idx = pk.freqs.findIndex((f) => f >= hz);
+    const v = pk.mag[Math.max(idx, 0)];
+    s += L(X(hz), y, X(hz), pn.sy(v), { c: WARM, dash: '3 3' });
+    s += O(X(hz), pn.sy(v), 4, { fill: WARM });
+    s += T(X(hz) + 8, pn.sy(v) - 6,
+      `${k} 倍 ${hz.toFixed(0)} Hz　${v.toFixed(4)}`,
+      { size: tiny(M), weight: 700, fill: WARM });
+  });
+  [500, 1000, 1500, 2000].forEach((f) => {
+    if (f > f1) return;
+    s += L(X(f), y + ph, X(f), y + ph + 5, { c: GRID });
+    s += T(X(f), y + ph + 19, `${f}`, { size: tiny(M), fill: MUTED, anchor: 'middle' });
+  });
+  y += ph + 32;
+
+  s += MT(px, y, w
+    ? [`主峰 ${pk.peak_hz} Hz 离标准的 C5（523 Hz）很近——这段录音弹的就是这个音。`,
+      '和合成信号不一样：真实录音的峰有宽度，峰之间也不是干干净净的零。',
+      '2 倍处还有主峰 14% 的读数，3 倍处几乎没有。这些整数倍就是第 03 课说的泛音。']
+    : [`主峰 ${pk.peak_hz} Hz 离标准的 C5（523 Hz）很近。`,
+      '和合成信号不同：真实录音的峰有宽度，峰之间',
+      '也不是干净的零。2 倍处还有主峰 14% 的读数，',
+      '3 倍处几乎没有——这些整数倍就是泛音。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '真实钢琴录音扫频得到的频谱，主峰在 527 Hz');
 };
 
 // ================================================================

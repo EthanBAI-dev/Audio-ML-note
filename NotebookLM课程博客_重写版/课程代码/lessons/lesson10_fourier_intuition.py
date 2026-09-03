@@ -16,6 +16,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 import numpy as np
 
 from soundlab import io
+from soundlab.figdata import dump, thin
 from soundlab.probe import probe, magnitude, phase, sweep
 
 SR = 4000                     # 这一课用一个小采样率，1 秒正好 4000 个数
@@ -78,7 +79,7 @@ def step3_phase():
 
 def extra_reconstruct(sig):
     """正文没放：把扫出来的成分加回去，看能不能拼回原波形。"""
-    print("[脚本额外] 用扫出来的两个成分，把原波形拼回来")
+    print("[正文] 第 4 步 · 用扫出来的两个成分，把原波形拼回来")
     rebuilt = np.zeros_like(sig)
     for f in (440, 880):
         a_sin = probe(sig, f, SR, "sin")
@@ -92,7 +93,7 @@ def extra_reconstruct(sig):
 
 def extra_real_audio():
     """正文没放：同样的试探，用在真实录音上。"""
-    print("[脚本额外] 同一套试探，用在真实钢琴录音上")
+    print("[正文] 第 5 步 · 同一套试探，用在真实钢琴录音上")
     y, sr = io.load("piano_c", seconds=1.0)
     n = len(y)
     t = np.arange(n) / sr
@@ -133,6 +134,39 @@ def extra_time_lost():
     print()
 
 
+def dump_figures(sig):
+    """这一课要上图的数：试探、扫频、相位、重建、钢琴。"""
+    import numpy as np
+    t = np.arange(SR) / SR
+    fs = np.arange(100, 2001, 2.0)
+    mag = sweep(sig, fs, SR)
+    # 只用一支正弦试探波时的读数，用来说明它会被起点位置抹掉
+    one = [probe(sig, f, SR) for f in fs]
+    sig_c = make_signal("cos")
+    one_c = [probe(sig_c, f, SR) for f in fs]
+    mag_c = [magnitude(sig_c, f, SR) for f in fs]
+    piano, sr_p = io.load("piano_c", seconds=1.0)
+    pf = np.arange(100, 2001, 2.0)
+    pm = sweep(piano, pf, sr_p)
+    path = dump(10, {
+        "sr": SR,
+        "wave": [round(float(v), 5) for v in sig[:200]],
+        "wave_shift": [round(float(v), 5) for v in sig_c[:200]],
+        "part440": [round(float(v), 5) for v in np.sin(2 * np.pi * 440 * t)[:200]],
+        "part880": [round(float(v), 5) for v in (0.5 * np.sin(2 * np.pi * 880 * t))[:200]],
+        "freqs": [float(f) for f in fs],
+        "mag": [round(float(v), 5) for v in mag],
+        "one_probe": [round(float(v), 5) for v in one],
+        "one_probe_shift": [round(float(v), 5) for v in one_c],
+        "mag_shift": [round(float(v), 5) for v in mag_c],
+        "piano": {"freqs": [float(f) for f in pf],
+                  "mag": [round(float(v), 5) for v in pm],
+                  "peak_hz": float(pf[int(np.argmax(pm))]),
+                  "peak_mag": round(float(max(pm)), 4)},
+    })
+    print(f"[配图数据] 写好了 {path}")
+
+
 if __name__ == "__main__":
     print(f"采样率 {SR}，取 1 秒，信号 = 440 Hz 幅度 1.0 + 880 Hz 幅度 0.5\n")
     sig = step1_probe()
@@ -141,3 +175,5 @@ if __name__ == "__main__":
     extra_reconstruct(sig)
     extra_real_audio()
     extra_time_lost()
+    if "--dump" in sys.argv:
+        dump_figures(sig)

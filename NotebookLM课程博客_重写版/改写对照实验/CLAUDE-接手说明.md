@@ -64,7 +64,7 @@
 | 07 | `source_course/07 - Time-domain audio features/Time-domain audio features.pdf` | `B-教程式/07-三个时域特征-不做频率分析能问出什么.md` | `课程代码/lessons/lesson07_three_time_features.py` | 只负责 AE、RMS、ZCR 的定义、公式、优缺点和应用，不抢 08 / 09 的完整实现 |
 | 08 | `source_course/08 - Implementing the amplitude envelope/Implementing the amplitude envelope.ipynb` | `B-教程式/08-实现振幅包络-把公式写成能跑的代码.md` | `课程代码/lessons/lesson08_amplitude_envelope.py` | 严格按 notebook 完成三段音乐、波形、手写 AE、时间轴和叠加比较 |
 | 09 | `source_course/09 - RMS energy and zero-crossing rate/RMS Energy and Zero-Crossing Rate.ipynb` | `B-教程式/09-实现RMS与过零率-先调库再手写然后对齐.md` | `课程代码/lessons/lesson09_rms_zcr.py` | librosa RMS → 波形叠加 → 手写对齐 → ZCR → 三段音乐 → voice / noise |
-| 10 | `source_course/10 - Fourier Transform The Intuition/Demystifying the Fourier Transform The Intuition.pdf`；同目录 `Fourier Transform.ipynb` | `B-教程式/10-傅里叶变换的直觉-电脑怎样从复杂波形里找出频率.md` | `课程代码/lessons/lesson10_fourier_intuition.py` | 拆分频率 → 正弦试探 → 选择频率 → 调相位 → 量强度 → 重建和逆变换 |
+| 10 | `source_course/10 - Fourier Transform The Intuition/Demystifying the Fourier Transform The Intuition.pdf`；同目录 `Fourier Transform.ipynb` | `B-教程式/10-傅里叶变换的直觉-拿已知频率去问声音里有没有它.md` | `课程代码/lessons/lesson10_fourier_intuition.py` | 拆分频率 → 正弦试探 → 选择频率 → 调相位 → 量强度 → 重建和逆变换 |
 
 表中的 `B-教程式/` 均指：
 
