@@ -24,6 +24,7 @@ const D = (n) => JSON.parse(readFileSync(join(DATA, `lesson${n}.json`), 'utf8'))
 const tiny = (M) => (wide(M) ? 12.5 : 14);
 
 const d06 = D('06');
+const d07 = D('07');
 const FIG = {};
 
 // ================================================================ 06
@@ -329,6 +330,72 @@ FIG['06-cola'] = (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '不重叠时窗叠加值在 0 和 1 之间摆动，50% 重叠时处处等于 1');
+};
+
+// ================================================================ 07
+
+// PPT p4–p10：AE 的公式逐项拆，外加八个数的小帧上的实际结果。
+FIG['07-ae-formula'] = (M) => {
+  const t = d07.toy;
+  const head = ['公式里每个符号是什么，', '以及为什么必须补上绝对值'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 18;
+
+  // 上半：八个数画成有正负的竖线，标出 max 和 max|·| 各落在哪
+  const vals = t.values;
+  const ph = w ? 118 : 104;
+  const pn = panel(px, y, pw, ph, {
+    yr: [-1.05, 1.05], zero: true,
+    title: '这一帧的 8 个数', tsize: M.small, tfill: MUTED,
+  });
+  s += pn.s;
+  vals.forEach((v, i) => {
+    const cx = px + 26 + (i / (vals.length - 1)) * (pw - 52);
+    const neg = v < 0;
+    const isMaxRaw = v === t.ae_ppt;
+    const isMaxAbs = Math.abs(v) === t.ae_abs;
+    const c = isMaxAbs ? WARM : (isMaxRaw ? BLUE : (neg ? '#c9a9a0' : '#9fc4dd'));
+    s += L(cx, pn.sy(0), cx, pn.sy(v), { c, w: isMaxAbs || isMaxRaw ? 3.2 : 2 });
+    s += O(cx, pn.sy(v), isMaxAbs || isMaxRaw ? 5 : 3.4, { fill: c });
+    s += T(cx, pn.sy(v) + (neg ? 17 : -10), String(v),
+      { size: tiny(M), weight: isMaxAbs || isMaxRaw ? 700 : 400, fill: c, anchor: 'middle' });
+  });
+  y += ph + 22;
+
+  // 两个结果并排
+  const cw = w ? (pw - 16) / 2 : pw;
+  const cards = [
+    { t1: '照公式直接取最大', v: t.ae_ppt, c: BLUE,
+      note: '漏掉 −0.9，它在负方向上离中线更远' },
+    { t1: '先取绝对值再取最大', v: t.ae_abs, c: WARM,
+      note: '离中线的距离才是这一帧真正的峰' },
+  ];
+  cards.forEach((c, i) => {
+    const bx = w ? px + i * (cw + 16) : px;
+    const by = w ? y : y + i * 74;
+    s += R(bx, by, cw, 66, { fill: PLATE, stroke: c.c, sw: 1.6, r: 9 });
+    s += T(bx + 12, by + 24, c.t1, { size: M.small, weight: 700, fill: c.c });
+    s += T(bx + cw - 12, by + 27, c.v.toFixed(1),
+      { size: 22, weight: 700, fill: c.c, anchor: 'end' });
+    s += T(bx + 12, by + 48, c.note, { size: tiny(M), fill: MUTED });
+  });
+  y += (w ? 66 : 74 * 2 - 8) + 22;
+
+  s += MT(px, y, w
+    ? [`两个答案差 ${(t.ae_abs - t.ae_ppt).toFixed(1)}，占真正峰高的 ${((1 - t.ae_ppt / t.ae_abs) * 100).toFixed(0)}%——而且程序不会报错。`,
+      'PPT 写的是「max amplitude value」，而「振幅」本来就指离零有多远，不带符号。',
+      '所以公式的意思没错，只是写成代码时必须补上 abs，否则一帧里最深的谷永远看不见。']
+    : [`两个答案差 ${(t.ae_abs - t.ae_ppt).toFixed(1)}，占真正峰高的 ${((1 - t.ae_ppt / t.ae_abs) * 100).toFixed(0)}%，`,
+      '而且程序不会报错。PPT 写的是「max amplitude',
+      'value」，振幅本来就指离零多远、不带符号；',
+      '写成代码时必须补 abs，否则最深的谷看不见。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '振幅包络公式逐项拆解，以及取不取绝对值的差别');
 };
 
 // ================================================================
