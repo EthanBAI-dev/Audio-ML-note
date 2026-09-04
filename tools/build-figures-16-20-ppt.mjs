@@ -27,6 +27,7 @@ const tiny = (M) => (wide(M) ? 12.5 : 14);
 
 const d16 = D('16');
 const d17 = D('17');
+const d18 = D('18');
 const FIG = {};
 
 /** 一块声谱图：外框、标题、纵轴刻度、横轴刻度，中间放渲染好的 PNG。
@@ -539,6 +540,262 @@ FIG['17-apply'] = async (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '滤波器组乘上声谱图，1025 行压成 10 个梅尔带，列数不变');
+};
+
+// ================================================================ 18
+
+// 源 Notebook 打印完 shape 就过去了。这张图是这一课真正的正题：
+// 形状一样、数字全不一样，三个默认值逐个改过来的过程。
+FIG['18-alignment'] = (M) => {
+  const head = ['形状一样，数字全不一样：', '三个默认值逐个改过来'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 18;
+
+  // 第二列不能从 0.30 起步：左边那行小字最长有二十几个汉字，会顶到顶点那一列上
+  const cols = w
+    ? [0.44, 0.72, 0.78, 1.0]
+    : [0.42, 1.0];
+  const rh = w ? 40 : 62;
+  s += R(px, y, pw, 24, { fill: PLATE, stroke: GRID, r: 6 });
+  if (w) {
+    s += T(px + 10, y + 17, '这一步', { size: tiny(M), weight: 700, fill: MUTED });
+    s += T(px + pw * cols[0], y + 17, '三角形顶点落在第几格', { size: tiny(M), weight: 700, fill: MUTED });
+    s += T(px + pw * cols[1], y + 17, '最高权重', { size: tiny(M), weight: 700, fill: MUTED });
+    s += T(px + pw - 10, y + 17, '和手写那版的最大差',
+      { size: tiny(M), weight: 700, fill: MUTED, anchor: 'end' });
+  } else {
+    s += T(px + 10, y + 17, '这一步', { size: tiny(M), weight: 700, fill: MUTED });
+    s += T(px + pw - 10, y + 17, '顶点 / 最高权重 / 最大差',
+      { size: tiny(M), weight: 700, fill: MUTED, anchor: 'end' });
+  }
+  y += 28;
+
+  d18.stages.forEach((st, i) => {
+    const hit = st.same_peaks;
+    const c = st.baseline ? BLUE : (hit ? GREEN : WARM);
+    s += R(px, y, pw, rh, {
+      fill: hit ? '#eef7f1' : PLATE, stroke: hit ? GREEN : GRID,
+      sw: hit ? 1.4 : 1, r: 6,
+    });
+    const peaks = st.peak_bins.slice(0, 5).join('、') + ' …';
+    s += T(px + 10, y + (w ? 17 : 19), st.name, { size: tiny(M), weight: 700, fill: c });
+    s += T(px + 10, y + (w ? 33 : 37), st.note, { size: tiny(M), fill: MUTED });
+    if (w) {
+      s += T(px + pw * cols[0], y + 25, peaks, { size: tiny(M), fill: INK });
+      s += T(px + pw * cols[1], y + 25, st.peak_value.toFixed(4), { size: tiny(M), fill: INK });
+      s += T(px + pw - 10, y + 25, st.baseline ? '—' : st.max_diff.toFixed(4),
+        { size: tiny(M), weight: 700, fill: c, anchor: 'end' });
+    } else {
+      s += T(px + pw - 10, y + 19, peaks, { size: tiny(M), fill: INK, anchor: 'end' });
+      s += T(px + pw - 10, y + 37,
+        st.peak_value.toFixed(4) + '　差 ' + (st.baseline ? '—' : st.max_diff.toFixed(4)),
+        { size: tiny(M), weight: 700, fill: c, anchor: 'end' });
+    }
+    y += rh + 5;
+  });
+  y += 10;
+
+  // 两条梅尔公式：差的不是精度，是刻度本身
+  s += T(px, y, '为什么顶点会错位：两条梅尔公式根本不是一条', {
+    size: M.small, weight: 700, fill: GOLD,
+  });
+  y += 12;
+  const mh = w ? 26 : 26;
+  s += R(px, y, pw, 22, { fill: PLATE, stroke: GRID, r: 5 });
+  s += T(px + 10, y + 16, '频率', { size: tiny(M), weight: 700, fill: MUTED });
+  s += T(px + pw * (w ? 0.46 : 0.52), y + 16, 'HTK（第 17 课那条）',
+    { size: tiny(M), weight: 700, fill: GREEN, anchor: 'end' });
+  s += T(px + pw - 10, y + 16, 'Slaney（库的默认）',
+    { size: tiny(M), weight: 700, fill: WARM, anchor: 'end' });
+  y += 26;
+  d18.mel_formula.forEach((r) => {
+    s += T(px + 10, y + 15, r.hz.toFixed(0) + ' Hz', { size: tiny(M), fill: INK });
+    s += T(px + pw * (w ? 0.46 : 0.52), y + 15, r.htk.toFixed(2) + ' Mel',
+      { size: tiny(M), weight: 700, fill: GREEN, anchor: 'end' });
+    s += T(px + pw - 10, y + 15, r.slaney.toFixed(2) + ' Mel',
+      { size: tiny(M), weight: 700, fill: WARM, anchor: 'end' });
+    s += L(px, y + 21, px + pw, y + 21, { c: GRID, w: 0.8 });
+    y += mh;
+  });
+  y += 8;
+
+  s += MT(px, y, w
+    ? ['三处都改过来之后，顶点位置完全一致，最大差只剩 '
+      + d18.stages[d18.stages.length - 1].max_diff.toFixed(4) + '。',
+      '这点残差来自第 17 课的第 ④ 步：那里把三角形的三个角四舍五入到了最近的频率格，',
+      '库则直接拿精确频率去算每一格的权重。']
+    : ['三处都改过来之后顶点完全一致，最大差只剩 '
+      + d18.stages[d18.stages.length - 1].max_diff.toFixed(4) + '。',
+      '这点残差来自第 17 课的第 ④ 步：那里把三角形的',
+      '角四舍五入到了最近的频率格，库用的是精确频率。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 3) * 21 + 8;
+  return doc(M.W, y, s, '手写滤波器组与库的结果逐步对齐，三个默认值各差在哪里');
+};
+
+// 三张三角形图叠着看：手写的、库默认的、对齐之后的。
+FIG['18-bank-compare'] = (M) => {
+  const head = ['同一个函数，', '三种参数画出三组不同的三角形'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 18;
+
+  const panels = [
+    ['手写那版（第 17 课的五步）', 'mine', BLUE],
+    ['库的默认值', 'default', WARM],
+    ['fmax=8000, norm=None, htk=True', 'aligned', GREEN],
+  ];
+  const ph = w ? 104 : 96;
+  panels.forEach(([title, key, color]) => {
+    const rows = d18.curves[key];
+    let mx = 0;
+    rows.forEach((r) => r.forEach((v) => { if (v > mx) mx = v; }));
+    const p = panel(px + 44, y + 16, pw - 54, ph, {
+      xr: [0, d18.fmax], yr: [0, mx * 1.14], fill: '#fff', stroke: GRID,
+    });
+    s += T(px, y + 10, title, { size: tiny(M), weight: 700, fill: color });
+    s += p.s;
+    rows.forEach((row, i) => {
+      const pts = row.map((v, k) => [p.sx(Math.min(k * d18.bin_hz, d18.fmax)), p.sy(v)]);
+      s += P(pts, { c: i % 2 ? color : INK, w: 1.3 });
+    });
+    s += T(p.x - 7, p.sy(mx) + 4, mx < 0.01 ? mx.toFixed(4) : mx.toFixed(2),
+      { size: tiny(M), fill: MUTED, anchor: 'end' });
+    s += T(p.x - 7, p.y + p.h + 4, '0', { size: tiny(M), fill: MUTED, anchor: 'end' });
+    y += ph + 16 + 24;
+  });
+  [0, 2000, 4000, 8000].forEach((f, i) => {
+    const p0x = px + 44;
+    const p0w = pw - 54;
+    const qx = p0x + (f / d18.fmax) * p0w;
+    s += T(qx, y - 12, i === 3 ? f + ' Hz' : String(f),
+      { size: tiny(M), fill: MUTED, anchor: i === 3 ? 'end' : (i === 0 ? 'start' : 'middle') });
+  });
+  y += 8;
+
+  s += MT(px, y, w
+    ? ['三张图的纵轴各按自己的最高值缩放过，否则中间那张压根看不见——'
+      + '库默认把每个三角形缩成等面积，最高权重只有 '
+      + d18.stages[1].peak_value.toFixed(4) + '。',
+      '看横向位置：上下两张的三角形对齐，中间那张整体偏右。那就是两条梅尔公式的差别。']
+    : ['三张纵轴各按自己的最高值缩放，否则中间那张',
+      '看不见——库默认把三角形缩成等面积，最高权重',
+      '只有 ' + d18.stages[1].peak_value.toFixed(4) + '。看横向：上下两张对齐，',
+      '中间那张整体偏右，那就是两条公式的差别。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 4) * 21 + 8;
+  return doc(M.W, y, s, '手写、库默认、对齐三种参数下的梅尔三角滤波器组对比');
+};
+
+// melspectrogram 不是黑盒：它就是三步串起来。
+FIG['18-black-box'] = (M) => {
+  const head = ['melspectrogram 不是黑盒，', '它就是三步串起来'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const bb = d18.blackbox;
+  const steps = [
+    ['① stft', '复数矩阵', '第 16 课', BLUE],
+    ['② abs() ** 2', bb.power_shape[0] + ' × ' + bb.power_shape[1], '功率矩阵', BLUE],
+    ['③ 滤波器组 @ 它', bb.mel_shape[0] + ' × ' + bb.mel_shape[1], '梅尔声谱图', GREEN],
+  ];
+  const ch = 80;
+  const cw = w ? (pw - 2 * 28) / 3 : pw;
+  steps.forEach((c, i) => {
+    const bx = w ? px + i * (cw + 28) : px;
+    const by = w ? y : y + i * (ch + 24);
+    s += R(bx, by, cw, ch, { fill: PLATE, stroke: c[3], sw: 1.5, r: 9 });
+    s += T(bx + 12, by + 24, c[0], { size: tiny(M), weight: 700, fill: c[3] });
+    s += T(bx + 12, by + 50, c[1], { size: w ? 18 : 17, weight: 700, fill: INK });
+    s += T(bx + 12, by + 70, c[2], { size: tiny(M), fill: MUTED });
+    if (i < 2) {
+      s += w
+        ? ARROW(bx + cw + 6, by + ch / 2, bx + cw + 24, by + ch / 2)
+        : ARROW(bx + cw / 2, by + ch + 4, bx + cw / 2, by + ch + 21);
+    }
+  });
+  y += (w ? ch + 26 : 3 * (ch + 24) - 2);
+
+  const bh = w ? 62 : 82;
+  s += R(px, y, pw, bh, { fill: '#eef7f1', stroke: GREEN, sw: 1.5, r: 10 });
+  s += T(px + 14, y + 24, '自己走这三步，和一行调用的结果对比', {
+    size: tiny(M), weight: 700, fill: GREEN,
+  });
+  s += T(px + 14, y + (w ? 48 : 50), '最大差 ' + bb.max_diff.toExponential(0), {
+    size: 18, weight: 700, fill: GREEN,
+  });
+  s += T(px + pw - 14, y + (w ? 48 : 50), w ? '一个数都不差' : '一个数都不差', {
+    size: tiny(M), fill: MUTED, anchor: 'end',
+  });
+  y += bh + 14;
+
+  s += MT(px, y, w
+    ? ['所以那个函数同时要 STFT 的参数（n_fft、hop_length）和梅尔的参数（n_mels）——',
+      '它内部要做的正是这三步，缺一样都算不下去。',
+      '知道这一点的好处：出了问题能自己拆开一步步查，而不是换个参数碰运气。']
+    : ['所以那个函数同时要 STFT 的参数（n_fft、',
+      'hop_length）和梅尔的参数（n_mels）：它内部',
+      '做的正是这三步。出了问题能自己拆开查，',
+      '不用换个参数碰运气。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, 'melspectrogram 等于 stft、取模平方、乘滤波器组这三步');
+};
+
+// 带数改一改：10 个带是粗台阶，90 个带能看见泛音。
+FIG['18-bands-10-90'] = async (M) => {
+  const head = ['十个带看得出音在往上走，', '九十个带才看得见泛音'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 18;
+
+  const hh = w ? 150 : 140;
+  for (const b of d18.bands) {
+    const plot = d18.band_plots[String(b.n_mels)];
+    const ticks = b.n_mels === 10 ? [0, 4, 9] : [0, 44, 89];
+    s += await heat(px, y, pw, hh, plot, {
+      title: 'n_mels = ' + b.n_mels + '　矩阵 ' + b.shape[0] + ' × ' + b.shape[1]
+        + '　是功率矩阵的 1/' + b.vs_power.toFixed(1),
+      tfill: b.n_mels === 10 ? WARM : GREEN,
+      fmin: 0, fmax: b.n_mels - 1, left: w ? 52 : 56,
+      ticks, tickLabel: (v) => (v + 1) + ' 带',
+      dbFloor: -70, timeMarks: [0, plot.duration / 2, plot.duration],
+    }, M);
+    y += hh + 14;
+  }
+  y += 4;
+  s += colorbar(px + 26, y, w ? 140 : 120, 12, 'magma',
+    { lo: '弱', hi: '强', size: tiny(M) });
+  y += 34;
+
+  s += MT(px, y, w
+    ? ['上面那张只有十条带，音阶变成十级粗台阶——看得出音在往上走，别的看不出来。',
+      '下面那张把同一段声音分成九十条带，主音上方那几条平行的亮线就露出来了，',
+      '那是第 03 课讲过的泛音。代价是数据量从 1/'
+      + d18.bands[0].vs_power.toFixed(1) + ' 变成 1/'
+      + d18.bands[1].vs_power.toFixed(1) + '。']
+    : ['上面十条带，音阶变成十级粗台阶；下面九十条',
+      '带，主音上方那几条平行亮线露出来了，那是',
+      '第 03 课讲过的泛音。代价是数据量从 1/'
+      + d18.bands[0].vs_power.toFixed(1) + ' 变成',
+      '1/' + d18.bands[1].vs_power.toFixed(1) + '。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '十个梅尔带与九十个梅尔带画出来的同一段音阶对比');
 };
 
 // ================================================================

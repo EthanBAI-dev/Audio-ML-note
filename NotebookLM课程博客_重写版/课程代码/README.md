@@ -71,6 +71,7 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `lesson15_stft.py` | 15 | 移动短窗怎样找回时间，矩阵形状 501 × 19 从哪来 |
 | `lesson16_spectrogram.py` | 16 | 同一批数换上色方式和纵轴刻法，能多看见多少 |
 | `lesson17_mel_scale.py` | 17 | 按听感刻的尺子长什么样，十个三角形怎样把 1025 行压成 10 行 |
+| `lesson18_mel_spectrogram.py` | 18 | 库造的滤波器组和手写的差在哪三个默认值上 |
 
 ## 输出怎么读
 
