@@ -1,4 +1,4 @@
-# PPT 脉络与内容归属表（01—10）
+# PPT 脉络与内容归属表（01—15）
 
 > 版本：2026-09-03。本文是 01—10 重写的结构依据。先按源 PPT / notebook 确定“这一课为什么接在上一课后面”，再决定博客怎样讲得更容易懂。教程模板只能改善表达，不能改写课程顺序。
 
@@ -10,7 +10,7 @@
 4. **实验沿着源材料走。** 概念课使用最小验证；实现课按 notebook 的读取、计算、画图、比较顺序展开。仓库脚本可以更全面，但正文先完成源实验。
 5. **图跟着推理出现。** 时间和频率都是连续轴，使用曲线、波形或谱线，不用柱状图；柱状图只用于离散类别比较。
 
-## 01—10 的课程主线
+## 01—15 的课程主线
 
 | 课 | 必须读取的源文件 | 源材料的讲解顺序 | 当前草稿的主要偏差 | 重写后的实验与代码 |
 | --- | --- | --- | --- | --- |
@@ -24,6 +24,11 @@
 | 08 实现振幅包络 | `source_course/08 - Implementing the amplitude envelope/Implementing the amplitude envelope.ipynb` | 载入三段音乐 → 看文件基本信息 → 画三条时域波形 → 手写 AE → 计算三段音乐 → 把帧编号换成时间 → 波形与包络叠加比较 | **已修复：**已按 notebook 单元顺序重写并改名 `08-实现振幅包络-…`。主线在前，工程扩展在后。实测纠正两处原稿错误（见提交 b3774c7） | `lesson08_amplitude_envelope.py` 先严格复现 notebook 主线；绝对值、尾帧、居中和速度比较放“脚本额外”或短工程说明 |
 | 09 实现 RMS 与 ZCR | `source_course/09 - RMS energy and zero-crossing rate/RMS Energy and Zero-Crossing Rate.ipynb` | 载入三段音乐 → 用 librosa 算 RMS → 与波形同图 → 从零实现 RMS 并对齐 → 用 librosa 算 ZCR → 三段音乐对比 → 语音与噪声对比 | **已修复：**已按 notebook 顺序重写并改名 `09-实现RMS与过零率-…`。补上原来完全没有的「手写与 librosa 对齐」，ZCR 比值实测 1.000978 = 1024/1023 | `lesson09_rms_zcr.py` 先按 notebook 顺序完成库函数、手写对齐、三种音乐、voice / noise；直流偏置、阈值与特征表放脚本扩展和项目出口 |
 | 10 傅里叶变换直觉 | `source_course/10 - Fourier Transform The Intuition/Demystifying the Fourier Transform The Intuition.pdf`；`Fourier Transform.ipynb` | 把复杂声音拆成频率成分 → 从时间域到频率域 → 用不同频率的正弦去比较，每个频率得到强度和相位 → 选频率、调相位、量强度 → 重建、逆变换、加法合成 | 当前从“乘法不抵消”切入，局部解释清楚但源课的总目标、相位优化和重建路线不够突出；合成 440 / 880 取代了 notebook 的钢琴 C 主线 | `lesson10_fourier_intuition.py` 用简单双正弦建立直觉后，回到 `piano_c.wav` 复现 notebook；实验必须走完“试探→相位→强度→重建”而不是只找两个峰 |
+| 11 复数 | `source_course/11 - Complex numbers.../Complex numbers for audio signal processing.pdf` | 为什么需要复数（傅里叶给的是强度＋相位，而强度是一个实数）→ 复数的来历 → 第一个复数、实部与虚部 → 画在平面上（直角坐标）→ 极坐标表示：模与角 → 欧拉公式 → 欧拉恒等式 → 极坐标 2.0 → 角度的几何含义（π/4、π、−π/2 各指哪儿） | 尚未按 PPT 重写 | `lesson11_complex.py`（待建）：用第 10 课那对正弦／余弦读数当实部虚部，画到复平面上，验证「模＝强度、角＝起点」，并核对欧拉公式两边相等 |
+| 12 复数形式的傅里叶 | `source_course/12 - Defining the Fourier transform.../Defining the Fourier transform using complex numbers.pdf` | 回顾 → 直觉：把强度和相位当极坐标，编码进一个复数 → 复数傅里叶系数 → 连续信号的傅里叶变换 → 幅度谱 → 幅度与相位 → 逆变换 → 傅里叶表示：纯音加权、加相位、全部叠加 → 一次完整往返 | 尚未按 PPT 重写 | `lesson12_complex_ft.py`（待建）：把第 10 课的两支试探波合成一个复数系数，验证 |c| 和第 10 课的强度一致、arg(c) 和相位一致；再做一次完整往返，量重建误差 |
+| 13 离散傅里叶变换 | `source_course/13 - Discrete Fourier Transform/Discrete Fourier Transform.pdf` | 数字化 → 数字信号 → 构造 DFT → 视觉解释 → **Hack 1 时间**：只在有限区间取值 x(0)…x(N−1) → **Hack 2 频率**：只算有限个频率，且 M = N（可逆、算得快）→ DFT 的冗余与奈奎斯特 → 从 DFT 到 FFT（N² 降到 N log₂N，靠正弦之间的冗余，N 是 2 的幂时最快） | 尚未按 PPT 重写 | `lesson13_dft.py`（待建）：手写 N=8 的 DFT 并和 np.fft.fft 对齐；量出 M=N 时可逆；验证后一半是前一半的镜像；实测 DFT 与 FFT 的耗时比 |
+| 14 用 Python 取频谱 | `source_course/14 - Extracting the Discrete Fourier Transform/Visualising the Power Spectrum.ipynb` | 载入 violin_c4 / piano_c5 / sax / noise → `np.fft.fft` → 取绝对值得幅度 → 画幅度谱，用 `f_ratio` 只看低频那一段 → 四种声音的谱对比 | 尚未按 PPT 重写 | `lesson14_fft_spectrum.py`（待建）：严格复现 notebook 四段素材的谱；频率轴、单边谱、幅度归一化三件事作为工程说明补在主线之后 |
+| 15 短时傅里叶变换 | `source_course/15 - Short-Time Fourier Transform.../Short-Time Fourier Transform explained easily.pdf` | 傅里叶变换的问题（时间没了）→ STFT 直觉 → 加窗 → STFT → 重叠帧 → 从 DFT 到 STFT → 输出：DFT 给一个向量，STFT 给一个矩阵（频率格数 × 帧数）→ 例子：10K 样本、帧长 1000、帧移 500 → 501 × 19 → 参数：帧长 → **时间与频率的取舍** → Hann 窗 → 可视化 → 声谱图 | 尚未按 PPT 重写 | `lesson15_stft.py`（待建）：先手算 501×19 再和 librosa.stft 对形状；扫帧长，量出「帧长越大频率越细、时间越糊」这条取舍的具体数字 |
 
 ## 跨课归属与允许的预告
 
@@ -41,6 +46,11 @@
 | 傅里叶变换的整体直觉、幅度、相位和可逆性 | 10 | 03 可以展示音色的连续谱线，但只说“稍后解释怎么算”；01 不提前讲频谱 / 声谱图 |
 | 复数形式的傅里叶变换 | 11—12 | 10 只建立正弦试探直觉，不提前完整讲复数公式 |
 | 声谱图的提取和轴 | 15—16 | 01 不讲；03 若展示仅作为音色观察图，不讲生成流程 |
+| 复数、模与相位、欧拉公式 | 11 | 10 只说「要两支试探波」，不提复数；12 起直接使用 |
+| 复数形式的傅里叶变换与可逆性 | 12 | 10 只做实数版的试探和重建；13 起当作已知 |
+| DFT 的两个 Hack、冗余、FFT | 13 | 14 只调用 np.fft.fft，不重讲原理 |
+| 用 np.fft 取谱、频率轴、单边谱 | 14 | 13 不写代码；16 起直接用 |
+| STFT、声谱图的形状与参数取舍 | 15 | 06 只讲分帧和加窗，不提 STFT；16 讲怎么把它画对 |
 
 ## 文件级执行顺序
 
