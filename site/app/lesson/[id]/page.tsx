@@ -2,8 +2,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { allLessons, lessonById, rawBody } from '../../../lib/lessons';
 import { renderLesson } from '../../../lib/markdown';
+import { extractToc } from '../../../lib/toc';
 import { WIDGETS } from '../../../content/widgets';
 import Article from '../../../components/Article';
+import Toc from '../../../components/Toc';
+import LayoutSwitcher from '../../../components/LayoutSwitcher';
 import { Masthead } from '../../layout';
 
 export function generateStaticParams() {
@@ -21,13 +24,15 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const l = lessonById(id);
   if (!l) notFound();
   const html = await renderLesson(rawBody(l), l, WIDGETS[l.id] ?? []);
+  const toc = extractToc(html);
   const all = allLessons();
   const i = all.findIndex((x) => x.id === l.id);
   const prev = all[i - 1], next = all[i + 1];
   return (
     <>
       <Masthead eyebrow={<>第 {l.id} 讲 / 共 23 讲</>} title={l.title} lead={l.lead} />
-      <div className="shell wide">
+      <div className="shell">
+        <Toc items={toc} />
         <main>
           <article>
             <Article html={html} />
@@ -38,6 +43,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           </article>
         </main>
       </div>
+      <LayoutSwitcher />
     </>
   );
 }
