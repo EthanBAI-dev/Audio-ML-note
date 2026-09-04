@@ -4,7 +4,6 @@ import { allLessons, lessonById, rawBody } from '../../../lib/lessons';
 import { renderLesson } from '../../../lib/markdown';
 import { WIDGETS } from '../../../content/widgets';
 import Article from '../../../components/Article';
-import SideNav from '../../../components/SideNav';
 import { Masthead } from '../../layout';
 
 export function generateStaticParams() {
@@ -28,8 +27,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   return (
     <>
       <Masthead eyebrow={<>第 {l.id} 讲 / 共 23 讲</>} title={l.title} lead={l.lead} />
-      <div className="shell">
-        <SideNav items={all.map((x) => ({ id: x.id, title: x.title }))} />
+      <div className="shell wide">
         <main>
           <article>
             <Article html={html} />

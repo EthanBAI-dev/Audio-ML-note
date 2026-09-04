@@ -63,5 +63,7 @@ export async function renderLesson(
     .use(rehypeKatex, { output: 'html' })
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(md);
-  return String(file);
+  // 宽表格要能横向滚动，滚动容器本身就是破栏的那一层
+  return String(file).replace(/<table>/g, '<div class="table-wrap"><table>')
+    .replace(/<\/table>/g, '</table></div>');
 }
