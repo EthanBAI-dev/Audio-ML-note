@@ -1,8 +1,8 @@
 # 第 18 课任务卡：用 Python 提取梅尔声谱图
 
 - 源文件与范围：
-  - 主线：`source_course/18 - Extracting Mel Spectrograms with Python/Extracting Mel Spectrograms.ipynb`，cell 1—15。这一课**只有 Notebook，没有 PDF**。
-  - 补充：`notebooklm博客/ダウンロード (16).md`。**注意编号对不上**——那一篇讲的正是第 18 课的内容。
+  - 主线：`source_course/18 - Extracting Mel Spectrograms with Python/Extracting Mel Spectrograms.ipynb`，cell 1—15。主线只有可执行的 Jupyter Notebook（`.ipynb`），没有配套 PDF。
+  - NotebookLM 补充博客稿：`notebooklm博客/ダウンロード (16).md`。这是 Markdown 参考稿，不是 `.ipynb`。**注意编号对不上**——那一篇讲的正是第 18 课的内容。
 - 上一课交进来：读者已经按五步手写过一遍梅尔滤波器组，知道形状是 (带数, 帧长/2+1)，也知道乘上功率矩阵就能把频率轴换掉。第 17 课结尾明确留了话：下一课把同样的事交给库，然后把两边摆在一起对齐。
 - 读者问题：现成的库一行就能做完，那手写那一遍还有什么用？
 - 一句话结果：形状一模一样，数字一个都对不上；顺着差异追下去挖出三个默认值（`fmax`、`norm`、`htk`），改完最大差从 0.9999 降到 0.0147，剩下的残差正是手写时那一步四舍五入。

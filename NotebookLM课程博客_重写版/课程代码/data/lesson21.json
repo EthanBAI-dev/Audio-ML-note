@@ -1,0 +1,71 @@
+{
+ "frequencies": [
+  0.0,
+  500.0,
+  1000.0,
+  1500.0,
+  2000.0,
+  2500.0,
+  3000.0
+ ],
+ "split_hz": 1200.0,
+ "rows": [
+  {
+   "name": "窄而居中",
+   "magnitude": [
+    0.0,
+    1.0,
+    4.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "split_bin": 3,
+   "low_power": 17.0,
+   "high_power": 1.0,
+   "ber": 17.0,
+   "centroid": 1000.0,
+   "bandwidth_p1": 166.667,
+   "bandwidth_p2": 288.675
+  },
+  {
+   "name": "宽而居中",
+   "magnitude": [
+    0.0,
+    2.0,
+    0.0,
+    2.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "split_bin": 3,
+   "low_power": 4.0,
+   "high_power": 4.0,
+   "ber": 1.0,
+   "centroid": 1000.0,
+   "bandwidth_p1": 500.0,
+   "bandwidth_p2": 500.0
+  },
+  {
+   "name": "同宽但右移",
+   "magnitude": [
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    0.0,
+    2.0,
+    0.0
+   ],
+   "split_bin": 3,
+   "low_power": 0.0,
+   "high_power": 8.0,
+   "ber": 0.0,
+   "centroid": 2000.0,
+   "bandwidth_p1": 500.0,
+   "bandwidth_p2": 500.0
+  }
+ ]
+}

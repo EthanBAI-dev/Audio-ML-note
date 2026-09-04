@@ -44,10 +44,11 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `framing.py` | 分帧、加窗、帧数与尾巴、帧的时间轴 | 06、08 |
 | `time_features.py` | 振幅包络、均方根、过零率、聚合 | 07、08、09 |
 | `probe.py` | 用已知频率去试探：读数、强度、相位、扫频 | 10 |
-| `spectral.py` | 单边 FFT、Hz 频率轴、相对 dB、频谱数据池化 | 14 |
+| `spectral.py` | 单边 FFT、Hz 频率轴、STFT、功率声谱图、频谱数据池化 | 14、15 |
+| `frequency_features.py` | BER、分界格、频谱质心、$p=1/2$ 频谱带宽 | 21—23 |
 | `figdata.py` | 把脚本实测数据写成配图读取的 JSON | 贯穿各课 |
 
-第 15 课会继续给 `spectral.py` 加 STFT。第 17—20 课的梅尔与倒谱部分目前直接写在各自的课程脚本里，等 21—23 写完再一起收进 `mel.py`。
+第 17—20 课的梅尔与倒谱部分直接写在各自的课程脚本里；第 21—23 课共用的频谱统计已经收进 `frequency_features.py`。
 
 ### `lessons/` 现在有什么
 
@@ -74,6 +75,9 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `lesson18_mel_spectrogram.py` | 18 | 库造的滤波器组和手写的差在哪三个默认值上 |
 | `lesson19_cepstrum.py` | 19 | 相乘的两样东西，能不能按变化快慢分到一根轴的两端 |
 | `lesson20_mfcc.py` | 20 | 一行 `librosa.feature.mfcc` 等于哪四步，delta 沿哪个轴 |
+| `lesson21_freq_features.py` | 21 | 三个频域统计量分别回答什么，质心与带宽能否独立变化 |
+| `lesson22_band_energy_ratio.py` | 22 | 2000 Hz 应切在第几格，矩阵轴写错会让 BER 偏多少 |
+| `lesson23_centroid_bandwidth.py` | 23 | 手写质心和两种带宽能否与库函数逐帧对齐 |
 
 ## 输出怎么读
 

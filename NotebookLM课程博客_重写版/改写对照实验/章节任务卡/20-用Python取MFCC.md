@@ -1,9 +1,9 @@
 # 第 20 课任务卡：用 Python 取 MFCC
 
 - 源文件与范围：
-  - 主线：`source_course/20 - Extracting MFCCs with Python/Extracting MFCCs.ipynb`，18 个单元格。**这一课只有 Notebook，没有 PDF。**
+  - 主线：`source_course/20 - Extracting MFCCs with Python/Extracting MFCCs.ipynb`，18 个单元格。主线只有可执行的 Jupyter Notebook（`.ipynb`），没有配套 PDF。
   - 逐格原文：`NotebookLM课程博客_重写版/PPT内容/20-Extracting-MFCCs-with-Python.md`
-  - 补充：`notebooklm博客/ダウンロード (15).md`。**编号对不上，是按内容认出来的**（开头是「揭秘声音的『指纹』：如何利用 Python 提取 MFCC 特征」）。它补上三件 Notebook 里没写的：`librosa.load` 默认重采样到 22050；一阶差分叫「速度」、二阶叫「加速度」；39 维矩阵是喂给 CNN / RNN 的输入形态。
+  - NotebookLM 补充博客稿：`notebooklm博客/ダウンロード (15).md`。这是 Markdown 参考稿，不是 `.ipynb`。**编号对不上，是按内容认出来的**（开头是「揭秘声音的『指纹』：如何利用 Python 提取 MFCC 特征」）。它补上三件 `.ipynb` 里没写的：`librosa.load` 默认重采样到 22050；一阶差分叫「速度」、二阶叫「加速度」；39 维矩阵是喂给 CNN / RNN 的输入形态。
 - 上一课交进来：读者已经手写过整条链——取对数、再变换一次、提升、DCT 去相关，并且知道前 13 个系数装下原谱 98.2% 的变化。第 19 课结尾留的话是：「下一课把这一步交给库……然后照例，把它和这一课手写的这套摆在一起对齐。」
 - 读者问题：原理都手写验证过了，那一行 `librosa.feature.mfcc` 到底替我做了哪几步？它和我自己走三步的结果一样吗？
 - 一句话结果：一行 `librosa.feature.mfcc(y, sr, n_mfcc=13)` 等于「梅尔谱 → `power_to_db` → DCT-II 正交 → 取前 13 行」，逐位对齐要先改对 `n_mels`；`librosa.feature.delta` 不是相邻两帧相减，而是沿**时间轴**的九帧回归，改一帧会牵动九列；13 + 13 + 13 拼成每帧 39 行。
@@ -38,7 +38,7 @@
   - `20-delta-along-time.svg`：扰动一帧之后，MFCC 只变一列、delta 变九列——两张对照，把「沿时间轴」画出来。
   - `20-three-genres.svg`：三种风格前 13 个系数的均值曲线，带正负一个标准差的带子；**用曲线和数据点，不用柱状图**。
 - 现有材料处理：`零基础版_16-20/` 里的旧图不覆盖、不改名。
-- 下一课链接：写完后把第 19 课结尾那句「下一课把这一步交给库……」换成指向本文的实际链接；第 21 课创建前只写普通文字预告，不制造死链。
+- 下一课链接：**已完成。**第 19 课结尾已经链接到本文；第 21 课创建前，本文结尾只写普通文字预告，不制造死链。
 
 ## 零基础与术语自查
 

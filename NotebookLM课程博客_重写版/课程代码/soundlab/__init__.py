@@ -9,4 +9,5 @@
 Python 按名称载入对应子模块。
 """
 
-__all__ = ["config", "io", "framing", "time_features", "probe", "spectral", "figdata"]
+__all__ = ["config", "io", "framing", "time_features", "probe", "spectral",
+           "frequency_features", "figdata"]

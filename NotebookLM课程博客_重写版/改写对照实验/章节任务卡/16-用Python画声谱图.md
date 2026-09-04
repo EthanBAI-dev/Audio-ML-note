@@ -1,6 +1,6 @@
 # 第 16 课任务卡：用 Python 把 STFT 画成声谱图
 
-- 源文件与范围：`source_course/16 - Extracting Spectrograms from Audio with Python/Extracting Spectrograms from Audio with Python.ipynb`，cell 1—26。这一课只有 Notebook，没有另一份 PDF，不要去找不存在的课件。
+- 源文件与范围：`source_course/16 - Extracting Spectrograms from Audio with Python/Extracting Spectrograms from Audio with Python.ipynb`，cell 1—26。主线只有可执行的 Jupyter Notebook（`.ipynb`），没有配套 PDF；另有 NotebookLM 补充博客稿 `notebooklm博客/ダウンロード (18).md`。
 - 上一课交进来：读者已经知道 STFT 是「移动短窗、每个位置算一列」，知道输出是一张「频率格 × 时间帧」的复数矩阵，也知道 `|S|²` 叫功率矩阵。第 15 课明确留下三个待查项：库默认是否补边、画的是模还是功率、颜色和纵轴要不要换成对数。
 - 读者问题：手上已经有一张几十万格的复数矩阵，怎样把它画成一张真正看得懂的图？
 - 一句话结果：`librosa.stft` 一行拿到复数矩阵，`np.abs(S) ** 2` 换成功率，`power_to_db` 把倍数摊成加减，纵轴改成对数频率——四步做完，同一批数从一片全黑变成能读的声谱图。

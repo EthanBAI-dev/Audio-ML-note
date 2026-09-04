@@ -1,9 +1,9 @@
 # 第 19 课任务卡：MFCC 是什么
 
 - 源文件与范围：
-  - 主线：`source_course/19 - MFCCs Explained Easily/Mel-Frequency Cepstral Coefficients Explained Easily.pdf`，37 张有效幻灯片。**这一课只有 PDF，没有 Notebook。**
+  - 主线：`source_course/19 - MFCCs Explained Easily/Mel-Frequency Cepstral Coefficients Explained Easily.pdf`，37 张有效幻灯片。**这一课没有配套的可执行 Jupyter Notebook（`.ipynb`）。**
   - 逐页全文：`NotebookLM课程博客_重写版/PPT内容/19-MFCCs-Explained-Easily.md`
-  - 补充：`notebooklm博客/ダウンロード (13).md`。**编号对不上，是按内容认出来的**（开头就是「声音的倒影：深度解析 MFCC」）。它补上了 PDF 抽不出来的三件事：倒频率的单位是秒/毫秒不是赫兹；「取对数把乘法变加法」这一步叫**同态滤波**；梅尔之外还有 Bark、ERB 两把尺子。
+  - NotebookLM 补充博客稿：`notebooklm博客/ダウンロード (13).md`。这是 Markdown 参考稿，不是 `.ipynb`。**编号对不上，是按内容认出来的**（开头就是「声音的倒影：深度解析 MFCC」）。它补上了 PDF 抽不出来的三件事：倒频率的单位是秒/毫秒不是赫兹；「取对数把乘法变加法」这一步叫**同态滤波**；梅尔之外还有 Bark、ERB 两把尺子。
 - 上一课交进来：读者手上已经有一张「梅尔带 × 时间」的表格，也知道 `melspectrogram` 等于「stft → abs()\*\*2 → 滤波器组 @ 它」。第 18 课结尾留的话是：90 行仍然不算少，而且相邻带高度相关——一个音响起来，泛音会同时点亮好几条带。
 - 读者问题：都已经压到几十行了，为什么还要再变换一次？DCT 到底解决了什么梅尔谱解决不了的问题？
 - 一句话结果：一段声音是「谁在发声」和「发的什么音」两样东西相乘出来的；取对数把乘法变成加法，这两样就能被分到倒频率轴的两端，各自占 98% 以上；DCT 顺手把梅尔带之间 0.55 的平均相关性压到 0.10，前 13 个系数就解释掉原谱 98.2% 的变化。

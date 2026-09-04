@@ -7,7 +7,7 @@
 | | 说明 |
 |---|---|
 | [课程总纲](课程总纲/README.md) | 五个阶段各讲什么、学完能做什么。**建议从这里开始。** |
-| [课程项目：三首曲子，一个分类器](课程项目/README.md) | 贯穿 23 课的项目，每课末尾的「动手做」都是它的一步 |
+| [课程项目：三首曲子，一个分类器](课程项目/README.md) | 贯穿 23 课的项目，完整实验代码与参数检查集中放在项目目录 |
 
 ## 五组课程
 
@@ -38,7 +38,6 @@
 
 ```bash
 node tools/build-figures.mjs            # 01-05，其余分组见 build-figures-06-10.mjs 等
-node tools/apply-exercises.mjs          # 把「动手做」写进 23 篇文章
 node tools/build-figure-contact-sheets.mjs both all
 node ".claude/skills/audio-course-lesson/scripts/check-readability.mjs" <文章路径>
 node ".claude/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" <figures/mobile 目录>
