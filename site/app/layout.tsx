@@ -18,7 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* 先于首屏应用保存的主题，避免闪一下浅色再切深色 */}
         <script dangerouslySetInnerHTML={{ __html:
-          `try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}` }} />
+          `try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);
+             var l=localStorage.getItem('layout');if(l)document.documentElement.setAttribute('data-layout',l)}catch(e){}` }} />
       </head>
       <body>
         <SiteNav />
