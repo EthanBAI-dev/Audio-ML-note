@@ -20,8 +20,28 @@ export default function Home() {
           </p>
           <p className="hero-cta">
             <Link href="/lesson/01" className="btn">从第 01 讲开始</Link>
-            <Link href="/guide" className="btn ghost">先看课程总纲</Link>
           </p>
+        </section>
+
+        <section className="course-docs" aria-labelledby="course-docs-title">
+          <div className="course-docs-head">
+            <p className="eyebrow">开始之前</p>
+            <h2 id="course-docs-title">先看全貌，再进入 23 讲</h2>
+          </div>
+          <div className="course-docs-grid">
+            <Link href="/guide" className="course-doc">
+              <span className="course-doc-kicker">学习地图</span>
+              <strong>课程总纲</strong>
+              <span>了解课程边界、共同基础和四条特征路线。</span>
+              <i aria-hidden>阅读总纲 →</i>
+            </Link>
+            <Link href="/project" className="course-doc">
+              <span className="course-doc-kicker">实践路线</span>
+              <strong>三首曲子，一个分类器</strong>
+              <span>查看最终产物，以及 23 个实验怎样连成一个项目。</span>
+              <i aria-hidden>查看项目 →</i>
+            </Link>
+          </div>
         </section>
 
         {gs.map((g) => (

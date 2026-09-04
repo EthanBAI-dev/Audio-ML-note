@@ -5,8 +5,6 @@ import { useEffect, useState } from 'react';
 
 const LINKS = [
   { href: '/', label: '全部课程' },
-  { href: '/guide', label: '课程总纲' },
-  { href: '/project', label: '课程项目' },
 ];
 
 export default function SiteNav() {

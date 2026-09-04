@@ -18,9 +18,19 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);
+body{margin:0;background:var(--bg);color:var(--ink);position:relative;isolation:isolate;
   font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
   font-size:16.5px;line-height:1.9;-webkit-text-size-adjust:100%}
+/* 极轻的声学粒子层：只给空白背景一点流动感，不抢正文。 */
+body::before{content:"";position:fixed;inset:-80px;z-index:-1;pointer-events:none;
+  opacity:.34;background-image:
+    radial-gradient(circle at center,color-mix(in srgb,var(--accent) 32%,transparent) 0 1px,transparent 1.6px),
+    radial-gradient(circle at center,color-mix(in srgb,var(--muted) 20%,transparent) 0 1px,transparent 1.5px);
+  background-size:54px 54px,83px 83px;background-position:0 0,21px 31px;
+  mask-image:linear-gradient(to bottom,black,transparent 82%);
+  animation:particle-drift 34s linear infinite}
+@keyframes particle-drift{to{transform:translate3d(54px,27px,0)}}
+@media(prefers-reduced-motion:reduce){body::before{animation:none}}
 h1,h2,h3{font-family:"Noto Serif SC","Songti SC","SimSun",Georgia,serif;font-weight:600;text-wrap:balance}
 a{color:var(--accent)}
 
@@ -73,10 +83,11 @@ pre code{background:none;padding:0}
 .crumb{display:none}
 
 /* ---------- 首页 ---------- */
-.group{margin:0 0 34px}
-.group h2{font-size:18px;margin:0 0 6px;padding:0;border:0}
-.group .group-range{font-family:ui-monospace,Consolas,monospace;font-size:12px;
-  letter-spacing:.1em;color:var(--accent);margin-right:.6em}
+.group{margin:0 0 42px}
+.group h2{font-size:22px;margin:0 0 11px;padding:0 0 10px;border:0;
+  border-bottom:1px solid var(--line);line-height:1.45}
+.group .group-range{font-family:ui-monospace,Consolas,monospace;font-size:13px;
+  letter-spacing:.1em;color:var(--accent);margin-right:.75em;vertical-align:.12em}
 .lesson-list{list-style:none;padding:0;margin:0}
 .lesson-list a{display:flex;gap:12px;padding:12px 12px;border-radius:10px;
   text-decoration:none;color:inherit;align-items:baseline}
@@ -186,7 +197,7 @@ pre code{background:none;padding:0}
    1300 是为了让 880px 的配图能按原尺寸显示，不被缩掉细节。 */
 .shell{max-width:1300px;margin:0 auto;padding:34px 22px 90px;display:grid;gap:40px;
   grid-template-columns:232px minmax(0,1fr)}
-.shell.home{grid-template-columns:minmax(0,1fr)}
+.shell.home{max-width:1040px;grid-template-columns:minmax(0,1fr)}
 .toc{position:sticky;top:78px;align-self:start;max-height:calc(100vh - 98px);
   overflow-y:auto;padding:4px 0}
 
@@ -231,6 +242,28 @@ pre code{background:none;padding:0}
 .btn.ghost:hover{color:var(--ink);border-color:var(--accent);filter:none}
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);
   margin-left:8px;vertical-align:middle}
+
+.course-docs{margin:-4px 0 52px;padding:24px 26px 26px;border:1px solid var(--line);
+  border-radius:16px;background:color-mix(in srgb,var(--panel) 86%,transparent)}
+.course-docs-head{display:flex;align-items:baseline;gap:14px;margin-bottom:15px}
+.course-docs-head .eyebrow{margin:0;color:var(--accent);font-size:11px;letter-spacing:.15em;
+  font-family:ui-monospace,Consolas,monospace;white-space:nowrap}
+.course-docs-head h2{margin:0;font-size:19px;border:0;padding:0}
+.course-docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.course-doc{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:18px 20px;
+  border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);
+  text-decoration:none;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.course-doc:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--accent-soft)}
+.course-doc-kicker{grid-column:1/-1;color:var(--accent);font:11px/1.5 ui-monospace,Consolas,monospace;
+  letter-spacing:.1em;text-transform:uppercase}
+.course-doc strong{font-family:"Noto Serif SC","Songti SC",Georgia,serif;font-size:17px}
+.course-doc>span:not(.course-doc-kicker){grid-column:1/-1;color:var(--muted);font-size:13px;line-height:1.7}
+.course-doc i{grid-column:2;grid-row:2;color:var(--accent);font-size:12px;font-style:normal;align-self:center}
+@media(max-width:700px){
+  .course-docs{padding:20px 18px}.course-docs-head{display:block}
+  .course-docs-head .eyebrow{margin-bottom:4px}.course-docs-grid{grid-template-columns:1fr}
+  .group h2{font-size:20px}
+}
 
 /* ================= 上下讲 ================= */
 .pager{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px;
