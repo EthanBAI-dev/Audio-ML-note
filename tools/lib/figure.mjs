@@ -176,6 +176,41 @@ export async function spectrogramPng(S, opt = {}) {
   return `data:image/png;base64,${png.toString('base64')}`;
 }
 
+/**
+ * 把一个方阵渲染成 PNG。第 19 课要并排放两张 40×40 的相关系数矩阵，
+ * 用 <rect> 画要三千多个矩形、三百多 KB；渲染成 PNG 只有几 KB。
+ *
+ * @param {number[][]} m   方阵，值域由 lo/hi 给出
+ * @param {object} opt
+ *   px        每个格子渲染成多少像素（默认 8，40×40 就是 320×320）
+ *   lo, hi    值域（默认 0..1）
+ *   cmap      同 spectrogramPng
+ */
+export async function matrixPng(m, opt = {}) {
+  const { px = 8, lo = 0, hi = 1, cmap = 'blue' } = opt;
+  const map = COLORMAPS[cmap] ?? COLORMAPS.blue;
+  const n = m.length;
+  const w = n * px;
+  const buf = Buffer.alloc(w * w * 3);
+  for (let r = 0; r < n; r += 1) {
+    for (let c = 0; c < n; c += 1) {
+      const t = Math.max(0, Math.min(1, (m[r][c] - lo) / (hi - lo)));
+      const [R0, G0, B0] = map(t);
+      for (let dy = 0; dy < px; dy += 1) {
+        const o0 = ((r * px + dy) * w + c * px) * 3;
+        for (let dx = 0; dx < px; dx += 1) {
+          const o = o0 + dx * 3;
+          buf[o] = R0; buf[o + 1] = G0; buf[o + 2] = B0;
+        }
+      }
+    }
+  }
+  const png = await sharp(buf, { raw: { width: w, height: w, channels: 3 } })
+    .png({ compressionLevel: 9, palette: true, colors: 128 })
+    .toBuffer();
+  return `data:image/png;base64,${png.toString('base64')}`;
+}
+
 /** 把 data URI 放进 SVG。图像本身不含文字，文字由外面的 <text> 负责。 */
 export const image = (href, x, y, w, h, o = {}) =>
   `<image href="${href}" x="${x}" y="${y}" width="${w}" height="${h}" `

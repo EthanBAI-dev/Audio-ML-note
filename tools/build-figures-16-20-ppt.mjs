@@ -15,7 +15,7 @@ import {
   panel, curve,
   BLUE, WARM, GREEN, GOLD, INK, MUTED, GRID, PLATE,
 } from './lib/tutorial-figure.mjs';
-import { spectrogramPng, image, colorbar } from './lib/figure.mjs';
+import { spectrogramPng, matrixPng, image, colorbar } from './lib/figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_16-20', 'figures');
@@ -28,6 +28,7 @@ const tiny = (M) => (wide(M) ? 12.5 : 14);
 const d16 = D('16');
 const d17 = D('17');
 const d18 = D('18');
+const d19 = D('19');
 const FIG = {};
 
 /** 一块声谱图：外框、标题、纵轴刻度、横轴刻度，中间放渲染好的 PNG。
@@ -796,6 +797,349 @@ FIG['18-bands-10-90'] = async (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '十个梅尔带与九十个梅尔带画出来的同一段音阶对比');
+};
+
+// ================================================================ 19
+
+// p22—p29 那一串「信号 → 功率谱 → 取对数 → 倒谱」，PDF 只有示意图。
+// 这里把第一步做实：相乘的两条曲线，取对数之后变成上下叠加。
+FIG['19-log-splits'] = (M) => {
+  const head = ['频谱上两部分是相乘的，', '取对数就变成了相加'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 26;
+
+  const sp = d19.spec;
+  const ph = w ? 76 : 66;
+  const cw = w ? (pw - 30) / 2 : pw;
+  const rgap = 42;   // 行距要装下画板外那一行标签
+  const rows = [
+    ['激励（谁在发声）', 'E', 'logE', GREEN],
+    ['包络（发的什么音）', 'H', 'logH', BLUE],
+    ['两者合起来', 'X', 'logX', WARM],
+  ];
+
+  if (w) {
+    s += T(px, y - 22, '原样：相乘', { size: tiny(M), weight: 700, fill: MUTED });
+    s += T(px + cw + 30, y - 22, '取对数之后：相加', {
+      size: tiny(M), weight: 700, fill: MUTED,
+    });
+  }
+  rows.forEach((row, i) => {
+    const name = row[0];
+    const kLin = row[1];
+    const kLog = row[2];
+    const c = row[3];
+    const ry = y + i * (ph + rgap);
+    const lin = sp[kLin];
+    const lg = sp[kLog];
+    const linMax = Math.max.apply(null, lin);
+    const lgLo = Math.min.apply(null, lg);
+    const lgHi = Math.max.apply(null, lg);
+    const p1 = panel(px, ry, cw, ph, { fill: PLATE, yr: [0, linMax * 1.06] });
+    s += p1.s;
+    s += curve(p1, lin, { c, w: 1.5 });
+    // 标签放画板外面：激励那两行的曲线密到顶，压在里面就看不清了
+    s += T(px, ry - 6, name, { size: tiny(M), weight: 700, fill: c });
+    if (w) {
+      const p2 = panel(px + cw + 30, ry, cw, ph, {
+        fill: PLATE, yr: [lgLo - 0.2, lgHi + 0.2],
+      });
+      s += p2.s;
+      s += curve(p2, lg, { c, w: 1.5 });
+      s += T(px + cw + 30, ry - 6, 'log ' + kLin, {
+        size: tiny(M), weight: 700, fill: c,
+      });
+    }
+    if (i === 1) {
+      s += T(px + cw / 2, ry + ph + 22, '×', {
+        size: 20, weight: 700, fill: MUTED, anchor: 'middle',
+      });
+      if (w) {
+        s += T(px + cw + 30 + cw / 2, ry + ph + 22, '＋', {
+          size: 20, weight: 700, fill: MUTED, anchor: 'middle',
+        });
+      }
+    }
+  });
+  y += 3 * (ph + rgap) - 18;
+
+  s += T(px, y + 14, '横轴都是 0—' + sp.fmax + ' Hz，三行一格对一格', {
+    size: tiny(M), fill: MUTED,
+  });
+  y += 30;
+
+  const bh = w ? 58 : 82;
+  s += R(px, y, pw, bh, { fill: '#eef7f2', stroke: GREEN, sw: 1.4, r: 10 });
+  s += MT(px + 14, y + 24, w
+    ? ['把两条相乘的曲线取对数，逐点最大差 max|log X − (log E + log H)| = '
+      + sp.resid.toExponential(3) + '，是浮点残渣。',
+      '相乘的两样东西没法分开，相加的两样才有可能——整条倒谱的路子就建在这一步上。']
+    : ['取对数后逐点最大差 ' + sp.resid.toExponential(3) + '，',
+      '是浮点残渣。相乘的分不开，',
+      '相加的才有可能分开。'],
+  { size: tiny(M), fill: INK, leading: 20 });
+  y += bh + 14;
+  return doc(M.W, y, s, '激励与包络相乘得到频谱，取对数之后两者变成相加');
+};
+
+// p53、p54 那两张「把两部分分开」，PDF 上只有 4 Hz 和 100 Hz 两个标注。
+// 这里把它变成三条真的倒谱，加上分界线两侧的能量占比。
+FIG['19-quefrency-ends'] = (M) => {
+  const head = ['一条曲线按变化快慢拆开：', '包络在左，激励在右'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 24;
+
+  const cp = d19.cep;
+  const qmax = cp.qmax_ms;
+  const ph = w ? 74 : 64;
+  const rows = [
+    ['包络的倒谱', 'H', BLUE, cp.split.H],
+    ['激励的倒谱', 'E', GREEN, cp.split.E],
+    ['两者合起来', 'X', WARM, cp.split.X],
+  ];
+  let lim = 0;
+  rows.forEach((r) => {
+    cp[r[1]].slice(1).forEach((v) => { if (Math.abs(v) > lim) lim = Math.abs(v); });
+  });
+
+  rows.forEach((row, i) => {
+    const name = row[0];
+    const k = row[1];
+    const c = row[2];
+    const sp = row[3];
+    const ry = y + i * (ph + 42);
+    const pn = panel(px, ry, pw, ph, {
+      fill: PLATE, xr: [0, qmax], yr: [-lim * 1.1, lim * 1.1], zero: true,
+    });
+    s += pn.s;
+    s += L(px, pn.sy(0), px + pw, pn.sy(0), { c: GRID, w: 1 });
+    // 第 0 格只是整条对数谱的平均值，画出来是一根盖过一切的竖线，跳过
+    s += curve(pn, cp[k].slice(1), { c, w: 1.4, xr: [d19.q_ms, qmax] });
+    const cx = pn.sx(d19.cut_ms);
+    s += L(cx, ry, cx, ry + ph, { c: GOLD, w: 1.6, dash: '4 3' });
+    s += T(px, ry - 6, name, { size: tiny(M), weight: 700, fill: c });
+    // 分界线在 1.36 ms 处，横轴一共 18 ms——它离左边太近，两个百分比挂在
+    // 线两侧会和行名挤成一团。并成一条放右端。
+    s += T(px + pw, ry - 6, w
+      ? '虚线左边 ' + (sp.lo * 100).toFixed(1) + '%　右边 ' + (sp.hi * 100).toFixed(1) + '%'
+      : '左 ' + (sp.lo * 100).toFixed(1) + '%　右 ' + (sp.hi * 100).toFixed(1) + '%', {
+        size: tiny(M), weight: 700, fill: c, anchor: 'end',
+      });
+    if (i === 2) {
+      const qx = pn.sx(cp.peak_ms);
+      s += L(qx, ry + ph * 0.15, qx, ry + ph, { c: WARM, w: 1.2, dash: '2 3' });
+      s += T(qx + 5, ry + ph * 0.15 + 2,
+        cp.peak_ms.toFixed(2) + ' 毫秒 → ' + cp.peak_hz.toFixed(1) + ' Hz', {
+          size: tiny(M), weight: 700, fill: WARM,
+        });
+    }
+  });
+  y += 3 * (ph + 42) - 16;
+
+  // 横轴刻度：单位并进最后一个刻度，不另起一个「毫秒」贴在右边缘
+  const ticks = [0, 4, 8, 12, 16];
+  ticks.forEach((t, i) => {
+    const tx = px + (t / qmax) * pw;
+    const last = i === ticks.length - 1;
+    s += T(tx, y + 6, last ? t + ' 毫秒' : String(t), {
+      size: tiny(M), fill: MUTED, anchor: last ? 'end' : 'middle',
+    });
+  });
+  // 手机版 420 宽装不下这一整句，拆成两行
+  s += MT(px, y + 28, w
+    ? ['横轴叫倒频率，单位是秒——它量的是「对数谱每隔多远重复一次」']
+    : ['横轴叫倒频率，单位是秒——', '它量的是「对数谱每隔多远重复一次」'],
+  { size: tiny(M), fill: MUTED, leading: 19 });
+  y += w ? 44 : 63;
+
+  s += MT(px, y, w
+    ? ['金色虚线放在 ' + d19.cut_ms.toFixed(2) + ' 毫秒。包络把 '
+      + (cp.split.H.lo * 100).toFixed(1) + '% 的结构能量放在它左边，激励把 '
+      + (cp.split.E.hi * 100).toFixed(1) + '% 放在右边。',
+      '合起来那条两边都有，正因为它是两者相加——照着这条线切一刀，就把它们分开了。']
+    : ['虚线在 ' + d19.cut_ms.toFixed(2) + ' 毫秒。包络 '
+      + (cp.split.H.lo * 100).toFixed(1) + '% 在左，',
+      '激励 ' + (cp.split.E.hi * 100).toFixed(1) + '% 在右。合起来那条',
+      '两边都有，因为它是两者相加。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 12;
+  return doc(M.W, y, s, '包络、激励与两者合成的倒谱，分界线两侧的能量占比');
+};
+
+// PDF 说提升能取回包络，但没验证过。这里把取回的那条叠在真包络上。
+FIG['19-liftering'] = (M) => {
+  const head = ['只留左边那一段再变回去，', '拿到的就是包络'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 26;
+
+  const lf = d19.lift;
+  const all = lf.logH.concat(lf.rec, lf.raw);
+  const lo = Math.min.apply(null, all);
+  const hi = Math.max.apply(null, all);
+  const ph = w ? 150 : 128;
+  const pn = panel(px, y, pw, ph, { fill: PLATE, yr: [lo - 0.2, hi + 0.2] });
+  s += pn.s;
+  s += curve(pn, lf.raw, { c: GRID, w: 1.2 });
+  s += curve(pn, lf.logH, { c: BLUE, w: 2.4 });
+  s += curve(pn, lf.rec, { c: WARM, w: 1.8 });
+  y += ph + 8;
+
+  const items = [
+    ['真正的包络', BLUE],
+    ['提升取回来的', WARM],
+    ['不提升的对数谱', GRID],
+  ];
+  let lx = px;
+  items.forEach((it) => {
+    s += R(lx, y + 4, 16, 4, { fill: it[1], stroke: 'none', r: 2 });
+    s += T(lx + 22, y + 11, it[0], { size: tiny(M), fill: MUTED });
+    lx += 22 + it[0].length * tiny(M) + 24;
+  });
+  y += 32;
+
+  const bh = w ? 92 : 132;
+  s += R(px, y, pw, bh, { fill: '#fbf0ec', stroke: WARM, sw: 1.4, r: 10 });
+  s += T(px + 14, y + 24, '对齐平均高度之后，和真包络差多少', {
+    size: tiny(M), weight: 700, fill: WARM,
+  });
+  const cmp = [
+    ['提升之后', lf.rmse_lift, lf.rmse_lift / lf.span, GREEN],
+    ['不提升', lf.rmse_raw, lf.rmse_raw / lf.span, MUTED],
+  ];
+  cmp.forEach((r, i) => {
+    const ry = y + 48 + i * 22;
+    s += T(px + 14, ry, r[0], { size: tiny(M), fill: INK });
+    s += T(px + 120, ry, '均方根差 ' + r[1].toFixed(4), { size: tiny(M), fill: INK });
+    s += T(px + 270, ry, '占包络自身跨度的 ' + (r[2] * 100).toFixed(1) + '%', {
+      size: tiny(M), weight: 700, fill: r[3],
+    });
+  });
+  if (w) {
+    s += T(px + pw - 14, y + 60, '提升把误差压到原来的 1/' + lf.gain.toFixed(1), {
+      size: 17, weight: 700, fill: GREEN, anchor: 'end',
+    });
+  }
+  y += bh + 12;
+
+  s += MT(px, y + 6, w
+    ? ['取回的是包络的形状：它整体比真包络高出 ' + lf.offset.toFixed(4)
+      + '，那个常数正是激励对数谱的平均值，被一起留在了低倒频率里。',
+      '分界线放在哪并不敏感——第 20 格到第 60 格之间，均方根差都在 0.12 到 0.15 之间。']
+    : ['取回的是形状：整体高出 ' + lf.offset.toFixed(4) + '，',
+      '那是激励的平均电平，一起留在了低倒频率里。',
+      '分界线在第 20—60 格之间效果都差不多。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 12;
+  return doc(M.W, y, s, '提升取回的包络与真包络、未提升的对数谱三条曲线对比');
+};
+
+// p68 那句「去相关」是全课最值钱的一条，PDF 一句话带过。
+FIG['19-dct-decorrelate'] = async (M) => {
+  const head = ['梅尔带互相重复，', 'DCT 把重复的部分去掉'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 26;
+
+  const dd = d19.dct;
+  const abs = (m) => m.map((row) => row.map(Math.abs));
+  const pngs = await Promise.all([
+    matrixPng(abs(dd.corr_mel), { px: 8 }),
+    matrixPng(abs(dd.corr_dct), { px: 8 }),
+  ]);
+
+  const side = w ? 200 : 168;
+  const gap = w ? 56 : 24;
+  const panels = [
+    ['DCT 之前：' + d19.n_mels + ' 条梅尔带', pngs[0], dd.corr_mel_avg, dd.corr_mel_adj, BLUE],
+    ['DCT 之后：' + d19.n_mels + ' 个系数', pngs[1], dd.corr_dct_avg, dd.corr_dct_adj, WARM],
+  ];
+  panels.forEach((p, i) => {
+    const bx = w ? px + i * (side + gap) : px + (pw - side) / 2;
+    const by = w ? y : y + i * (side + 78);
+    s += T(bx, by - 8, p[0], { size: tiny(M), weight: 700, fill: p[4] });
+    s += image(p[1], bx, by, side, side);
+    s += R(bx, by, side, side, { fill: 'none', stroke: GRID, r: 0 });
+    s += T(bx, by + side + 20, '任意两条的平均 |相关| ' + p[2].toFixed(4), {
+      size: tiny(M), fill: INK,
+    });
+    s += T(bx, by + side + 38, '相邻两条 ' + p[3].toFixed(4), {
+      size: tiny(M), weight: 700, fill: p[4],
+    });
+  });
+  if (w) {
+    s += MT(px + 2 * side + 2 * gap, y + 24,
+      ['颜色越深表示越相关；',
+        '对角线是自己和自己，永远是 1。',
+        '',
+        '左边那张几乎整片都是深的——',
+        '相邻两条到了 ' + dd.corr_mel_adj.toFixed(2) + '，',
+        '说明四十个数里有大量重复。',
+        '',
+        'DCT 之后只剩对角线还亮，',
+        '平均相关性掉了 ' + (dd.drop * 100).toFixed(0) + '%。'],
+      { size: tiny(M), fill: MUTED, leading: 20 });
+  }
+  y += (w ? side + 52 : 2 * (side + 78) - 26);
+  if (!w) {
+    s += T(px, y + 12, '颜色越深表示越相关；对角线永远是 1', {
+      size: tiny(M), fill: MUTED,
+    });
+    y += 24;
+  }
+  y += 12;
+
+  // 三行数据从 y+70 起，每行 20——框高至少要 70 + 3*20 + 12
+  const bh = w ? 142 : 158;
+  s += R(px, y, pw, bh, { fill: '#eef7f2', stroke: GREEN, sw: 1.4, r: 10 });
+  s += T(px + 14, y + 24, '那么留几个系数够用', {
+    size: tiny(M), weight: 700, fill: GREEN,
+  });
+  s += T(px + 14, y + 48, '前 K 个', { size: tiny(M), weight: 700, fill: MUTED });
+  s += T(px + 110, y + 48, '重建的均方根差', { size: tiny(M), weight: 700, fill: MUTED });
+  s += T(px + 270, y + 48, '解释掉原谱多少变化', { size: tiny(M), weight: 700, fill: MUTED });
+  dd.recon.filter((r) => r.k <= 20).forEach((r, i) => {
+    const ry = y + 70 + i * 20;
+    const hot = r.k === 13;
+    s += T(px + 14, ry, String(r.k), { size: tiny(M), fill: INK });
+    s += T(px + 110, ry, r.rmse.toFixed(3) + ' dB', { size: tiny(M), fill: INK });
+    s += T(px + 270, ry, (r.var * 100).toFixed(1) + '%', {
+      size: tiny(M), weight: hot ? 700 : 400, fill: hot ? GREEN : INK,
+    });
+  });
+  if (w) {
+    s += MT(px + 460, y + 48,
+      ['传统上取 12—13 个，就是在这条曲线上挑的：',
+        '前 13 个只用了 ' + (13 / d19.n_mels * 100).toFixed(0) + '% 的数，',
+        '却装下了原谱 ' + (dd.recon[1].var * 100).toFixed(1) + '% 的变化。'],
+      { size: tiny(M), fill: MUTED, leading: 20 });
+  }
+  y += bh + 14;
+
+  s += MT(px, y, w
+    ? ['相邻梅尔带 ' + dd.corr_mel_adj.toFixed(2) + ' 的相关不是巧合：三角形本来就互相重叠，'
+      + '一个音响起来，它的泛音会同时点亮好几条带。',
+      '把重复的部分去掉，四十个数才真正变成四十条互不重复的信息。']
+    : ['相邻梅尔带 ' + dd.corr_mel_adj.toFixed(2) + ' 的相关不是巧合：',
+      '三角形本来就重叠，泛音会同时点亮好几条带。',
+      '去掉重复，四十个数才是四十条信息。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 12;
+  return doc(M.W, y, s, '梅尔带之间与 DCT 系数之间的相关系数矩阵对比');
 };
 
 // ================================================================
