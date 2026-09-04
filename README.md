@@ -8,6 +8,7 @@
 |---|---|
 | **[音频信号处理二十三讲](音频信号处理二十三讲/README.md)** | **正式版课程。**23 篇文章、课程总纲、课程项目与全部可运行代码。对外只看这一个目录。 |
 | [参考资料](参考资料/) | 源课程逐页全文、原始素材大纲、概念归属表、改写与配图工作流。写作时查，不对外发布。 |
+| **[site](site/README.md)** | **课程网页版。**Next.js，读同一批 Markdown，带七个可动手调的交互程序与动画。部署在 Vercel。 |
 | `tools/` | 配图生成器、联系表、可读性与公式检查脚本。 |
 | `.claude/skills/`、`.agents/skills/` | 写作与审校规则（两份同步）。 |
 
@@ -34,6 +35,14 @@ node .claude/skills/audio-course-lesson/scripts/check-markdown-math.mjs <文章�
 ```
 
 验收线：正文与公式检查 ERROR 清零；配图除自动检查外，还要目视检查桌面与手机联系表。
+
+## 网页版
+
+```bash
+npm --prefix site install && npm --prefix site run dev
+```
+
+站点在构建时直接读 `音频信号处理二十三讲/` 里的 Markdown，不复制副本——改文章不用动站点。部署到 Vercel 时把 Root Directory 设成 `site` 即可，23 篇全部构建期静态生成。细节见 [site/README.md](site/README.md)。
 
 ## 已知待办
 
