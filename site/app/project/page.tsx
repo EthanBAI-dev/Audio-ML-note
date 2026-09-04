@@ -1,7 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import Link from 'next/link';
-import { COURSE } from '../../lib/lessons';
+import { readDoc } from '../../lib/lessons';
 import { renderLesson } from '../../lib/markdown';
 import { extractToc } from '../../lib/toc';
 import Article from '../../components/Article';
@@ -10,8 +8,8 @@ import Toc from '../../components/Toc';
 export const metadata = { title: '课程项目' };
 
 export default async function Page() {
-  const raw = readFileSync(join(COURSE, '课程项目', 'README.md'), 'utf8');
-  const html = await renderLesson(raw.replace(/^#\s+.+$/m, ''), { group: '01-05' } as never);
+  const doc = readDoc('课程项目');
+  const html = await renderLesson(doc.body, { group: 'project' } as never);
   return (
     <div className="shell">
       <Toc items={extractToc(html)} />
@@ -21,7 +19,10 @@ export default async function Page() {
           <span aria-current="page">课程项目</span>
         </nav>
         <article>
-          <header className="art-head"><h1>课程项目</h1></header>
+          <header className="art-head">
+            <h1>{doc.title}</h1>
+            {doc.lead ? <p className="lead">{doc.lead}</p> : null}
+          </header>
           <Article html={html} />
         </article>
       </main>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import 'katex/dist/katex.min.css';
 import './globals.css';
+import Lightbox from '../components/Lightbox';
 import SiteNav from '../components/SiteNav';
 import BackToTop from '../components/BackToTop';
 import { groups } from '../lib/lessons';
@@ -14,12 +15,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const gs = groups();
   return (
-    <html lang="zh-CN" data-layout="b" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
         {/* 先于首屏应用保存的主题，避免闪一下浅色再切深色 */}
         <script dangerouslySetInnerHTML={{ __html:
-          `try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);
-             var l=localStorage.getItem('layout');if(l)document.documentElement.setAttribute('data-layout',l)}catch(e){}` }} />
+          `try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}` }} />
       </head>
       <body>
         <SiteNav />
@@ -56,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <p className="foot-bottom">正文与配图由本仓库生成；课程音频版权归原作者所有。</p>
         </footer>
         <BackToTop />
+        <Lightbox />
       </body>
     </html>
   );

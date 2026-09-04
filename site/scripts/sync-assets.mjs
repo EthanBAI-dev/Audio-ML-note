@@ -24,6 +24,18 @@ for (const d of readdirSync(COURSE)) {
   }
 }
 
+// 课程总纲、课程项目自己的配图（例如课程路线图）
+for (const [dir, key] of [['课程总纲', 'guide'], ['课程项目', 'project']]) {
+  for (const variant of ['desktop', 'mobile']) {
+    const src = join(COURSE, dir, 'figures', variant);
+    if (!existsSync(src)) continue;
+    const dst = join(PUB, 'figures', key, variant);
+    mkdirSync(dst, { recursive: true });
+    cpSync(src, dst, { recursive: true });
+    figs += readdirSync(src).length;
+  }
+}
+
 // 音频：只同步自制/无版权疑虑的素材，三段商业录音走外链
 const SELF_MADE = ['scale.wav', 'noise.wav', 'piano_c.wav', 'violin_c.wav', 'sax.wav', 'tremolo.wav', 'voice.wav'];
 const audioSrc = join(ROOT, 'source_course', 'audio_resources');

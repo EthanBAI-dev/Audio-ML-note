@@ -7,7 +7,6 @@ import { WIDGETS } from '../../../content/widgets';
 import Article from '../../../components/Article';
 import Toc from '../../../components/Toc';
 import ReadingProgress from '../../../components/ReadingProgress';
-import LayoutSwitcher from '../../../components/LayoutSwitcher';
 
 export function generateStaticParams() {
   return allLessons().map((l) => ({ id: l.id }));
@@ -75,7 +74,6 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           </article>
         </main>
       </div>
-      <LayoutSwitcher />
     </>
   );
 }

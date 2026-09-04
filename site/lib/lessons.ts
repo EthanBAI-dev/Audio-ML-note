@@ -80,3 +80,15 @@ export function rawBody(l: Lesson): string {
   t = t.replace(/^>\s*\*\*导读：\*\*[\s\S]*?(?=\n\n)/m, ''); // 导读另行渲染
   return t.trim();
 }
+
+/** 读 课程总纲 / 课程项目 这类单页文档，拆出真正的标题、导读和正文。
+ *  它们和课程文章是同一种写法，页面头部也该长一样。 */
+export function readDoc(dir: string): { title: string; lead: string; body: string } {
+  const raw = readFileSync(join(COURSE, dir, 'README.md'), 'utf8');
+  const title = (/^#\s+(.+)$/m.exec(raw)?.[1] ?? dir).trim();
+  const lead = (/^>\s*\*\*导读：\*\*\s*([\s\S]*?)(?:\n(?!>)|$)/m.exec(raw)?.[1] ?? '')
+    .replace(/\n>\s*/g, ' ').replace(/\*\*/g, '').trim();
+  let body = raw.replace(/^#\s+.+$/m, '');
+  body = body.replace(/^>\s*\*\*导读：\*\*[\s\S]*?(?=\n\n)/m, '');
+  return { title, lead, body: body.trim() };
+}

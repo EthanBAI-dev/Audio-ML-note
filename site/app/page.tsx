@@ -37,7 +37,7 @@ export default function Home() {
                         {l.title}
                         {(WIDGETS[l.id] ?? []).length ? <i className="dot" title="含交互实验" /> : null}
                       </span>
-                      <span className="lesson-lead">{l.lead}</span>
+                      <span className="lesson-lead"><span>{l.lead}</span></span>
                     </span>
                   </Link>
                 </li>

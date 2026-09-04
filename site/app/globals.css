@@ -85,7 +85,14 @@ pre code{background:none;padding:0}
   color:var(--accent);font-weight:600;font-size:12.5px;min-width:1.8rem}
 .lesson-body{display:flex;flex-direction:column;gap:2px;min-width:0}
 .lesson-title{font-weight:600;line-height:1.6}
-.lesson-lead{color:var(--muted);font-size:13.5px;line-height:1.75}
+/* 目录默认只给标题，导读在悬停或键盘聚焦时展开，免得 23 条堆成一堵墙 */
+.lesson-lead{display:grid;grid-template-rows:0fr;opacity:0;
+  transition:grid-template-rows .22s ease,opacity .18s ease,margin-top .22s ease;
+  color:var(--muted);font-size:13.5px;line-height:1.75;margin-top:0}
+.lesson-lead>span{overflow:hidden;min-height:0}
+.lesson-list a:hover .lesson-lead,.lesson-list a:focus-visible .lesson-lead{
+  grid-template-rows:1fr;opacity:1;margin-top:5px}
+@media(prefers-reduced-motion:reduce){.lesson-lead{transition:none}}
 
 /* ---------- 交互组件 ---------- */
 .lab{margin:34px 0;padding:22px 24px 24px;border:1px solid var(--line);
@@ -175,54 +182,19 @@ pre code{background:none;padding:0}
 .progress span{display:block;height:100%;background:var(--accent);transition:width .08s linear}
 
 /* ================= 页面骨架 ================= */
-.shell{max-width:1240px;margin:0 auto;padding:34px 22px 90px;display:grid;gap:40px;
-  grid-template-columns:minmax(0,1fr)}
+/* 单一版式：左侧小节目录 + 正文。正文、配图、代码、表格一律同宽。
+   1300 是为了让 880px 的配图能按原尺寸显示，不被缩掉细节。 */
+.shell{max-width:1300px;margin:0 auto;padding:34px 22px 90px;display:grid;gap:40px;
+  grid-template-columns:232px minmax(0,1fr)}
 .shell.home{grid-template-columns:minmax(0,1fr)}
-
-/* ---- 四版布局：只改小节目录摆哪、正文多宽，其余一律相同 ---- */
-/* A 右侧目录 */
-:root[data-layout="a"] .shell:not(.home){grid-template-columns:minmax(0,1fr) 232px}
-:root[data-layout="a"] .toc{order:2}
-:root[data-layout="a"] main{order:1}
-/* B 左侧目录 */
-:root[data-layout="b"] .shell:not(.home){grid-template-columns:232px minmax(0,1fr)}
-/* A / B 共用的粘性侧栏 */
-:root[data-layout="a"] .toc,:root[data-layout="b"] .toc{
-  position:sticky;top:78px;align-self:start;max-height:calc(100vh - 98px);
+.toc{position:sticky;top:78px;align-self:start;max-height:calc(100vh - 98px);
   overflow-y:auto;padding:4px 0}
 
-/* C 顶部目录条：横向滚动，正文最宽 */
-:root[data-layout="c"] .shell{gap:0}
-:root[data-layout="c"] .toc{position:sticky;top:60px;z-index:20;margin:0 0 24px;
-  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--line);padding:8px 0}
-:root[data-layout="c"] .toc-label{display:none}
-:root[data-layout="c"] .toc ol{flex-direction:row;gap:4px;overflow-x:auto;
-  scrollbar-width:none;padding-bottom:2px}
-:root[data-layout="c"] .toc ol::-webkit-scrollbar{display:none}
-:root[data-layout="c"] .toc a{white-space:nowrap;border-left:0;
-  border-bottom:2px solid transparent;border-radius:8px 8px 0 0;padding:6px 12px}
-:root[data-layout="c"] .toc a[aria-current="true"]{border-left:0;border-bottom-color:var(--accent)}
-:root[data-layout="c"] .toc-n{display:none}
-
-/* D 开头列目录：两侧都不站人 */
-:root[data-layout="d"] .shell{gap:0}
-:root[data-layout="d"] .toc{margin:0 0 30px;padding:20px 24px;border:1px solid var(--line);
-  border-radius:12px;background:var(--panel)}
-:root[data-layout="d"] .toc ol{display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2px}
-
-/* 窄屏一律收成单栏，目录折到正文上方的一张卡片里 */
+/* 窄屏收成单栏，目录折到正文上方的一张卡片里 */
 @media(max-width:920px){
-  .shell,:root[data-layout="a"] .shell:not(.home),
-  :root[data-layout="b"] .shell:not(.home){grid-template-columns:minmax(0,1fr);gap:0;padding-top:24px}
-  .toc,:root[data-layout="a"] .toc,:root[data-layout="b"] .toc,:root[data-layout="c"] .toc{
-    position:static;order:-1;max-height:none;margin:0 0 24px;padding:16px 18px;
-    border:1px solid var(--line);border-radius:12px;background:var(--panel);
-    backdrop-filter:none;overflow-x:visible}
-  :root[data-layout="c"] .toc ol{flex-direction:column}
-  :root[data-layout="c"] .toc-label{display:block}
-  :root[data-layout="d"] .toc ol{grid-template-columns:minmax(0,1fr)}
+  .shell{grid-template-columns:minmax(0,1fr);gap:0;padding-top:24px}
+  .toc{position:static;order:-1;max-height:none;margin:0 0 24px;padding:16px 18px;
+    border:1px solid var(--line);border-radius:12px;background:var(--panel)}
 }
 
 .crumb{display:flex;gap:9px;align-items:center;font-size:12.5px;color:var(--muted);
@@ -298,19 +270,16 @@ pre code{background:none;padding:0}
 .notfound .eyebrow{font-family:ui-monospace,Consolas,monospace;color:var(--accent);
   letter-spacing:.2em;margin:0 0 12px}
 
-/* ================= 版式切换器（选定后删掉） ================= */
-.switcher{position:fixed;right:18px;bottom:74px;z-index:60;font-size:13px}
-.switcher-toggle{border:1px solid var(--accent);background:var(--accent);color:#fff;
-  border-radius:99px;padding:9px 18px;cursor:pointer;font-family:inherit;font-size:13px;
-  box-shadow:0 6px 20px rgba(0,0,0,.18)}
-.switcher-panel{position:absolute;right:0;bottom:46px;width:290px;background:var(--panel);
-  border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;
-  flex-direction:column;gap:6px;box-shadow:0 12px 36px rgba(0,0,0,.22)}
-.switcher-panel>p{margin:0 0 4px;color:var(--muted);font-size:12px;line-height:1.6}
-.switcher-panel button{display:flex;flex-direction:column;gap:2px;text-align:left;
-  border:1px solid var(--line);background:transparent;border-radius:9px;padding:9px 12px;
-  cursor:pointer;font-family:inherit;color:var(--ink)}
-.switcher-panel button:hover{border-color:var(--accent)}
-.switcher-panel button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
-.switcher-panel button b{font-size:13px;font-weight:650}
-.switcher-panel button span{font-size:11.5px;color:var(--muted);line-height:1.5}
+
+/* ---- 配图点开看大图 ---- */
+.prose picture img{cursor:zoom-in}
+.lightbox{position:fixed;inset:0;z-index:100;display:grid;place-items:center;
+  background:rgba(8,12,18,.86);padding:24px;cursor:zoom-out;
+  backdrop-filter:blur(3px)}
+.lightbox img{max-width:min(1600px,96vw);max-height:94vh;width:auto;height:auto;
+  background:#fff;border-radius:10px;padding:10px;cursor:default;
+  box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.lightbox-close{position:absolute;top:18px;right:20px;width:38px;height:38px;border-radius:99px;
+  border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;
+  font-size:15px;cursor:pointer;line-height:1}
+.lightbox-close:hover{background:rgba(255,255,255,.18)}
