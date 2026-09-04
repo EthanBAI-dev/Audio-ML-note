@@ -1,10 +1,12 @@
 /** 哪一课在哪个二级标题之前插入哪个交互组件。
  *  锚点用标题原文；文章改标题时这里要跟着改，构建脚本会报出对不上的锚点。 */
-export const WIDGET_NAMES = ['framing', 'spectrum', 'mel', 'bandsplit', 'sliding', 'probe', 'phasor'] as const;
+export const WIDGET_NAMES = ['framing', 'spectrum', 'mel', 'bandsplit', 'sliding', 'probe', 'phasor', 'tone'] as const;
 export type WidgetName = (typeof WIDGET_NAMES)[number];
 export type Placement = { before: string; name: WidgetName };
 
 export const WIDGETS: Record<string, Placement[]> = {
+  // 02 —— 第一次把波形、参数和听感连在一起
+  '02': [{ before: '人耳能听到多快的振动', name: 'tone' }],
   // 06 / 08 / 15 —— 分帧、加窗、时频分辨率
   '06': [{ before: '频域那条流水线，为什么要多一步', name: 'sliding' },
           { before: '加窗：把两端压到零，接缝就平了', name: 'framing' }],

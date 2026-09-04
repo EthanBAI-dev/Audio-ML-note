@@ -8,6 +8,8 @@ source_course/*
 __pycache__/
 *.pyc
 node_modules/
+site/AGENTS.md
+site/CLAUDE.md
 
 # 本地草稿与站点，不进版本库
 audio-dsp-learning-site/

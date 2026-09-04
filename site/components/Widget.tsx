@@ -10,6 +10,7 @@ const map = {
   sliding: dynamic(() => import('./SlidingWindowAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
   probe: dynamic(() => import('./ProbeSweepAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
   phasor: dynamic(() => import('./PhasorAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
+  tone: dynamic(() => import('./ToneLab'), { ssr: false, loading: () => <LabSkeleton /> }),
 } as const;
 
 function LabSkeleton() {
