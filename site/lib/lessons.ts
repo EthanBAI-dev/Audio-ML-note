@@ -63,6 +63,17 @@ export function groups(): Group[] {
   }));
 }
 
+export const GROUP_TITLE = GROUP_TITLES;
+
+/** 粗略阅读时长：中文按每分钟 400 字算，代码块和公式不计。 */
+export function readingMinutes(l: Lesson): number {
+  const body = readFileSync(l.file, 'utf8')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/<picture[\s\S]*?<\/picture>/g, '')
+    .replace(/\$\$[\s\S]*?\$\$/g, '');
+  return Math.max(1, Math.round(body.length / 400));
+}
+
 export function rawBody(l: Lesson): string {
   let t = readFileSync(l.file, 'utf8');
   t = t.replace(/^#\s+.+$/m, '');                       // 标题另行渲染
