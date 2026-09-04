@@ -11,7 +11,8 @@ import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  MODES, wide, doc, T, MT, R, L, ARROW, header, headerH,
+  MODES, wide, doc, T, MT, R, L, P, O, ARROW, header, headerH,
+  panel, curve,
   BLUE, WARM, GREEN, GOLD, INK, MUTED, GRID, PLATE,
 } from './lib/tutorial-figure.mjs';
 import { spectrogramPng, image, colorbar } from './lib/figure.mjs';
@@ -25,6 +26,7 @@ const D = (n) => JSON.parse(readFileSync(join(DATA, `lesson${n}.json`), 'utf8'))
 const tiny = (M) => (wide(M) ? 12.5 : 14);
 
 const d16 = D('16');
+const d17 = D('17');
 const FIG = {};
 
 /** 一块声谱图：外框、标题、纵轴刻度、横轴刻度，中间放渲染好的 PNG。
@@ -40,7 +42,7 @@ async function heat(x, y, w, h, plot, opt, M) {
   const bottom = 30;
   const iw = w - left - right;
   const ih = h - top - bottom;
-  const fmin = d16.fmin;
+  const fmin = opt.fmin ?? d16.fmin;
   const fmax = opt.fmax ?? d16.fmax;
   // 渲染尺寸取「显示尺寸的 2.2 倍」和「数据分辨率的 3 倍」里小的那个。
   // 只按显示尺寸算的话，三种风格那张图会把 200 帧的数据放大到 1782 像素宽，
@@ -67,7 +69,10 @@ async function heat(x, y, w, h, plot, opt, M) {
     const p = posOf(Math.max(f, fmin));
     if (p < -0.01 || p > 1.01) return;
     const py = y + top + ih - p * ih;
-    s += T(x + left - 6, py + 4, i === ticks.length - 1 ? `${f} Hz` : String(f),
+    const label = opt.tickLabel
+      ? opt.tickLabel(f)
+      : (i === ticks.length - 1 ? `${f} Hz` : String(f));
+    s += T(x + left - 6, py + 4, label,
       { size: tiny(M), fill: MUTED, anchor: 'end' });
   });
 
@@ -285,6 +290,255 @@ FIG['16-three-genres'] = async (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '古典、摇滚、爵士三段音乐的对数频率声谱图对比');
+};
+
+// ================================================================ 17
+
+// p5：同样约 200 Hz，一个跨两个八度，一个只跨一个全音。
+FIG['17-same-hz-different-feel'] = (M) => {
+  const head = ['同样差两百赫兹，', '听起来根本不是一回事'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  // 一条 0—2000 Hz 的横轴，两对音各画一个括号
+  const AXMAX = 2000;
+  const ax = px + 10;
+  const aw = pw - 20;
+  const X = (f) => ax + (f / AXMAX) * aw;
+  const ay = y + (w ? 52 : 58);
+  s += L(ax, ay, ax + aw, ay, { c: INK, w: 2 });
+  [0, 500, 1000, 1500, 2000].forEach((f, i) => {
+    const last = f === AXMAX;
+    s += L(X(f), ay, X(f), ay + 6, { c: MUTED, w: 1 });
+    s += T(X(f), ay + 22, last ? '2000 Hz' : String(f),
+      { size: tiny(M), fill: MUTED, anchor: last ? 'end' : (i === 0 ? 'start' : 'middle') });
+  });
+
+  d17.pairs.forEach((p, i) => {
+    const c = i === 0 ? BLUE : WARM;
+    const x0 = X(p.low_hz);
+    const x1 = X(p.high_hz);
+    const by = ay - (i === 0 ? 30 : 14);
+    s += L(x0, by, x1, by, { c, w: 2.4 });
+    s += L(x0, by, x0, ay, { c, w: 1.2, dash: '3 3' });
+    s += L(x1, by, x1, ay, { c, w: 1.2, dash: '3 3' });
+    s += T((x0 + x1) / 2, by - 7,
+      p.low_name + '→' + p.high_name + '　' + p.gap_hz.toFixed(0) + ' Hz',
+      { size: tiny(M), weight: 700, fill: c, anchor: 'middle' });
+  });
+  y = ay + 40;
+
+  // 两把尺子量同一对音，结果差得远
+  const rows = [
+    ['在赫兹上差', (p) => p.gap_hz.toFixed(0) + ' Hz',
+      '两对几乎一样（差 ' + d17.ratio_hz.toFixed(2) + ' 倍）'],
+    ['在音程上差', (p) => p.semitones.toFixed(0) + ' 个半音',
+      '差 ' + d17.ratio_semitones.toFixed(0) + ' 倍'],
+    ['在梅尔上差', (p) => p.gap_mel.toFixed(0) + ' Mel',
+      '差 ' + d17.mel_ratio.toFixed(1) + ' 倍'],
+  ];
+  const rh = w ? 30 : 46;
+  rows.forEach((r, i) => {
+    const by = y + i * (rh + 6);
+    s += R(px, by, pw, rh, { fill: i === 1 ? '#fff7ed' : PLATE, stroke: GRID, r: 6 });
+    s += T(px + 10, by + (w ? 20 : 19), r[0], { size: tiny(M), weight: 700, fill: MUTED });
+    const cx = w ? px + pw * 0.30 : px + 10;
+    const cy = w ? by + 20 : by + 38;
+    s += T(cx, cy, r[1](d17.pairs[0]), { size: tiny(M), weight: 700, fill: BLUE });
+    s += T(cx + (w ? pw * 0.17 : 116), cy, r[1](d17.pairs[1]),
+      { size: tiny(M), weight: 700, fill: WARM });
+    s += T(px + pw - 10, by + (w ? 20 : 19), r[2],
+      { size: tiny(M), fill: MUTED, anchor: 'end' });
+  });
+  y += rows.length * (rh + 6) + 8;
+
+  s += MT(px, y, w
+    ? ['C2 到 C4 跨了两个八度，G6 到 A6 只跨一个全音，可它们在赫兹上几乎一样宽。',
+      '赫兹这把尺子量的是「振动快了多少」，不是「听起来差多远」。']
+    : ['C2 到 C4 跨两个八度，G6 到 A6 只跨一个全音，',
+      '可它们在赫兹上几乎一样宽。赫兹量的是振动快了',
+      '多少，不是听起来差多远。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 8;
+  return doc(M.W, y, s, '两对音在赫兹上间隔几乎相同，在音程和梅尔刻度上却相差很多');
+};
+
+// p11/p12：梅尔刻度曲线，以及等距的梅尔切回赫兹是不等距的。
+FIG['17-mel-curve'] = (M) => {
+  const head = ['梅尔上等距，', '赫兹上越往高越宽'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const ph = w ? 208 : 192;
+  const melMax = d17.bank.mel_hi;
+  const p = panel(px + 52, y, pw - 62, ph, {
+    xr: [0, d17.fmax], yr: [0, melMax], fill: '#fff', stroke: GRID,
+  });
+  s += p.s;
+  // 十段等距的梅尔，横着切过去、竖着落到赫兹轴上
+  d17.scale.edges_mel.forEach((m, i) => {
+    const hz = d17.scale.edges_hz[i];
+    s += L(p.x, p.sy(m), p.sx(hz), p.sy(m), { c: GRID, dash: '3 3', w: 0.9 });
+    s += L(p.sx(hz), p.sy(m), p.sx(hz), p.y + p.h, { c: '#d9c7a3', w: 0.9 });
+  });
+  s += curve(p, d17.curve_mel, { c: GREEN, w: 2.4, xr: [0, d17.fmax] });
+  // 1000 Hz = 1000 Mel 这个锚点
+  s += O(p.sx(1000), p.sy(d17.scale.anchor_mel), 4.5, { fill: WARM });
+  s += T(p.sx(1000) + 8, p.sy(d17.scale.anchor_mel) + 4,
+    '1000 Hz ≈ ' + d17.scale.anchor_mel.toFixed(0) + ' Mel',
+    { size: tiny(M), weight: 700, fill: WARM });
+  [0, 1000, 2000, melMax].forEach((m, i) => {
+    s += T(p.x - 7, p.sy(m) + 4, i === 3 ? m.toFixed(0) + ' Mel' : m.toFixed(0),
+      { size: tiny(M), fill: MUTED, anchor: 'end' });
+  });
+  [0, 2000, 4000, 8000].forEach((f, i) => {
+    s += T(p.sx(f), p.y + p.h + 19, i === 3 ? f + ' Hz' : String(f),
+      { size: tiny(M), fill: MUTED, anchor: i === 3 ? 'end' : (i === 0 ? 'start' : 'middle') });
+  });
+  y += ph + 34;
+
+  const wid = d17.scale.widths;
+  const cards = [
+    ['最窄的一段', Math.min.apply(null, wid).toFixed(0) + ' Hz', '在最低那一段', GREEN],
+    ['最宽的一段', Math.max.apply(null, wid).toFixed(0) + ' Hz', '在最高那一段', WARM],
+    ['两者相差', d17.scale.width_ratio.toFixed(1) + ' 倍', '同样叫「一段」', GOLD],
+  ];
+  const cw = w ? (pw - 2 * 14) / 3 : pw;
+  cards.forEach((c, i) => {
+    const bx = w ? px + i * (cw + 14) : px;
+    const by = w ? y : y + i * 58;
+    s += R(bx, by, cw, 50, { fill: PLATE, stroke: c[3], sw: 1.4, r: 8 });
+    s += T(bx + 12, by + 20, c[0], { size: tiny(M), fill: MUTED });
+    s += T(bx + 12, by + 41, c[1], { size: 17, weight: 700, fill: c[3] });
+    s += T(bx + cw - 12, by + 41, c[2], { size: tiny(M), fill: MUTED, anchor: 'end' });
+  });
+  y += (w ? 50 : 58 * 3 - 8) + 18;
+
+  s += MT(px, y, w
+    ? ['纵轴上那十道横线是等距的，落到横轴上却越来越疏。',
+      '这就是「梅尔上等距」的意思：低频那一段分得细，高频那一段分得粗。']
+    : ['纵轴上那十道横线是等距的，落到横轴上却',
+      '越来越疏——低频分得细，高频分得粗。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += 2 * 21 + 8;
+  return doc(M.W, y, s, '梅尔刻度曲线，以及梅尔上等距的十段切回赫兹后宽度差近十倍');
+};
+
+// p25/p29/p30/p31：按五步造出来的三角滤波器组。
+FIG['17-filter-bank'] = (M) => {
+  const head = ['十个三角形，', '低频又窄又挤，高频又宽又疏'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const ph = w ? 176 : 158;
+  const binHz = d17.bank.bin_hz;
+  const p = panel(px + 34, y, pw - 44, ph, {
+    xr: [0, d17.fmax], yr: [0, 1.12], fill: '#fff', stroke: GRID,
+  });
+  s += p.s;
+  const colors = [BLUE, GREEN];
+  d17.bank_curves.forEach((row, i) => {
+    const pts = row.map((v, k) => [p.sx(Math.min(k * binHz, d17.fmax)), p.sy(v)]);
+    s += P(pts, { c: colors[i % 2], w: 1.6 });
+  });
+  [0, 0.5, 1].forEach((v) => {
+    s += T(p.x - 7, p.sy(v) + 4, v.toFixed(1), { size: tiny(M), fill: MUTED, anchor: 'end' });
+  });
+  [0, 2000, 4000, 8000].forEach((f, i) => {
+    s += T(p.sx(f), p.y + p.h + 19, i === 3 ? f + ' Hz' : String(f),
+      { size: tiny(M), fill: MUTED, anchor: i === 3 ? 'end' : (i === 0 ? 'start' : 'middle') });
+  });
+  y += ph + 44;
+
+  const bk = d17.bank;
+  s += MT(px, y, w
+    ? ['第 1 个三角形底边宽 ' + bk.widths_hz[0].toFixed(0) + ' Hz，第 '
+      + bk.n_mels + ' 个宽 ' + bk.widths_hz[bk.n_mels - 1].toFixed(0)
+      + ' Hz，差 ' + bk.width_ratio.toFixed(1) + ' 倍。',
+      '每个三角形吃掉一段频率格，加权求和交出一个数——'
+      + bk.n_bins + ' 个格子就这样变成 ' + bk.n_mels + ' 个。',
+      '所以滤波器组的形状是（带数，帧长 / 2 + 1）= (' + bk.n_mels + ', ' + bk.n_bins + ')。']
+    : ['第 1 个三角形底边宽 ' + bk.widths_hz[0].toFixed(0) + ' Hz，第 ' + bk.n_mels + ' 个',
+      '宽 ' + bk.widths_hz[bk.n_mels - 1].toFixed(0) + ' Hz，差 '
+      + bk.width_ratio.toFixed(1) + ' 倍。每个三角形吃掉',
+      '一段频率格、加权求和交出一个数，' + bk.n_bins + ' 个格子',
+      '就变成 ' + bk.n_mels + ' 个。形状 = (' + bk.n_mels + ', ' + bk.n_bins + ')。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '十个三角滤波器在赫兹轴上的分布，低频窄而密、高频宽而疏');
+};
+
+// p34/p37：乘上去，1025 行变成 10 行。
+FIG['17-apply'] = async (M) => {
+  const head = ['乘一次矩阵，', '频率轴就换成了梅尔带'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const ap = d17.apply;
+  const cards = [
+    ['滤波器组 M', ap.bank_shape[0] + ' × ' + ap.bank_shape[1], '带 × 频率格', GREEN],
+    ['声谱图 Y', ap.spectrogram_shape[0] + ' × ' + ap.spectrogram_shape[1], '频率格 × 帧', BLUE],
+    ['M @ Y', ap.mel_shape[0] + ' × ' + ap.mel_shape[1], '带 × 帧', WARM],
+  ];
+  const ch = 78;
+  const cw = w ? (pw - 2 * 30) / 3 : pw;
+  cards.forEach((c, i) => {
+    const bx = w ? px + i * (cw + 30) : px;
+    const by = w ? y : y + i * (ch + 26);
+    s += R(bx, by, cw, ch, { fill: PLATE, stroke: c[3], sw: 1.5, r: 9 });
+    s += T(bx + 12, by + 22, c[0], { size: tiny(M), weight: 700, fill: c[3] });
+    s += T(bx + 12, by + 48, c[1], { size: w ? 18 : 17, weight: 700, fill: INK });
+    s += T(bx + 12, by + 68, c[2], { size: tiny(M), fill: MUTED });
+    if (i < 2) {
+      const sym = i === 0 ? '×' : '=';
+      s += w
+        ? T(bx + cw + 15, by + ch / 2 + 6, sym,
+          { size: 18, weight: 700, fill: MUTED, anchor: 'middle' })
+        : T(bx + cw / 2, by + ch + 19, sym,
+          { size: 18, weight: 700, fill: MUTED, anchor: 'middle' });
+    }
+  });
+  y += (w ? ch + 24 : 3 * (ch + 26) - 2);
+
+  // 真的画出来：纵轴是第几个带，每个带一样高
+  const hh = w ? 156 : 148;
+  s += await heat(px, y, pw, hh, ap.plot, {
+    title: ap.mel_shape[0] + ' 个梅尔带的声谱图（纵轴：第几个带）',
+    tfill: WARM, fmin: 0, fmax: ap.mel_shape[0] - 1, left: w ? 84 : 88,
+    ticks: [0, 4, 9], dbFloor: -70,
+    tickLabel: (v) => (v + 1) + ' 带 ' + ap.band_centers[v].toFixed(0) + ' Hz',
+    timeMarks: [0, ap.duration / 2, ap.duration],
+  }, M);
+  y += hh + 14;
+
+  s += MT(px, y, w
+    ? ['列数一个没动，行数从 ' + ap.spectrogram_shape[0] + ' 压到 ' + ap.mel_shape[0]
+      + '——少了 ' + ap.compress.toFixed(1) + ' 倍。',
+      '时间轴完全没碰，被换掉的只有频率轴：从「第几个频率格」变成「第几个梅尔带」。',
+      '每个带在图上一样高，可它在赫兹上覆盖的范围越往上越宽。']
+    : ['列数没动，行数从 ' + ap.spectrogram_shape[0] + ' 压到 ' + ap.mel_shape[0] + '，',
+      '少了 ' + ap.compress.toFixed(1) + ' 倍。时间轴没碰，换掉的只有频率轴。',
+      '每个带在图上一样高，在赫兹上覆盖的范围',
+      '却越往上越宽。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 8;
+  return doc(M.W, y, s, '滤波器组乘上声谱图，1025 行压成 10 个梅尔带，列数不变');
 };
 
 // ================================================================
