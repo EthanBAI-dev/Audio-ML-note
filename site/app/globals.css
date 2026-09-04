@@ -196,8 +196,8 @@ pre code{background:none;padding:0}
 .shell{max-width:1300px;margin:0 auto;padding:34px 22px 90px;display:grid;gap:40px;
   grid-template-columns:232px minmax(0,1fr)}
 .shell.home{max-width:1040px;grid-template-columns:minmax(0,1fr)}
-.toc{position:sticky;top:78px;align-self:start;max-height:calc(100vh - 98px);
-  overflow-y:auto;padding:4px 0}
+.toc{position:sticky;top:78px;align-self:start;margin-top:68px;
+  max-height:calc(100vh - 166px);overflow-y:auto;padding:4px 0}
 
 /* 窄屏收成单栏，目录折到正文上方的一张卡片里 */
 @media(max-width:920px){
