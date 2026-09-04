@@ -29,7 +29,10 @@ function rewritePaths(md: string, group: string): string {
   // 音频：自制的内嵌播放，商业录音换成外链
   md = md.replace(/\[([^\]]*)\]\((?:\.\.\/)*source_course\/audio_resources\/([a-z_]+)\.wav\)/g,
     (_m, label, name) => {
-      if (SELF_MADE.has(name)) return `<audio controls preload="none" src="/audio/${name}.wav" data-label="${label}"></audio>`;
+      if (SELF_MADE.has(name)) {
+        const safeLabel = String(label).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<span class="audio-preview"><span class="audio-preview-label">${safeLabel}</span><audio controls preload="metadata" src="/audio/${name}.wav" aria-label="${safeLabel}"></audio></span>`;
+      }
       const e = EXTERNAL[name];
       return e ? `[${label}](${e.url})` : label;
     });
@@ -37,7 +40,7 @@ function rewritePaths(md: string, group: string): string {
   // 课程内互链
   md = md.replace(/\]\((?:\.\.\/第\d\d-\d\d课\/)?(\d\d)-[^)]*\.md\)/g, (_m, n) => `](/lesson/${n})`);
   md = md.replace(/\]\(\.\.\/课程总纲\/README\.md\)/g, '](/guide)');
-  md = md.replace(/\]\(\.\.\/课程项目\/README\.md\)/g, '](/guide#实践项目)');
+  md = md.replace(/\]\(\.\.\/课程项目\/README\.md\)/g, `](${REPO}/${encodeURI('音频信号处理二十三讲/课程项目/README.md')})`);
   md = md.replace(/\]\(\.\.\/课程代码\/([^)]+)\)/g,
     (_m, p) => `](${REPO}/${encodeURI('音频信号处理二十三讲/课程代码/' + p)})`);
   return md;

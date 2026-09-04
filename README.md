@@ -8,7 +8,7 @@
 |---|---|
 | **[音频信号处理二十三讲](音频信号处理二十三讲/README.md)** | **正式版课程。**23 篇文章、课程总纲、课程项目与全部可运行代码。对外只看这一个目录。 |
 | [参考资料](参考资料/) | 源课程逐页全文、原始素材大纲、概念归属表、改写与配图工作流。写作时查，不对外发布。 |
-| **[site](site/README.md)** | **课程网页版。**Next.js，读同一批 Markdown，带七个可动手调的交互程序与动画。部署在 Vercel。 |
+| **[site](site/README.md)** | **课程网页版。**Next.js，读同一批 Markdown，带八种可动手调的交互程序与动画。部署在 Vercel。 |
 | `tools/` | 配图生成器、联系表、可读性与公式检查脚本。 |
 | `.claude/skills/`、`.agents/skills/` | 写作与审校规则（两份同步）。 |
 
@@ -44,7 +44,9 @@ npm --prefix site install && npm --prefix site run dev
 
 站点在构建时直接读 `音频信号处理二十三讲/` 里的 Markdown，不复制副本——改文章不用动站点。部署到 Vercel 时把 Root Directory 设成 `site` 即可，23 篇全部构建期静态生成。细节见 [site/README.md](site/README.md)。
 
-## 已知待办
+## 缺漏清单
 
 - **小红书卡片版需要重新生成。** 现存 12 张对应的是改写前的旧文章，`tools/build-cards-*.mjs` 可以重跑。
-- **课程音频不在仓库里。** `source_course/` 在 `.gitignore` 中，因此正文里指向 `.wav` 的试听链接在 GitHub 上打不开。
+- **三段分类项目音乐不随仓库分发。** `debussy.wav`、`duke.wav`、`redhot.wav` 涉及商业录音，网站只给外部试听入口；运行完整三分类项目时需要自行准备有权使用的片段。
+
+七段教学示例音频已经纳入正式仓库并可在网页内试听，不再属于缺漏项。

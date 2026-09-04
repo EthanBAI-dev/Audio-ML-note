@@ -68,6 +68,14 @@ pre{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;
 }
 pre code{background:none;padding:0}
 .prose audio{width:100%;margin:18px 0}
+.prose .audio-preview{display:grid;grid-template-columns:minmax(8.5rem,.65fr) minmax(230px,1.35fr);
+  gap:14px;align-items:center;margin:10px 0;padding:10px 12px;background:var(--code-bg);
+  border:1px solid var(--line);border-radius:10px}
+.prose .audio-preview-label{font-size:13.5px;line-height:1.55;color:var(--ink);font-weight:600}
+.prose .audio-preview audio{min-width:0;margin:0;height:36px}
+@media(max-width:600px){
+  .prose .audio-preview{grid-template-columns:1fr;gap:7px}
+}
 .katex-display{overflow-x:auto;overflow-y:hidden;background:var(--accent-soft);
   border-radius:10px;padding:14px 18px;margin:0 0 22px}
 

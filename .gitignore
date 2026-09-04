@@ -5,6 +5,8 @@ source_course/
 source_course/*
 !source_course/audio_resources/
 !source_course/audio_resources/*.wav
+!source_course/audio_resources/README.md
+!source_course/audio_resources/LICENSE
 __pycache__/
 *.pyc
 node_modules/

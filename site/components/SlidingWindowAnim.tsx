@@ -5,7 +5,7 @@ import { hann, magnitudeSpectrum } from '../lib/dsp';
 
 const SR = 22050, N = 8192, FRAME = 1024, HOP = 256;
 
-/** 06 / 15：一扇窗在录音上往右挪，右边的声谱图一列一列长出来。 */
+/** 06：一扇窗在录音上往右挪，右边的声谱图一列一列长出来。 */
 export default function SlidingWindowAnim() {
   const sig = useMemo(() => {
     const x = new Float32Array(N);

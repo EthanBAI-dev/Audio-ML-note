@@ -135,9 +135,13 @@ export function AnimCanvas({ w, h, draw, duration, ariaLabel, caption }: {
 
   useEffect(() => {
     if (!playing) return;
-    start.current = performance.now() - t * duration;
+    const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 1000;
+    const safeT = Number.isFinite(t) ? Math.max(0, Math.min(1, t)) : 0;
+    start.current = performance.now() - safeT * safeDuration;
     const step = (now: number) => {
-      setT(((now - start.current) / duration) % 1);
+      const raw = (now - start.current) / safeDuration;
+      const next = ((raw % 1) + 1) % 1;
+      setT(Number.isFinite(next) ? next : 0);
       raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);
@@ -152,7 +156,8 @@ export function AnimCanvas({ w, h, draw, duration, ariaLabel, caption }: {
     const g = c.getContext('2d'); if (!g) return;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, w, h);
-    draw(g, w, h, t);
+    const progress = Number.isFinite(t) ? Math.max(0, Math.min(1, t)) : 0;
+    draw(g, w, h, progress);
   }, [t, w, h, draw]);
 
   return (
@@ -163,8 +168,13 @@ export function AnimCanvas({ w, h, draw, duration, ariaLabel, caption }: {
         <button type="button" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
           {playing ? '暂停' : '播放'}
         </button>
-        <input type="range" min={0} max={1} step={0.002} value={t} aria-label="进度"
-          onChange={(e) => { setPlaying(false); setT(Number(e.target.value)); }} />
+        <input type="range" min={0} max={1} step={0.002}
+          value={Number.isFinite(t) ? Math.max(0, Math.min(1, t)) : 0} aria-label="进度"
+          onChange={(e) => {
+            setPlaying(false);
+            const next = Number(e.target.value);
+            setT(Number.isFinite(next) ? Math.max(0, Math.min(1, next)) : 0);
+          }} />
         {caption ? <span className="anim-caption">{caption}</span> : null}
       </div>
     </div>

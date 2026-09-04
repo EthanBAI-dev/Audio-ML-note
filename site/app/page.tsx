@@ -16,7 +16,7 @@ export default function Home() {
           </p>
           <p className="hero-stats">
             <span><b>23</b> 讲</span><span><b>122</b> 张配图</span>
-            <span><b>7</b> 个交互实验</span><span><b>23</b> 个可运行脚本</span>
+            <span><b>8</b> 种交互实验</span><span><b>23</b> 个可运行脚本</span>
           </p>
           <p className="hero-cta">
             <Link href="/lesson/01" className="btn">从第 01 讲开始</Link>
@@ -30,8 +30,8 @@ export default function Home() {
               <Link href="/guide">
                 <span className="lesson-n">导览</span>
                 <span className="lesson-body">
-                  <span className="lesson-title">学习地图与实践项目</span>
-                  <span className="lesson-lead"><span>一次看清课程边界、四条特征路线、最终产物，以及 23 个实验怎样连起来。</span></span>
+                  <span className="lesson-title">课程总纲</span>
+                  <span className="lesson-lead"><span>一次看清课程边界、运行环境和 23 讲的完整学习顺序。</span></span>
                 </span>
               </Link>
             </li>

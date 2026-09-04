@@ -7,25 +7,16 @@ export type Placement = { before: string; name: WidgetName };
 export const WIDGETS: Record<string, Placement[]> = {
   // 02 —— 第一次把波形、参数和听感连在一起
   '02': [{ before: '人耳能听到多快的振动', name: 'tone' }],
-  // 06 / 08 / 15 —— 分帧、加窗、时频分辨率
-  '06': [{ before: '频域那条流水线，为什么要多一步', name: 'sliding' },
-          { before: '加窗：把两端压到零，接缝就平了', name: 'framing' }],
-  '08': [{ before: '第 4 步：把帧编号换算成时间', name: 'framing' }],
-  '15': [{ before: '一次只看一小段，时间位置就留下来了', name: 'sliding' },
-          { before: '帧长决定时间和频率哪边看得更细', name: 'framing' }],
-  // 10 / 14 / 16 —— 频谱与画法
+  // 06 第一次看窗口移动；15 再单独比较帧长，不重复同一个演示
+  '06': [{ before: '频域那条流水线，为什么要多一步', name: 'sliding' }],
+  '15': [{ before: '帧长决定时间和频率哪边看得更细', name: 'framing' }],
+  // 10 第一次建立频谱直觉；14、16 直接使用真实音频和各自的静态计算图
   '10': [{ before: '第 2 步：把所有频率都试一遍', name: 'probe' },
           { before: '第 4 步：能拆开，就能拼回去', name: 'spectrum' }],
-  '14': [{ before: '`f_ratio=0.1` 只是把 0—2205 Hz 放大来看', name: 'spectrum' }],
-  '16': [{ before: '纵轴也该按倍数刻', name: 'spectrum' }],
   // 11 —— 复数的模与相位
   '11': [{ before: '欧拉公式：把「模和角」写成一个乘法', name: 'phasor' }],
-  // 17 / 18 / 20 —— 梅尔与 MFCC
-  '17': [{ before: '三步配方，前两步已经做完了', name: 'mel' }],
-  '18': [{ before: '十个带够不够', name: 'mel' }],
+  // 20 才把梅尔滤波与 DCT 放在同一实验里，避免 17、18 提前讲 DCT
   '20': [{ before: '13 行里，第 0 行说的是另一件事', name: 'mel' }],
-  // 21 / 22 / 23 —— 频域特征
+  // 21 用一组已知答案比较三种统计量；22、23 保留各自的真实代码实验
   '21': [{ before: '三个公式放进同一组已知答案', name: 'bandsplit' }],
-  '22': [{ before: '分界频率一改，结论也会动', name: 'bandsplit' }],
-  '23': [{ before: '三个特征放回项目：谁分得开哪一对', name: 'bandsplit' }],
 };

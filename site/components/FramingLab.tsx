@@ -5,14 +5,13 @@ import { WINDOWS, type WindowName, synth, magnitudeSpectrum, binFrequencies } fr
 
 const SR = 22050;
 
-/** 06 / 08 / 15：改帧长和帧移，看分帧怎么落、窗是什么形状、时频分辨率怎么此消彼长。 */
+/** 15：只改帧长，看时间与频率分辨率怎样此消彼长；帧移的效果已经在 06 演示。 */
 export default function FramingLab() {
   const [frameExp, setFrameExp] = useState(11);   // 2^11 = 2048
-  const [hopRatio, setHopRatio] = useState(4);    // 帧移 = 帧长 / 4
   const [win, setWin] = useState<WindowName>('hann');
 
   const frame = 2 ** frameExp;
-  const hop = Math.max(1, Math.round(frame / hopRatio));
+  const hop = Math.max(1, Math.round(frame / 4));
   const ms = (frame / SR) * 1000;
   const hopMs = (hop / SR) * 1000;
   const df = SR / frame;
@@ -39,13 +38,11 @@ export default function FramingLab() {
   const nFrames = Math.floor((total - frame) / hop) + 1;
 
   return (
-    <Lab title="调一调帧长和帧移"
-      hint="这段信号在正中间从 440 Hz 跳到 1200 Hz。帧越长，频率读得越准，但那一跳发生在哪一刻就越模糊。">
+    <Lab title="调一调帧长，看时间和频率的取舍"
+      hint="这段信号在正中间从 440 Hz 跳到 1200 Hz。帧移固定为帧长的四分之一；这里只改变帧长，频率读得越准，那一跳发生在哪一刻就越模糊。">
       <>
         <Slider label="帧长" value={frameExp} min={7} max={13} onChange={setFrameExp}
           fmt={(v) => `${2 ** v} 个样本（${((2 ** v / SR) * 1000).toFixed(1)} ms）`} />
-        <Slider label="帧移" value={hopRatio} min={1} max={8} onChange={setHopRatio}
-          fmt={(v) => `帧长 ÷ ${v} = ${Math.round(frame / v)} 个样本`} />
         <Choice label="窗" value={win} options={['hann', 'hamming', 'rect'] as const} onChange={setWin} />
       </>
       <>

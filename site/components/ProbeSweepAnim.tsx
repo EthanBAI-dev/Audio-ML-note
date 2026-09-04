@@ -30,8 +30,12 @@ export default function ProbeSweepAnim() {
   const maxScore = useMemo(() => Math.max(...probes.map((p) => p.score)), [probes]);
 
   const draw = useCallback((g: CanvasRenderingContext2D, w: number, h: number, t: number) => {
-    const idx = Math.min(probes.length - 1, Math.floor(t * probes.length));
-    const probe = probes[idx];
+    // 开发时热更新、浏览器恢复标签页等情况可能短暂传进 NaN 或越界进度。
+    // 动画不该因为一帧坏值拖垮整篇文章，所以这里仍做一次就地兜底。
+    const progress = Number.isFinite(t) ? Math.max(0, Math.min(1, t)) : 0;
+    const idx = Math.max(0, Math.min(probes.length - 1, Math.floor(progress * probes.length)));
+    const probe = probes[idx] ?? probes[0];
+    if (!probe) return;
     const p = { l: 52, r: 12 };
     const iw = w - p.l - p.r;
     const rowH = (h - 30) / 3;
