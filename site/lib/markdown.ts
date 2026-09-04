@@ -22,6 +22,7 @@ export const EXTERNAL: Record<string, { label: string; url: string }> = {
 /** 把课程目录里的相对路径改写成站点 URL。 */
 function rewritePaths(md: string, group: string): string {
   // 配图：本组 figures/... 与跨组 ../第GG课/figures/...
+  md = md.replace(/(["(])\.\.\/课程总纲\/figures\//g, '$1/figures/guide/');
   md = md.replace(/(["(])\.\.\/第(\d\d-\d\d)课\/figures\//g, (_m, q, g) => `${q}/figures/${g}/`);
   md = md.replace(/(["(])figures\//g, (_m, q) => `${q}/figures/${group}/`);
 

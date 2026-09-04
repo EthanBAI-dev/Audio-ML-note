@@ -8,7 +8,7 @@ export default function Lightbox() {
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const img = (e.target as HTMLElement)?.closest?.('.prose picture img') as HTMLImageElement | null;
+      const img = (e.target as HTMLElement)?.closest?.('.prose img') as HTMLImageElement | null;
       if (!img) return;
       e.preventDefault();
       setSrc(img.currentSrc || img.src);

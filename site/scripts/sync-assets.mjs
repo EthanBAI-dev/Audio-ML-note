@@ -14,7 +14,7 @@ let figs = 0;
 for (const d of readdirSync(COURSE)) {
   const m = /^第(\d\d-\d\d)课$/.exec(d);
   if (!m) continue;
-  for (const variant of ['desktop', 'mobile']) {
+  for (const variant of ['desktop', 'mobile', 'photo']) {
     const src = join(COURSE, d, 'figures', variant);
     if (!existsSync(src)) continue;
     const dst = join(PUB, 'figures', m[1], variant);

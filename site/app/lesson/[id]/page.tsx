@@ -57,21 +57,22 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
             <Article html={html} />
 
-            <nav className="pager" aria-label="上下讲">
-              {prev ? (
-                <Link href={`/lesson/${prev.id}`} className="pager-prev">
-                  <span className="pager-dir">← 上一讲 · {prev.id}</span>
-                  <span className="pager-title">{prev.title}</span>
-                </Link>
-              ) : <span />}
-              {next ? (
-                <Link href={`/lesson/${next.id}`} className="pager-next">
-                  <span className="pager-dir">下一讲 · {next.id} →</span>
-                  <span className="pager-title">{next.title}</span>
-                </Link>
-              ) : <span />}
-            </nav>
           </article>
+
+          <nav className={`pager${prev && next ? '' : ' single'}`} aria-label="上下讲">
+            {prev ? (
+              <Link href={`/lesson/${prev.id}`} className="pager-prev">
+                <span className="pager-dir">← 上一讲 · {prev.id}</span>
+                <span className="pager-title">{prev.title}</span>
+              </Link>
+            ) : null}
+            {next ? (
+              <Link href={`/lesson/${next.id}`} className="pager-next">
+                <span className="pager-dir">下一讲 · {next.id} →</span>
+                <span className="pager-title">{next.title}</span>
+              </Link>
+            ) : null}
+          </nav>
         </main>
       </div>
     </>
