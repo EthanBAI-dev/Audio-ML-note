@@ -235,6 +235,15 @@ function check(file) {
   if (/^>\s*\*\*读完能做到/m.test(md)) {
     add('ERROR', 1, '开头出现「读完能做到」那一行：和导读、小结互相复述，删掉，只留导读');
   }
+  if (isArticle) {
+    md.split(/\r?\n/).forEach((line, index) => {
+      const hit = line.match(/PPT|Notebook|幻灯片|源课件|源材料|原课程/i);
+      if (hit) {
+        add('ERROR', index + 1,
+          `读者正文出现内部来源痕迹「${hit[0]}」：直接讲知识，把来源只留在任务卡和交接文档`);
+      }
+    });
+  }
   checkTextBlocks(md, add);
 
 

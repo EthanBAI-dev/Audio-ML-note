@@ -14,7 +14,7 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   MODES, wide, doc, T, MT, R, L, P, O, header, headerH,
-  panel, curve, bars, legend,
+  panel, curve, legend,
   BLUE, WARM, GREEN, GOLD, INK, MUTED, GRID, PLATE,
 } from './lib/tutorial-figure.mjs';
 
@@ -91,23 +91,35 @@ FIG['03-timbre-three'] = (M) => {
   // —— 第二件事：泛音分布 ——
   s += T(px, y + 14, '② 泛音分布：整数倍频率上各有多强', { size: M.h2, weight: 700, fill: GREEN });
   y += 30;
-  const bh = 92;
+  const bh = 104;
   const order = [['violin_c', BLUE], ['sax', WARM], ['piano_c', MUTED]];
-  // 基频那一组三根柱永远都是 1.00（它就是基准），画出来只会让数字挤在一起。
-  // 只画 2–6 倍，基准写在标题里。
-  const groups = [];
-  for (let k = 1; k < 6; k += 1) {
-    groups.push({
-      name: `${k + 1} 倍`,
-      vals: order.map(([nm, c]) => ({ v: D.inst[nm].harm[k], c, t: D.inst[nm].harm[k].toFixed(2) })),
-    });
-  }
-  s += T(px + pw, y - 8, '纵轴：以各自的基频为 1.00', {
+  // 频率是连续轴，不用柱状图。这里只在 2—6 倍频率处有实测点，
+  // 折线仅用于帮助眼睛追踪同一件乐器，不代表两点之间另有实测频率。
+  const hp = panel(px, y, pw, bh, { xr: [0, 4], yr: [0, 3.0], fill: PLATE });
+  s += hp.s;
+  s += L(px, hp.sy(1), px + pw, hp.sy(1), { c: GRID, dash: '4 3' });
+  s += T(px + pw - 4, hp.sy(1) - 5, '基频强度 = 1.00', {
     size: tiny(M), fill: MUTED, anchor: 'end',
   });
-  // 数字字号压到 11：柱间距 22+6=28 px，13.5 px 的四字标签会互相压住
-  s += bars(px, y, pw, bh, groups, { bw: wide(M) ? 22 : 12, max: 3.0, vsize: 11 });
-  y += bh + 46;
+  order.forEach(([nm, c], oi) => {
+    const vals = D.inst[nm].harm.slice(1, 6);
+    s += curve(hp, vals, { c, w: 1.8, xr: [0, 4] });
+    vals.forEach((v, i) => {
+      s += O(hp.sx(i), hp.sy(v), 3.6, { fill: c });
+      if (i === 0) {
+        const dy = oi === 0 ? -7 : (oi === 1 ? 14 : -7);
+        s += T(hp.sx(i) + 5, hp.sy(v) + dy, v.toFixed(2), {
+          size: tiny(M), weight: 700, fill: c, anchor: 'middle',
+        });
+      }
+    });
+  });
+  for (let i = 0; i < 5; i += 1) {
+    s += T(hp.sx(i), y + bh + 18, `${i + 2} 倍`, {
+      size: tiny(M), fill: MUTED, anchor: 'middle',
+    });
+  }
+  y += bh + 32;
   s += legend(px, y, order.map(([nm, c]) => ({ c, name: D.inst[nm].zh })),
     { gap: wide(M) ? 110 : 90, size: tiny(M) });
   y += 24;
@@ -131,10 +143,17 @@ FIG['03-timbre-three'] = (M) => {
   s += T(px, y - 5, `tremolo.wav　全长 ${D.tremolo.dur} 秒`, {
     size: tiny(M), weight: 700, fill: GOLD,
   });
-  s += T(px + pw, y - 5,
-    `每 ${D.tremolo.period} 秒一次（${D.tremolo.rate} Hz），起伏 ${(D.tremolo.depth * 100).toFixed(0)}%`,
-    { size: tiny(M), weight: 700, fill: MUTED, anchor: 'end' });
+  if (wide(M)) {
+    s += T(px + pw, y - 5,
+      `每 ${D.tremolo.period} 秒一次（${D.tremolo.rate} Hz），起伏 ${(D.tremolo.depth * 100).toFixed(0)}%`,
+      { size: tiny(M), weight: 700, fill: MUTED, anchor: 'end' });
+  }
   y += th + 24;
+  if (!wide(M)) {
+    s += T(px, y, `每 ${D.tremolo.period} 秒一次（${D.tremolo.rate} Hz），起伏 ${(D.tremolo.depth * 100).toFixed(0)}%`,
+      { size: tiny(M), weight: 700, fill: MUTED });
+    y += 24;
+  }
   s += MT(px, y, wide(M)
     ? ['强弱周期性地抖叫颤音，高低周期性地抖叫揉弦。两者都不改变音高和平均响度，只改变听感。']
     : ['强弱周期性地抖叫颤音，高低抖叫揉弦。',

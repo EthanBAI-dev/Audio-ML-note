@@ -44,8 +44,10 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `framing.py` | 分帧、加窗、帧数与尾巴、帧的时间轴 | 06、08 |
 | `time_features.py` | 振幅包络、均方根、过零率、聚合 | 07、08、09 |
 | `probe.py` | 用已知频率去试探：读数、强度、相位、扫频 | 10 |
+| `spectral.py` | 单边 FFT、Hz 频率轴、相对 dB、频谱数据池化 | 14 |
+| `figdata.py` | 把脚本实测数据写成配图读取的 JSON | 贯穿各课 |
 
-后面的课会继续往这里加 `spectral.py`（第 13—15 课）和 `mel.py`（第 17—20 课）。
+第 15 课会继续给 `spectral.py` 加 STFT；第 17—20 课再加入 `mel.py`。
 
 ### `lessons/` 现在有什么
 
@@ -62,6 +64,10 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `lesson08_amplitude_envelope.py` | 08 | 振幅包络怎么写才对得准时间轴 |
 | `lesson09_rms_zcr.py` | 09 | 「两个特征一起看更好」到底好多少 |
 | `lesson10_fourier_intuition.py` | 10 | 只用乘法和平均，能不能把两个频率挑出来 |
+| `lesson11_complex.py` | 11 | 一个复数怎样同时装下强度和起点 |
+| `lesson12_complex_ft.py` | 12 | 复数形式的傅里叶变换能否完整往返 |
+| `lesson13_dft.py` | 13 | 有限个样本怎样变成可逆的有限 DFT，FFT 快多少 |
+| `lesson14_fft_spectrum.py` | 14 | 四段真实声音怎样变成可正确读取 Hz 横轴的低频幅度谱 |
 
 ## 输出怎么读
 

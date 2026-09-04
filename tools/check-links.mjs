@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // 检查所有 Markdown 里的相对链接和图片路径是否存在。
 //   node tools/check-links.mjs
+//   node tools/check-links.mjs --include-drafts
 // 退出码：0 = 全部有效；1 = 有失效链接。
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
@@ -8,12 +9,14 @@ import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const INCLUDE_DRAFTS = process.argv.includes('--include-drafts');
 
 function walk(dir) {
   return readdirSync(dir).flatMap((f) => {
     // 对照实验里放的是各种写法的试写稿，相对链接按正式稿的位置写的，
     // 在这里必然指不到，不参与检查。
-    if (f === 'node_modules' || f.startsWith('.git') || f === 'tmp' || f.endsWith('对照实验')) return [];
+    if (f === 'node_modules' || f.startsWith('.git') || f === 'tmp'
+      || (!INCLUDE_DRAFTS && f.endsWith('对照实验'))) return [];
     const p = join(dir, f);
     if (statSync(p).isDirectory()) return walk(p);
     return f.endsWith('.md') ? [p] : [];

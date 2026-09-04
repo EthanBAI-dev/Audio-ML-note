@@ -12,41 +12,18 @@ const [BLUE, ORANGE, GREEN, GOLD] = [PALETTE.s1, PALETTE.s2, PALETTE.s3, PALETTE
 const PURPLE = '#7656b5';
 const { ink: INK, muted: MUTED, grid: GRID, plate: PLATE } = PALETTE;
 
-const stages = [
-  {
-    range: '01—05', title: ['认识声音', '与数字录音'], question: ['声音分类要解决什么，', '声音怎样变成数字？'],
-    lessons: ['课程导论与任务', '声音、波形与音高', '分贝、响度与音色', '模拟声怎样数字化', '五种特征分类方法'],
-    result: ['认清课程问题与路线', '理解声音和录音参数'], color: BLUE, icon: 'views', start: 1,
-  },
-  {
-    range: '06—10', title: ['把录音变成', '可计算片段'], question: ['怎样沿时间切开声音，', '再提取基础证据？'],
-    lessons: ['两条特征提取流水线', '三种时域特征', '实现振幅包络', '实现 RMS 与过零率', '建立傅里叶直觉'],
-    result: ['会分帧和建立时间轴', '会计算时域特征'], color: ORANGE, icon: 'frames', start: 6,
-  },
-  {
-    range: '11—15', title: ['从波形进入', '时间—频率'], question: ['怎样找到有哪些频率，', '以及它们何时出现？'],
-    lessons: ['复数的模与相位', '傅里叶为何使用复数', 'DFT 与频率格', '正确读取 FFT', '短时傅里叶变换'],
-    result: ['正确计算频谱与 STFT', '理解矩阵形状和取舍'], color: GREEN, icon: 'fourier', start: 11,
-  },
-  {
-    range: '16—20', title: ['把频谱整理成', '可用的模型输入'], question: ['怎样让频率表示更稳定，', '也更接近听觉尺度？'],
-    lessons: ['可信的功率声谱图', '梅尔刻度与滤波器组', '对数梅尔频谱', 'MFCC 与 DCT', 'Delta 与 39 维拼接'],
-    result: ['实现对数梅尔与 MFCC', '固定参数和边界'], color: GOLD, icon: 'mel', start: 16,
-  },
-  {
-    range: '21—23', title: ['用少量数字', '概括一帧频谱'], question: ['怎样量出频率分布的', '比例、中心与扩散？'],
-    lessons: ['三类频域统计问题', '实现带能量比 BER', '计算质心与带宽'],
-    result: ['按任务选择频域特征', '保持权重与坐标一致'], color: PURPLE, icon: 'features', start: 21,
-  },
+const common = [
+  { range: '01', title: '先认清问题', body: ['为什么声音分类需要', '先把录音变成证据'], result: '明确课程目标与边界' },
+  { range: '02—04', title: '认识输入', body: ['声音、听感与波形', '连续声音怎样数字化'], result: '看懂录音中的数字' },
+  { range: '05—06', title: '建立方法', body: ['特征怎样分类', '录音怎样分帧和计算'], result: '得到统一提取步骤' },
 ];
 
-const outcomes = [
-  ['看懂', '波形、频谱与声谱图'],
-  ['计算', '时域特征、FFT 与 STFT'],
-  ['实现', '对数梅尔、MFCC 与 BER'],
-  ['排错', '单位、坐标、形状与边界'],
-  ['选择', '从任务证据到模型输入'],
-];
+const routes = {
+  time: { range: '07—09', title: '时域特征', body: ['直接沿时间观察波形', '量出强弱与正负变化'], result: '振幅包络 · RMS · 过零率', color: ORANGE },
+  freq: { range: '10—16', title: '频率与时间—频率', body: ['从傅里叶变换走到 STFT', '找到成分及其出现时间'], result: '频谱 · 声谱图（也可直接使用）', color: GREEN },
+  hearing: { range: '17—20', title: '听觉表示', body: ['按人耳的分辨方式', '重新整理频率'], result: '梅尔频谱 · MFCC', color: GOLD },
+  stats: { range: '21—23', title: '频谱统计', body: ['直接概括一帧频谱的', '比例、中心与宽度'], result: 'BER · 质心 · 带宽', color: PURPLE },
+};
 
 const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 function MT(x, y, lines, o = {}) {
@@ -123,66 +100,118 @@ function icon(type, x, y, w, h, c0) {
 }
 
 function desktop() {
-  const W = 880; const pad = 28; const gap = 12; const colW = (W - 2 * pad - 4 * gap) / 5; const top = 188; const stageH = 430;
-  let s = MT(pad, 35, ['从声音到机器学习特征：23 课课程总纲'], { size: 24, weight: 700 });
-  s += T(pad, 68, '目标不是背函数名，而是理解每一步保留什么、丢掉什么、参数错了会怎样', { size: 15, fill: MUTED });
-  s += R(pad, 92, W - 2 * pad, 70, { fill: '#eef5fd', stroke: '#cbdff5', sw: 1, r: 5 });
-  s += T(pad + 16, 119, '系列目的', { size: 15, weight: 700, fill: BLUE });
-  s += T(pad + 104, 119, '把空气振动变成电脑可计算、可解释、可复现的声音证据', { size: 17, weight: 700 });
-  s += T(pad + 104, 145, '终点是准备可信的模型输入；模型训练、网络结构与部署不在本系列范围内', { size: 13.5, fill: MUTED });
+  const W = 880; const pad = 28; const commonY = 112; const commonW = 260; const commonH = 112;
+  let s = MT(pad, 35, ['23 课的真实结构：共同基础之后，特征路线开始分叉'], { size: 23, weight: 700 });
+  s += T(pad, 68, '课程按课号学习；实际项目按任务选择，不必把所有特征首尾串联', { size: 15, fill: MUTED });
+  s += T(pad, 96, '所有路线共用', { size: 14, weight: 700, fill: BLUE });
 
-  stages.forEach((d, i) => {
-    const x = pad + i * (colW + gap); const y = top;
-    s += R(x, y, colW, stageH, { fill: i % 2 ? '#fbfcfd' : PLATE, stroke: GRID, sw: 1, r: 4 });
-    s += R(x, y, colW, 6, { fill: d.color, r: 2 });
-    s += T(x + 12, y + 32, d.range, { size: 14, weight: 700, fill: inkOf(d.color) });
-    s += MT(x + 12, y + 60, d.title, { size: 16.5, weight: 700, leading: 23 });
-    s += icon(d.icon, x + 18, y + 111, colW - 36, 55, d.color);
-    s += MT(x + 12, y + 194, d.question, { size: 13.5, weight: 700, fill: inkOf(d.color), leading: 20 });
-    s += L(x + 12, y + 239, x + colW - 12, y + 239, { c: GRID });
-    d.lessons.forEach((v, k) => { s += T(x + 14, y + 263 + k * 23, `${String(d.start + k).padStart(2, '0')}  ${v}`, { size: 12.5, fill: INK }); });
-    const ry = y + 385; s += L(x + 12, ry - 15, x + colW - 12, ry - 15, { c: d.color, w: 2 });
-    s += MT(x + 12, ry + 8, d.result, { size: 12.5, weight: 700, fill: inkOf(d.color), leading: 19 });
-    if (i < 4) s += arrow(x + colW + 2, y + 80, x + colW + gap - 2, y + 80, MUTED);
+  common.forEach((d, i) => {
+    const x = pad + i * 282;
+    s += R(x, commonY, commonW, commonH, { fill: '#eef5fd', stroke: '#cbdff5', sw: 1, r: 5 });
+    s += R(x, commonY, commonW, 5, { fill: BLUE, r: 2 });
+    s += T(x + 14, commonY + 29, d.range, { size: 14, weight: 700, fill: BLUE });
+    s += T(x + 70, commonY + 29, d.title, { size: 17, weight: 700 });
+    s += MT(x + 14, commonY + 55, d.body, { size: 13.5, fill: MUTED, leading: 19 });
+    s += T(x + 14, commonY + 99, d.result, { size: 13.5, weight: 700, fill: BLUE });
+    if (i < common.length - 1) s += arrow(x + commonW + 4, commonY + commonH / 2, x + commonW + 18, commonY + commonH / 2, MUTED);
   });
 
-  const oy = top + stageH + 35; s += T(pad, oy, '学完以后，读者能够', { size: 19, weight: 700 });
-  const ow = (W - 2 * pad - 4 * gap) / 5;
-  outcomes.forEach((d, i) => { const x = pad + i * (ow + gap); s += L(x, oy + 23, x + ow, oy + 23, { c: stages[i].color, w: 4 }); s += T(x, oy + 51, d[0], { size: 16, weight: 700, fill: inkOf(stages[i].color) }); s += MT(x, oy + 75, [d[1]], { size: 12.5, fill: MUTED }); });
-  s += T(W / 2, oy + 128, '一条主线：听懂声音 → 切分声音 → 看见频率 → 构建表示 → 提取特征', { size: 15, weight: 700, anchor: 'middle' });
-  return svgDoc(W, oy + 154, s, '从声音到机器学习特征的二十三课桌面课程总纲');
+  const routeCard = (x, y, w, h, d, label) => {
+    let o = R(x, y, w, h, { fill: '#fbfcfd', stroke: GRID, sw: 1, r: 5 });
+    o += R(x, y, 6, h, { fill: d.color, r: 2 });
+    o += T(x + 18, y + 29, `${label}  ${d.range}`, { size: 14, weight: 700, fill: inkOf(d.color) });
+    o += T(x + 18, y + 57, d.title, { size: 18, weight: 700 });
+    o += MT(x + 18, y + 84, d.body, { size: 13.5, fill: MUTED, leading: 20 });
+    o += L(x + 18, y + h - 34, x + w - 18, y + h - 34, { c: d.color, w: 2 });
+    o += T(x + 18, y + h - 12, d.result, { size: 13.5, weight: 700, fill: inkOf(d.color) });
+    return o;
+  };
+
+  const splitY = 263; const timeX = 28; const timeW = 282; const freqX = 340; const freqW = 512;
+  s += L(722, commonY + commonH, 722, splitY, { c: MUTED, w: 1.7 });
+  s += L(169, splitY, 722, splitY, { c: MUTED, w: 1.7 });
+  s += arrow(169, splitY, 169, 286, MUTED);
+  s += arrow(596, splitY, 596, 286, MUTED);
+  s += T(pad, 278, '可选的特征路线', { size: 14, weight: 700, fill: MUTED });
+  s += routeCard(timeX, 292, timeW, 162, routes.time, '路线 A');
+  s += routeCard(freqX, 292, freqW, 162, routes.freq, '路线 B');
+
+  const childY = 502; const childW = 246; const hearX = 340; const statsX = 606;
+  s += L(596, 454, 596, 480, { c: MUTED, w: 1.7 });
+  s += L(463, 480, 729, 480, { c: MUTED, w: 1.7 });
+  s += arrow(463, 480, 463, childY - 6, MUTED);
+  s += arrow(729, 480, 729, childY - 6, MUTED);
+  s += routeCard(hearX, childY, childW, 145, routes.hearing, '路线 C');
+  s += routeCard(statsX, childY, childW, 145, routes.stats, '路线 D');
+
+  const oy = 681;
+  s += R(pad, oy, W - 2 * pad, 62, { fill: '#fff8e5', stroke: '#f0d99d', sw: 1, r: 5 });
+  s += T(pad + 18, oy + 26, '实际任务', { size: 15, weight: 700, fill: '#7d5c00' });
+  s += T(pad + 104, oy + 26, '时域　＋／或　频谱/声谱图　＋／或　梅尔/MFCC　＋／或　频谱统计', { size: 14.5, weight: 700 });
+  s += T(pad + 104, oy + 49, '四类证据都能直接使用，也可以按任务组合', { size: 13.5, fill: MUTED });
+  return svgDoc(W, 770, s, '二十三课从共同基础分向四类声音特征的桌面课程路线图');
 }
 
 function mobile() {
-  const W = 420; const pad = 20; const spineX = 42; const boxX = 64; const boxW = W - boxX - pad; const stageH = 270; const gap = 22; const top = 254;
-  let s = MT(pad, 31, ['从声音到机器学习特征', '23 课课程总纲'], { size: 20, weight: 700, leading: 28 });
-  s += MT(pad, 96, ['不只会调用函数，还要知道：', '每一步保留什么、丢掉什么，', '参数错了会怎样。'], { size: 14, fill: MUTED, leading: 21 });
-  s += R(pad, 172, W - 2 * pad, 62, { fill: '#eef5fd', stroke: '#cbdff5', sw: 1, r: 4 });
-  s += MT(W / 2, 197, ['把声音变成可计算、可解释、', '可复现的证据'], { size: 14, weight: 700, fill: BLUE, leading: 21, anchor: 'middle' });
-  s += L(spineX, top + 18, spineX, top + stages.length * (stageH + gap) - gap - 18, { c: GRID, w: 4 });
+  const W = 420; const pad = 20; const boxX = 48; const boxW = 352;
+  let s = MT(pad, 31, ['23 课不是一条', '首尾相接的流水线'], { size: 20, weight: 700, leading: 28 });
+  s += MT(pad, 96, ['先学习共同基础，再按任务选择', '时域、频率、听觉表示或频谱统计。'], { size: 14, fill: MUTED, leading: 21 });
+  s += T(pad, 151, '所有路线共用', { size: 14, weight: 700, fill: BLUE });
 
-  stages.forEach((d, i) => {
-    const y = top + i * (stageH + gap); const cy = y + 26;
-    s += `<circle cx="${spineX}" cy="${cy}" r="13" fill="#fff" stroke="${d.color}" stroke-width="4"/>`;
-    s += L(spineX + 13, cy, boxX - 5, cy, { c: d.color, w: 2 });
-    s += R(boxX, y, boxW, stageH, { fill: i % 2 ? '#fbfcfd' : PLATE, stroke: GRID, sw: 1, r: 4 });
-    s += R(boxX, y, 6, stageH, { fill: d.color, r: 2 });
-    s += T(boxX + 17, y + 28, d.range, { size: 14, weight: 700, fill: inkOf(d.color) });
-    s += MT(boxX + 87, y + 27, d.title, { size: 17, weight: 700, leading: 22 });
-    s += icon(d.icon, boxX + boxW - 91, y + 17, 67, 48, d.color);
-    s += MT(boxX + 17, y + 82, d.question, { size: 14, weight: 700, fill: inkOf(d.color), leading: 20 });
-    s += L(boxX + 17, y + 126, boxX + boxW - 17, y + 126, { c: GRID });
-    const split = Math.ceil(d.lessons.length / 2);
-    d.lessons.forEach((v, k) => { const col = k >= split ? 1 : 0; const row = col ? k - split : k; const xx = boxX + 17 + col * (boxW - 34) / 2; s += T(xx, y + 151 + row * 22, `• ${v}`, { size: 14 }); });
-    s += L(boxX + 17, y + 214, boxX + boxW - 17, y + 214, { c: d.color, w: 2 });
-    s += MT(boxX + 17, y + 239, [`学会：${d.result[0]}`, d.result[1]], { size: 14, weight: 700, fill: inkOf(d.color), leading: 20 });
+  const commonCard = (d, y) => {
+    let o = R(boxX, y, boxW, 115, { fill: '#eef5fd', stroke: '#cbdff5', sw: 1, r: 5 });
+    o += R(boxX, y, 6, 115, { fill: BLUE, r: 2 });
+    o += T(boxX + 17, y + 27, d.range, { size: 14, weight: 700, fill: BLUE });
+    o += T(boxX + 83, y + 27, d.title, { size: 17, weight: 700 });
+    o += MT(boxX + 17, y + 53, d.body, { size: 14, fill: MUTED, leading: 20 });
+    o += L(boxX + 17, y + 84, boxX + boxW - 17, y + 84, { c: '#cbdff5' });
+    o += T(boxX + 17, y + 105, d.result, { size: 14, weight: 700, fill: BLUE });
+    return o;
+  };
+  const commonYs = [169, 302, 435];
+  common.forEach((d, i) => {
+    s += commonCard(d, commonYs[i]);
+    if (i < 2) s += arrow(W / 2, commonYs[i] + 118, W / 2, commonYs[i + 1] - 7, MUTED);
   });
 
-  const oy = top + stages.length * (stageH + gap) + 18; s += MT(pad, oy, ['学完以后，你能够'], { size: 19, weight: 700 });
-  outcomes.forEach((d, i) => { const y = oy + 32 + i * 52; s += L(pad, y, pad + 36, y, { c: stages[i].color, w: 5 }); s += T(pad + 49, y + 5, d[0], { size: 15, weight: 700, fill: inkOf(stages[i].color) }); s += T(pad + 105, y + 5, d[1], { size: 14, fill: MUTED }); });
-  const endY = oy + 318; s += R(pad, endY, W - 2 * pad, 69, { fill: '#fff8e5', stroke: '#f0d99d', sw: 1, r: 4 });
-  s += MT(W / 2, endY + 27, ['课程终点：准备可信的模型输入', '不包含模型训练、网络结构与部署'], { size: 14, weight: 700, fill: '#7d5c00', leading: 22, anchor: 'middle' });
-  return svgDoc(W, endY + 90, s, '从声音到机器学习特征的二十三课手机课程总纲');
+  s += T(pad, 585, '从这里开始，特征分成不同路线', { size: 16, weight: 700 });
+  s += L(34, 620, 34, 863, { c: GRID, w: 4 });
+  const routeCard = (d, y, label, x = 58, w = 342, h = 132) => {
+    let o = `<circle cx="34" cy="${y + 25}" r="10" fill="#fff" stroke="${d.color}" stroke-width="3"/>`;
+    o += L(44, y + 25, x - 5, y + 25, { c: d.color, w: 2 });
+    o += R(x, y, w, h, { fill: '#fbfcfd', stroke: GRID, sw: 1, r: 5 });
+    o += R(x, y, 6, h, { fill: d.color, r: 2 });
+    o += T(x + 17, y + 27, `${label}  ${d.range}`, { size: 14, weight: 700, fill: inkOf(d.color) });
+    o += T(x + 17, y + 55, d.title, { size: 17, weight: 700 });
+    o += MT(x + 17, y + 81, d.body, { size: 14, fill: MUTED, leading: 20 });
+    o += T(x + 17, y + h - 13, d.result, { size: 14, weight: 700, fill: inkOf(d.color) });
+    return o;
+  };
+  s += routeCard(routes.time, 620, '路线 A');
+  s += routeCard(routes.freq, 775, '路线 B', 58, 342, 145);
+
+  s += MT(77, 956, ['频率基础继续分成两条路线'], { size: 14, weight: 700, fill: GREEN });
+  s += L(67, 932, 67, 1225, { c: GRID, w: 3 });
+  const childCard = (d, y, label) => {
+    const x = 89; const w = 311; const h = 128;
+    let o = `<circle cx="67" cy="${y + 23}" r="9" fill="#fff" stroke="${d.color}" stroke-width="3"/>`;
+    o += L(76, y + 23, x - 5, y + 23, { c: d.color, w: 2 });
+    o += R(x, y, w, h, { fill: '#fbfcfd', stroke: GRID, sw: 1, r: 5 });
+    o += R(x, y, 6, h, { fill: d.color, r: 2 });
+    o += T(x + 17, y + 27, `${label}  ${d.range}`, { size: 14, weight: 700, fill: inkOf(d.color) });
+    o += T(x + 17, y + 54, d.title, { size: 17, weight: 700 });
+    o += MT(x + 17, y + 79, d.body, { size: 14, fill: MUTED, leading: 20 });
+    o += T(x + 17, y + h - 12, d.result, { size: 14, weight: 700, fill: inkOf(d.color) });
+    return o;
+  };
+  s += childCard(routes.hearing, 984, '路线 C');
+  s += childCard(routes.stats, 1133, '路线 D');
+
+  const endY = 1295;
+  s += R(pad, endY, W - 2 * pad, 112, { fill: '#fff8e5', stroke: '#f0d99d', sw: 1, r: 5 });
+  s += T(W / 2, endY + 29, '实际任务：选择或组合', { size: 16, weight: 700, fill: '#7d5c00', anchor: 'middle' });
+  s += MT(W / 2, endY + 55, ['时域 · 频谱/声谱图', '梅尔与 MFCC · 频谱统计', '四类证据都能直接使用'], { size: 14, fill: MUTED, leading: 20, anchor: 'middle' });
+  return svgDoc(W, 1432, s, '二十三课从共同基础分向四类声音特征的手机课程路线图');
 }
 
 for (const [mode, draw] of [['desktop', desktop], ['mobile', mobile]]) {
