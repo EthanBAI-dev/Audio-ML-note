@@ -3,7 +3,7 @@
 //
 //   node tools/build-cards-21-23.mjs
 //
-// 输出 NotebookLM课程博客_重写版/零基础版_21-23/figures/card/
+// 输出 音频信号处理二十三讲/第21-23课/figures/card/
 //
 // 这一组讲三个频域统计量，图里到处是「同一帧频谱 + 一条标注线」，
 // 所以把 frameSpectrum / centroid / bandwidth / berCurve 抽成公用函数，
@@ -21,7 +21,7 @@ import {
 } from './lib/card.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_21-23', 'figures', 'card');
+const OUT = join(ROOT, '音频信号处理二十三讲/', '第21-23课', 'figures', 'card');
 mkdirSync(OUT, { recursive: true });
 
 const SR = 16000;

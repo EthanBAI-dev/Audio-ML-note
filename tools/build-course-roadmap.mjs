@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { svgDoc, T, R, L, P, PALETTE } from './lib/figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BASE = join(ROOT, 'NotebookLM课程博客_重写版', '课程总纲', 'figures');
+const BASE = join(ROOT, '音频信号处理二十三讲/', '课程总纲', 'figures');
 const [BLUE, ORANGE, GREEN, GOLD] = [PALETTE.s1, PALETTE.s2, PALETTE.s3, PALETTE.s4];
 const PURPLE = '#7656b5';
 const { ink: INK, muted: MUTED, grid: GRID, plate: PLATE } = PALETTE;

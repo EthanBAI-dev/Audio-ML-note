@@ -5,7 +5,7 @@
 //   node tools/check-concept-overlap.mjs --dir <路径>    # 只查某个目录
 //   node tools/check-concept-overlap.mjs --list          # 另外列出所有跨篇加粗的词
 //
-// 归属表 OWNER 是从原始课程扫出来的，依据是 NotebookLM课程博客_重写版/原始素材大纲.md
+// 归属表 OWNER 是从原始课程扫出来的，依据是 参考资料/原始素材大纲.md
 // （由 tools/extract-source-outline.py 生成）。改归属之前先去那份大纲里对一遍。
 //
 // 两道检查：
@@ -21,7 +21,7 @@ import { join, dirname, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BASE = join(ROOT, 'NotebookLM课程博客_重写版');
+const BASE = join(ROOT, '音频信号处理二十三讲/');
 
 // ---------------------------------------------------------------- 归属表
 // 概念 → 主场课号。来源是 source_course 每一课的幻灯片标题，见原始素材大纲。
@@ -79,8 +79,7 @@ const dirArg = process.argv.indexOf('--dir');
 const roots = dirArg > -1
   ? [resolve(process.argv[dirArg + 1])]
   : [
-    ...readdirSync(BASE).filter((d) => d.startsWith('零基础版_')).map((d) => join(BASE, d)),
-    join(BASE, '改写对照实验', 'B-教程式'),
+    ...readdirSync(BASE).filter((d) => /^第\d\d-\d\d课$/.test(d)).map((d) => join(BASE, d)),
   ].filter(existsSync);
 
 const groups = [];

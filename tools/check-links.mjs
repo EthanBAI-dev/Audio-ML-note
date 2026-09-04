@@ -24,7 +24,7 @@ function walk(dir) {
 }
 
 const files = [
-  ...walk(join(ROOT, 'NotebookLM课程博客_重写版')),
+  ...walk(join(ROOT, '音频信号处理二十三讲/')),
   join(ROOT, 'README.md'),
   join(ROOT, 'SKILL.md'),
 ].filter(existsSync);

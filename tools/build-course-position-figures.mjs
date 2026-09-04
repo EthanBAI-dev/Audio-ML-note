@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { svgDoc, T, R, L, PALETTE } from './lib/figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BASE = join(ROOT, 'NotebookLM课程博客_重写版');
+const BASE = join(ROOT, '音频信号处理二十三讲/');
 const { ink: INK, muted: MUTED, grid: GRID, plate: PLATE } = PALETTE;
 const COLORS = [PALETTE.s1, PALETTE.s2, PALETTE.s3, '#a5761a', '#7656b5'];
 
@@ -22,27 +22,27 @@ const stages = [
   {
     range: '01—05', short: '声音基础', title: '认识声音与数字录音',
     goal: '先认清课程任务，再理解声音怎样产生、记录并变成可计算的数字',
-    start: 1, end: 5, dir: '零基础版_01-05',
+    start: 1, end: 5, dir: '第01-05课',
   },
   {
     range: '06—10', short: '时域特征', title: '把录音变成可计算片段',
     goal: '把整段声音切成短片段，再逐段算出可以比较的数字',
-    start: 6, end: 10, dir: '零基础版_06-10',
+    start: 6, end: 10, dir: '第06-10课',
   },
   {
     range: '11—15', short: '傅里叶', title: '从波形进入时间—频率',
     goal: '找出声音里有哪些频率，以及它们分别在什么时候出现',
-    start: 11, end: 15, dir: '零基础版_11-15',
+    start: 11, end: 15, dir: '第11-15课',
   },
   {
     range: '16—20', short: '梅尔/MFCC', title: '把频谱整理成模型输入',
     goal: '把上千个频率成分压成几十个更接近听觉的数字',
-    start: 16, end: 20, dir: '零基础版_16-20',
+    start: 16, end: 20, dir: '第16-20课',
   },
   {
     range: '21—23', short: '频域统计', title: '用少量数字概括频谱',
     goal: '用三个能解释的统计量概括一帧频谱',
-    start: 21, end: 23, dir: '零基础版_21-23',
+    start: 21, end: 23, dir: '第21-23课',
   },
 ];
 

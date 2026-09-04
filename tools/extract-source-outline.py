@@ -2,7 +2,7 @@
 """把 source_course 里 23 课的原始 PPT 和 notebook 扫成一份大纲。
 
 用法：python tools/extract-source-outline.py
-产出：NotebookLM课程博客_重写版/原始素材大纲.md
+产出：参考资料/原始素材大纲.md
 
 为什么要这个：写文章之前必须知道原始课程每一课到底讲了哪些点，否则
 同一个概念会在两三课里各讲一遍（2026-09-03 就发生过：均方根在 03、07、
@@ -29,9 +29,9 @@ import pymupdf
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "source_course")
-OUT = os.path.join(ROOT, "NotebookLM课程博客_重写版", "原始素材大纲.md")
+OUT = os.path.join(ROOT, "音频信号处理二十三讲/", "原始素材大纲.md")
 # 逐页全文，一课一个文件。大纲只够检索，写作时要看这一份。
-FULL_DIR = os.path.join(ROOT, "NotebookLM课程博客_重写版", "PPT内容")
+FULL_DIR = os.path.join(ROOT, "音频信号处理二十三讲/", "PPT内容")
 
 
 def norm(t):

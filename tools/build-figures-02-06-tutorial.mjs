@@ -18,10 +18,10 @@ import {
 } from './lib/tutorial-figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const REWRITE = join(ROOT, 'NotebookLM课程博客_重写版');
+const REWRITE = join(ROOT, '音频信号处理二十三讲/');
 // 图名开头的课号决定它归哪一组，06 的图不能落到 01-05 的目录里
 const baseFor = (name) => join(REWRITE,
-  Number(name.slice(0, 2)) <= 5 ? '零基础版_01-05' : '零基础版_06-10', 'figures');
+  Number(name.slice(0, 2)) <= 5 ? '第01-05课' : '第06-10课', 'figures');
 
 const FIG = {};
 

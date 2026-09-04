@@ -3,7 +3,7 @@
 //
 //   node tools/build-cards-11-15.mjs
 //
-// 输出 NotebookLM课程博客_重写版/零基础版_11-15/figures/card/
+// 输出 音频信号处理二十三讲/第11-15课/figures/card/
 //
 // 约束和 06–10 那组一样：宽 912、高 ≤ 900、最小字号 32。
 // 这一组讲复数和频率轴，箭头、圆和坐标多，所以额外写了一个平面画板 plane()，
@@ -22,7 +22,7 @@ import {
 } from './lib/card.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_11-15', 'figures', 'card');
+const OUT = join(ROOT, '音频信号处理二十三讲/', '第11-15课', 'figures', 'card');
 mkdirSync(OUT, { recursive: true });
 
 const SR = 16000;

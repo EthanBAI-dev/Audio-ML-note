@@ -3,7 +3,7 @@
 //
 //   node tools/build-cards-01-05.mjs
 //
-// 输出 NotebookLM课程博客_重写版/零基础版_01-05/figures/card/
+// 输出 音频信号处理二十三讲/第01-05课/figures/card/
 //
 // 与网页版（desktop 880 / mobile 420）的区别：
 //   卡片正文可用宽 912、图片高度上限 900，而且卡片在手机上会整体缩到 0.361，
@@ -22,7 +22,7 @@ import {
 } from './lib/card.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_01-05', 'figures', 'card');
+const OUT = join(ROOT, '音频信号处理二十三讲/', '第01-05课', 'figures', 'card');
 mkdirSync(OUT, { recursive: true });
 
 // ---------- 素材 ----------

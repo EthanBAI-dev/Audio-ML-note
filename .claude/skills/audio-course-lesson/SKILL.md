@@ -1,6 +1,6 @@
 ---
 name: audio-course-lesson
-description: Write or rewrite one lesson of the Chinese zero-background audio-signal-processing course as a PPT-spine-first runnable tutorial. Use when the user asks to draft, rewrite, audit or improve a lesson in NotebookLM课程博客_重写版, wants a readability or jargon audit, a title and lead rewrite, figure planning, or a batch review of the course's Markdown articles. Preserves the source PPT/notebook teaching order, then applies zero-background, experiment, code and figure rules.
+description: Write or rewrite one lesson of the Chinese zero-background audio-signal-processing course as a PPT-spine-first runnable tutorial. Use when the user asks to draft, rewrite, audit or improve a lesson in 音频信号处理二十三讲/, wants a readability or jargon audit, a title and lead rewrite, figure planning, or a batch review of the course's Markdown articles. Preserves the source PPT/notebook teaching order, then applies zero-background, experiment, code and figure rules.
 ---
 
 # Audio Course Lesson Writer
@@ -13,11 +13,11 @@ description: Write or rewrite one lesson of the Chinese zero-background audio-si
 
 ## 零、最高优先级：PPT / notebook 决定课程骨架
 
-写一篇之前必须先读对应的 `source_course/NN - .../`：概念课直接看 PDF 的逐页演示，代码课按 Jupyter Notebook（`.ipynb`）的单元格顺序看。然后按内容匹配并扫描 `notebooklm博客/*.md`：它们是 NotebookLM 生成的补充博客稿，不是可执行 Notebook，只能补充解释、例子和检索线索，不能替代 PDF / `.ipynb` 的课程顺序。`NotebookLM课程博客_重写版/原始素材大纲.md` 也只用于检索，**不能代替直接看源文件**，因为提取文本会丢掉动画展开顺序、图与公式之间的关系。
+写一篇之前必须先读对应的 `source_course/NN - .../`：概念课直接看 PDF 的逐页演示，代码课按 Jupyter Notebook（`.ipynb`）的单元格顺序看。然后按内容匹配并扫描 `notebooklm博客/*.md`：它们是 NotebookLM 生成的补充博客稿，不是可执行 Notebook，只能补充解释、例子和检索线索，不能替代 PDF / `.ipynb` 的课程顺序。`参考资料/原始素材大纲.md` 也只用于检索，**不能代替直接看源文件**，因为提取文本会丢掉动画展开顺序、图与公式之间的关系。
 
 批量改写时，先读完整组源材料并建立归属表，再改任何一篇。当前 01—10 的唯一结构依据是：
 
-`NotebookLM课程博客_重写版/改写对照实验/PPT脉络与内容归属表.md`
+`参考资料/概念归属表.md`
 
 执行顺序固定为：记录源顺序 → 写清承接 / 新内容 / 留给后课的内容 → 标注当前段落去留 → 完成源实验 → 成文 → 定稿后画图。
 
@@ -169,7 +169,7 @@ FAQ、速查表、Before / After、对照表和“加一层”都是**可选工�
 
 01—10 的详细归属、允许的预告、实验边界和文件级任务全部见：
 
-`NotebookLM课程博客_重写版/改写对照实验/PPT脉络与内容归属表.md`
+`参考资料/概念归属表.md`
 
 `原始素材大纲.md` 和 `tools/check-concept-overlap.mjs` 只是辅助检查。检查器的 ERROR 0 不能证明文章跟着 PPT 走，也识别不了换一种说法后的重复。
 
@@ -196,7 +196,7 @@ FAQ、速查表、Before / After、对照表和“加一层”都是**可选工�
 
 1. 批量任务先扫描整组源材料，建立 / 更新 `PPT脉络与内容归属表.md`；单篇任务也必须读前后两课。
 2. 直接查看 PDF 页序和 notebook 单元格；再用 `原始素材大纲.md` 查关键词。不能只看自动提取文本。
-3. **保留原稿。** 试写和改写写到 `*对照实验/`，没有明确授权不覆盖 `零基础版_*/`。
+3. **保留原稿。** 正式文章在 `音频信号处理二十三讲/第NN-NN课/`；改写前先确认改的是哪一篇，没有明确授权不要整篇覆盖。
 4. 按源顺序列文章骨架，逐项标出保留、移动、删除、补台阶、实验和配图。先处理课程错位，再处理句子与术语。
 5. 按 `references/zero-basis-rules.md` 做读者模拟，并用 `references/rubric.md` 记录 P0—P3 问题。
 6. 先改并运行对应 `课程代码/lessons/lessonNN_*.py`，确认源实验跑通；再写正文中的代码、输出与解释。
@@ -210,7 +210,7 @@ FAQ、速查表、Before / After、对照表和“加一层”都是**可选工�
 ## 八、参考文件
 
 - `references/zero-basis-rules.md` —— 术语准入、开头规则、密度检查、读者模拟。动笔前读。
-- `NotebookLM课程博客_重写版/改写对照实验/PPT脉络与内容归属表.md` —— 01—10 的源课顺序、概念边界、实验和文件级执行清单。01—10 动笔前必读。
+- `参考资料/概念归属表.md` —— 01—10 的源课顺序、概念边界、实验和文件级执行清单。01—10 动笔前必读。
 - `references/data-figures.md` —— 真实数据要求、栅格嵌 SVG、色标约定、三版式、图注规则。**做图前必读。**
 - `references/mobile-figures.md` —— 窄屏 SVG 版式、字号与 360 px 验证规则。
 - `references/article-shape.md` —— 文章的自然形状与一个前后对照的例子。

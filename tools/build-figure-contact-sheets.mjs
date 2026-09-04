@@ -36,7 +36,7 @@ const label = (text, w) => Buffer.from(
 );
 
 for (const series of seriesList) {
-  const BASE = join(ROOT, 'NotebookLM课程博客_重写版', `零基础版_${series}`, 'figures');
+  const BASE = join(ROOT, '音频信号处理二十三讲', `第${series}课`, 'figures');
   for (const layout of layouts) {
     const dir = join(BASE, layout);
     if (!existsSync(dir)) { console.log(`跳过 ${series}/${layout}（不存在）`); continue; }

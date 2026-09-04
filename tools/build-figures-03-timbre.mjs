@@ -19,7 +19,7 @@ import {
 } from './lib/tutorial-figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BASE = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_01-05', 'figures');
+const BASE = join(ROOT, '音频信号处理二十三讲/', '第01-05课', 'figures');
 const D = JSON.parse(readFileSync(join(ROOT, 'tools', 'data', '03-timbre.json'), 'utf8'));
 const tiny = (M) => (wide(M) ? 12.5 : 14);
 

@@ -18,8 +18,8 @@ import {
 import { spectrogramPng, matrixPng, image, colorbar } from './lib/figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BASE = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_16-20', 'figures');
-const DATA = join(ROOT, 'NotebookLM课程博客_重写版', '课程代码', 'data');
+const BASE = join(ROOT, '音频信号处理二十三讲/', '第16-20课', 'figures');
+const DATA = join(ROOT, '音频信号处理二十三讲/', '课程代码', 'data');
 const D = (n) => JSON.parse(readFileSync(join(DATA, `lesson${n}.json`), 'utf8'));
 
 // 手机版 420 缩到 360 是 0.857 倍，图内最小字号要 >= 14

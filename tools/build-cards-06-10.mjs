@@ -3,7 +3,7 @@
 //
 //   node tools/build-cards-06-10.mjs
 //
-// 输出 NotebookLM课程博客_重写版/零基础版_06-10/figures/card/
+// 输出 音频信号处理二十三讲/第06-10课/figures/card/
 //
 // 卡片版和网页版（desktop 880 / mobile 420）的差别只有一条，但影响一切：
 // 卡片在手机上整体缩到 0.361，图内字号必须 ≥ 32 才等于正文 36px 的量级。
@@ -20,7 +20,7 @@ import {
 } from './lib/card.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_06-10', 'figures', 'card');
+const OUT = join(ROOT, '音频信号处理二十三讲/', '第06-10课', 'figures', 'card');
 mkdirSync(OUT, { recursive: true });
 
 const SR = 16000;

@@ -11,8 +11,8 @@ import {
 } from './lib/tutorial-figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BASE = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_21-23', 'figures');
-const DATA = join(ROOT, 'NotebookLM课程博客_重写版', '课程代码', 'data');
+const BASE = join(ROOT, '音频信号处理二十三讲/', '第21-23课', 'figures');
+const DATA = join(ROOT, '音频信号处理二十三讲/', '课程代码', 'data');
 const D = (n) => JSON.parse(readFileSync(join(DATA, `lesson${n}.json`), 'utf8'));
 const d21 = D(21);
 const d22 = D(22);

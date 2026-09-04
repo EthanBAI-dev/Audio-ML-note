@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from '../audio-dsp-learning-site/node_modules/sharp/lib/index.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const SRC = process.argv[2] ?? join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_01-05');
+const SRC = process.argv[2] ?? join(ROOT, '音频信号处理二十三讲/', '第01-05课');
 const OUT = process.argv[3] ?? join(ROOT, 'tmp', 'preview-零基础版');
 
 // ---------- 图片 ----------

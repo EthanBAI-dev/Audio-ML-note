@@ -17,7 +17,7 @@ import {
 } from './lib/tutorial-figure.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BASE = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_06-10', 'figures');
+const BASE = join(ROOT, '音频信号处理二十三讲/', '第06-10课', 'figures');
 const D = (n) => JSON.parse(readFileSync(join(ROOT, 'tools', 'data', `${n}.json`), 'utf8'));
 // 手机版整张图从 420 缩到 360 px，是 0.857 倍。图内最小字号必须 >= 11.5/0.857
 // = 13.5 px，否则 check-svg-mobile 会报 ERROR。电脑版不缩，12.5 就够。

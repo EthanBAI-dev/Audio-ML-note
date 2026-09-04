@@ -3,7 +3,7 @@
 //
 //   node tools/build-cards-16-20.mjs
 //
-// 输出 NotebookLM课程博客_重写版/零基础版_16-20/figures/card/
+// 输出 音频信号处理二十三讲/第16-20课/figures/card/
 //
 // 这一组图大半是热力图（声谱图、梅尔谱、MFCC 矩阵），SVG 画不动，
 // 一律先渲成 PNG 再嵌进 SVG，坐标和文字仍然是真正的 <text>。
@@ -21,7 +21,7 @@ import {
 } from './lib/card.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'NotebookLM课程博客_重写版', '零基础版_16-20', 'figures', 'card');
+const OUT = join(ROOT, '音频信号处理二十三讲/', '第16-20课', 'figures', 'card');
 mkdirSync(OUT, { recursive: true });
 
 const SR = 16000;

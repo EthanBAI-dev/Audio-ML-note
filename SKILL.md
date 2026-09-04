@@ -24,13 +24,13 @@
 - 改完任何一篇跑一次检查，ERROR 必须为 0：
 
 ```bash
-node ".claude/skills/audio-course-lesson/scripts/check-readability.mjs" "NotebookLM课程博客_重写版/零基础版_01-05"
+node ".claude/skills/audio-course-lesson/scripts/check-readability.mjs" "音频信号处理二十三讲/第01-05课"
 ```
 
 改完配图后按 360 px 手机正文宽度检查：
 
 ```bash
-node ".claude/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" "NotebookLM课程博客_重写版/零基础版_01-05/figures"
+node ".claude/skills/audio-course-lesson/scripts/check-svg-mobile.mjs" "音频信号处理二十三讲/第01-05课/figures"
 ```
 
-第一批成果见 [零基础版_01-05](NotebookLM课程博客_重写版/零基础版_01-05/README.md)。
+第一批成果见 [第01-05课](音频信号处理二十三讲/第01-05课/README.md)。
