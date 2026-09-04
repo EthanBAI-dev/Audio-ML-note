@@ -5,6 +5,7 @@ import './globals.css';
 import Lightbox from '../components/Lightbox';
 import SiteNav from '../components/SiteNav';
 import BackToTop from '../components/BackToTop';
+import AshParticles from '../components/AshParticles';
 import { groups } from '../lib/lessons';
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}` }} />
       </head>
       <body>
+        <AshParticles />
         <SiteNav />
         {children}
         <footer className="foot">

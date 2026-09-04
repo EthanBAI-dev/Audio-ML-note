@@ -23,19 +23,19 @@ export default function Home() {
           </p>
         </section>
 
-        <section className="course-docs" aria-labelledby="course-docs-title">
-          <div className="course-docs-head">
-            <p className="eyebrow">开始之前</p>
-            <h2 id="course-docs-title">先看全貌，再进入 23 讲</h2>
-          </div>
-          <div className="course-docs-grid">
-            <Link href="/guide" className="course-doc">
-              <span className="course-doc-kicker">课程导览</span>
-              <strong>学习地图与实践项目</strong>
-              <span>一次看清课程边界、四条特征路线、最终产物，以及 23 个实验怎样连起来。</span>
-              <i aria-hidden>查看导览 →</i>
-            </Link>
-          </div>
+        <section className="group group-intro" aria-labelledby="course-docs-title">
+          <h2 id="course-docs-title"><span className="group-range">00</span>开始之前</h2>
+          <ul className="lesson-list">
+            <li>
+              <Link href="/guide">
+                <span className="lesson-n">导览</span>
+                <span className="lesson-body">
+                  <span className="lesson-title">学习地图与实践项目</span>
+                  <span className="lesson-lead"><span>一次看清课程边界、四条特征路线、最终产物，以及 23 个实验怎样连起来。</span></span>
+                </span>
+              </Link>
+            </li>
+          </ul>
         </section>
 
         {gs.map((g) => (
