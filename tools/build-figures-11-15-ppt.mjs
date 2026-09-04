@@ -24,6 +24,7 @@ const D = (n) => JSON.parse(readFileSync(join(DATA, `lesson${n}.json`), 'utf8'))
 const tiny = (M) => (wide(M) ? 12.5 : 14);
 
 const d11 = D('11');
+const d12 = D('12');
 const FIG = {};
 
 /** 画一块复平面：返回坐标换算函数和已画好的坐标轴。
@@ -232,6 +233,167 @@ FIG['11-two-probes-one-number'] = (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 3 : 4) * 21 + 8;
   return doc(M.W, y, s, '两支试探波的读数拼成一个复数后，模是强度、角是相位');
+};
+
+// ================================================================ 12
+
+// PPT p8/p15：一个频率对应一个复数系数，模是幅度、角是相位。
+FIG['12-one-coefficient'] = (M) => {
+  const head = ['一个频率算出一个复数，', '模是幅度、角是相位'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const size = w ? 180 : Math.min(pw, 210);
+  const p = plane(px, y, size, 1.35, M);
+  s += p.s;
+  s += L(p.X(0), p.Y(0), p.X(d12.c[0]), p.Y(d12.c[1]), { c: WARM, w: 2.4 });
+  s += O(p.X(d12.c[0]), p.Y(d12.c[1]), 5, { fill: WARM });
+  s += T(p.X(d12.c[0]) + 8, p.Y(d12.c[1]) + 14, 'c', { size: M.h2, weight: 700, fill: WARM });
+
+  const rx = w ? px + size + 26 : px;
+  let ry = w ? y + 14 : y + size + 26;
+  const rw = w ? pw - size - 26 : pw;
+  const rows = [
+    ['实部 Re(c)', d12.c[0].toFixed(4), '余弦那支试探波的读数', BLUE],
+    ['虚部 Im(c)', d12.c[1].toFixed(4), '正弦那支试探波的读数', GREEN],
+    ['模 |c|', d12.c_mag.toFixed(4), '幅度：这个频率有多强', WARM],
+    ['角 ∠c', d12.c_ang.toFixed(4) + ' 弧度', '相位：从哪里起步', WARM],
+  ];
+  rows.forEach((r) => {
+    s += R(rx, ry, rw, w ? 34 : 44, { fill: PLATE, stroke: r[3], sw: 1.3, r: 6 });
+    s += T(rx + 10, ry + (w ? 22 : 19), r[0], { size: tiny(M), weight: 700, fill: r[3] });
+    s += T(rx + (w ? rw * 0.34 : 10), ry + (w ? 22 : 37), r[1],
+      { size: tiny(M), weight: 700, fill: INK });
+    s += T(rx + rw - 10, ry + (w ? 22 : 19), r[2],
+      { size: tiny(M), fill: MUTED, anchor: 'end' });
+    ry += (w ? 40 : 50);
+  });
+  y = Math.max(y + size, ry) + 12;
+
+  s += MT(px, y, w
+    ? ['模和角不是从系数里「再算一次」得到的——它们就是同一个点的另一套坐标。',
+      '第 11 课已经验证过：模等于第 10 课量到的强度，角等于第 10 课量到的相位。']
+    : ['模和角不是再算一次得到的，它们就是同一个点',
+      '的另一套坐标。第 11 课验证过：模＝强度，',
+      '角＝相位。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 8;
+  return doc(M.W, y, s, '一个频率对应一个复数系数，模是幅度、角是相位');
+};
+
+// PPT p38/p39：幅度谱与相位谱是同一次变换的两半。
+FIG['12-mag-and-phase'] = (M) => {
+  const head = ['幅度谱和相位谱，', '来自同一次变换'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const f0 = d12.freqs[0];
+  const f1 = d12.freqs[d12.freqs.length - 1];
+  const X = (f) => px + ((f - f0) / (f1 - f0)) * pw;
+  const ph = w ? 92 : 80;
+
+  // 幅度谱
+  const mx = Math.max.apply(null, d12.mag);
+  const p1 = panel(px, y, pw, ph, {
+    yr: [0, mx * 1.18], title: '幅度谱（取模）', tsize: M.small, tfill: BLUE,
+  });
+  s += p1.s + curve(p1, d12.mag, { c: BLUE, w: 1.6 });
+  [[440, d12.mag[d12.freqs.findIndex((f) => f >= 440)]],
+    [880, d12.mag[d12.freqs.findIndex((f) => f >= 880)]]].forEach((q) => {
+    s += O(X(q[0]), p1.sy(q[1]), 4, { fill: WARM });
+    s += T(X(q[0]) + 7, p1.sy(q[1]) - 5, `${q[0]} Hz　${q[1].toFixed(4)}`,
+      { size: tiny(M), weight: 700, fill: WARM });
+  });
+  y += ph + 26;
+
+  // 相位谱
+  const p2 = panel(px, y, pw, ph, {
+    yr: [-3.4, 3.4], zero: true,
+    title: '相位谱（取角）', tsize: M.small, tfill: GOLD,
+  });
+  s += p2.s + curve(p2, d12.phase, { c: GOLD, w: 1.1 });
+  [440, 880].forEach((hz) => {
+    const i = d12.freqs.findIndex((f) => f >= hz);
+    s += O(X(hz), p2.sy(d12.phase[i]), 4, { fill: WARM });
+  });
+  y += ph + 26;
+
+  s += MT(px, y - 6, w
+    ? ['两条谱不是算了两遍——同一批复数系数，取模得上面那条，取角得下面那条。',
+      '注意下面那条大部分位置在乱跳：那些频率上幅度只有 1e-17 量级，',
+      '幅度是零时「从哪里起步」这个问题本身不成立，角完全由浮点残渣决定。',
+      '所以读相位谱之前必须先看幅度谱，只有峰所在的位置才值得读。']
+    : ['两条谱不是算了两遍：同一批复数系数，取模得',
+      '上面那条，取角得下面那条。下面大部分在乱跳，',
+      '因为那些频率的幅度只有 1e-17 量级——幅度是零',
+      '时，角完全由浮点残渣决定，读它没有意义。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 4 : 4) * 21 + 8;
+  return doc(M.W, y, s, '幅度谱与相位谱是同一次变换的两半');
+};
+
+// PPT p44–p50：一次完整往返，以及丢掉相位的后果。
+FIG['12-roundtrip'] = (M) => {
+  const head = ['带相位能拼回原波形，', '丢掉相位就拼不回来'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const ph = w ? 96 : 84;
+  const p1 = panel(px, y, pw, ph, {
+    yr: [-1.7, 1.7], zero: true,
+    title: '原波形（粗）与带相位重建（细）——完全重合',
+    tsize: M.small, tfill: GREEN,
+  });
+  s += p1.s + curve(p1, d12.wave, { c: '#9fc4dd', w: 4 })
+    + curve(p1, d12.rec, { c: GREEN, w: 1.4 });
+  y += ph + 26;
+
+  const p2 = panel(px, y, pw, ph, {
+    yr: [-1.7, 1.7], zero: true,
+    title: '把相位当成 0 之后的重建——形状明显不同',
+    tsize: M.small, tfill: WARM,
+  });
+  s += p2.s + curve(p2, d12.wave, { c: '#9fc4dd', w: 4 })
+    + curve(p2, d12.rec_nophase, { c: WARM, w: 1.4 });
+  y += ph + 26;
+
+  const cards = [
+    ['带相位重建', d12.err.toExponential(3), '浮点残渣', GREEN],
+    ['丢掉相位重建', d12.err_nophase.toFixed(4), `大了 ${(d12.err_nophase / d12.err).toExponential(1)} 倍`, WARM],
+  ];
+  const cw = w ? (pw - 16) / 2 : pw;
+  cards.forEach((c, i) => {
+    const bx = w ? px + i * (cw + 16) : px;
+    const by = w ? y : y + i * 62;
+    s += R(bx, by, cw, 54, { fill: PLATE, stroke: c[3], sw: 1.5, r: 8 });
+    s += T(bx + 12, by + 21, c[0], { size: tiny(M), fill: MUTED });
+    s += T(bx + 12, by + 43, c[1], { size: 17, weight: 700, fill: c[3] });
+    s += T(bx + cw - 12, by + 43, c[2], { size: tiny(M), fill: MUTED, anchor: 'end' });
+  });
+  y += (w ? 54 : 62 * 2 - 8) + 22;
+
+  s += MT(px, y, w
+    ? ['幅度谱只是变换结果的一半。它能告诉你有哪些频率、各有多强，',
+      '但只有幅度谱拼不回原来的波形——「从哪里起步」丢掉就再也补不回来。',
+      '只有幅度和相位都留着，原信号和它的傅里叶表示才装着同样多的信息。']
+    : ['幅度谱只是结果的一半。它能说清有哪些频率、',
+      '各有多强，但只有它拼不回波形——起点丢了就',
+      '补不回来。两样都留着，才算另一种完整写法。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 3) * 21 + 8;
+  return doc(M.W, y, s, '带相位重建能完全拼回原波形，丢掉相位则拼不回来');
 };
 
 // ================================================================

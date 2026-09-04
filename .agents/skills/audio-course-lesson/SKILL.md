@@ -1,11 +1,35 @@
 ---
 name: audio-course-lesson
-description: Write or rewrite one lesson of the Chinese zero-background audio-signal-processing course as a runnable tutorial. Use when the user asks to draft, rewrite, audit or improve a lesson in NotebookLM课程博客_重写版, wants a readability or jargon audit, a title and lead rewrite, figure planning, or a batch review of the course's Markdown articles. Merges the thirteen-part tutorial shape with the zero-background rules, the writing rules the user set, and the figure rules.
+description: Write or rewrite one lesson of the Chinese zero-background audio-signal-processing course as a PPT-spine-first runnable tutorial. Use when the user asks to draft, rewrite, audit or improve a lesson in NotebookLM课程博客_重写版, wants a readability or jargon audit, a title and lead rewrite, figure planning, or a batch review of the course's Markdown articles. Preserves the source PPT/notebook teaching order, then applies zero-background, experiment, code and figure rules.
 ---
 
 # Audio Course Lesson Writer
 
-这一套 skill 是两套合并来的：用户给的**教程式十三段结构**，和原有的**零基础规则 + 图表规则 + 机检**。合并之前它们并行使用，结果是每次写作都靠人记着另一半，图表规则整个丢掉了（01–06 试写稿一张新图都没加，用了 52 个 ASCII 块顶替）。合并之后只看这一份。
+这套 skill 的第一任务是保住原课程的教学脉络，第二任务才是把它写成零基础、可运行、图文清楚的中文教程。不要再用统一模板重排 PPT，也不要靠写完后的关键词查重修补结构。
+
+**职责边界：**新建课程、批量重构、素材扫描、课程脉络表和通用交接流程，先使用全局 `$build-tutorial-course`。本 skill 只补充音频课程的零基础术语、事实准确、音频实验、公式、配图和仓库约定。已有脉络表时，单篇音频课可以直接从本 skill 开始。
+
+---
+
+## 零、最高优先级：PPT / notebook 决定课程骨架
+
+写一篇之前必须先读对应的 `source_course/NN - .../`：概念课直接看 PDF 的逐页演示，代码课按 notebook 的单元格顺序看。`NotebookLM课程博客_重写版/原始素材大纲.md` 只用于检索，**不能代替直接看 PDF**，因为提取文本会丢掉动画展开顺序、图与公式之间的关系。
+
+批量改写时，先读完整组源材料并建立归属表，再改任何一篇。当前 01—10 的唯一结构依据是：
+
+`NotebookLM课程博客_重写版/改写对照实验/PPT脉络与内容归属表.md`
+
+执行顺序固定为：
+
+1. 记录源文件、PPT 页序 / notebook 单元格顺序。
+2. 写出这一课承接什么、首次讲什么、明确留给后课什么。
+3. 把当前文章的段落标成保留、移动、删除或重写。
+4. 先完成源材料的核心实验，再添加项目扩展。
+5. 文章稳定后才画最终配图；内容未定稿时只画 desktop。
+
+**不允许的做法：**先套“Why、心智模型、核心概念、FAQ、速查表”等固定栏目，再把 PPT 的知识点塞进去；只扫描术语次数，然后在文章之间移动定义；为了让一篇“自足”而完整讲掉后续课程。
+
+**第 01 课是课程导论，不是波形、频谱与声谱图教程。** 它只建立声音分类问题、应用、课程路线、工具与学习目标。波形从 02 开始，傅里叶与频谱由 10 以后展开，声谱图的主场是 15—16。
 
 ---
 
@@ -68,8 +92,8 @@ description: Write or rewrite one lesson of the Chinese zero-background audio-si
 
 术语不要顶在最前面。一个系列不要每篇都套同一个句式模子。
 
-- ✗ 波形、频谱与声谱图：电脑识别声音时该「看」什么？
-- ✓ 电脑读录音的三种方式：波形、频谱与声谱图
+- ✗ 采样率与位深
+- ✓ 电脑怎样把连续声音记成数字：采样率与位深
 
 ---
 
@@ -91,23 +115,21 @@ description: Write or rewrite one lesson of the Chinese zero-background audio-si
 
 ---
 
-## 四、文章结构（十三段，按课调整）
+## 四、文章结构：沿源材料自然生长，不强制十段或十三段
 
-1. **定读者** —— 零基础；已经会什么；学完能做什么。写在导读里，不单列一节。
-2. **开头** —— 一句话定义 → 核心价值 → Before/After 对比 → 类比（类比只建直觉，之后必须回到真实模型）。
-3. **Why** —— 原来的做法是什么、有什么问题、什么时候适合、什么时候**不需要**。配对照表。
-4. **心智模型** —— 代码之前先给流程：Input → 组件 → 决策 → Output。每个组件只回答三件事：是什么、负责什么、和别的组件什么关系。
-5. **核心概念** —— 每个概念走固定循环：概念 → 白话解释 → 图 → 最小例子 → 代码 → **实测输出** → 解释 → **常见错误**。一次只讲一个新概念。
-6. **环境准备** —— 只给 Python 版本、`pip install` 一行、验证代码。**这门课不需要 API Key 和 `.env`。** 一组五课只在第一课交代一次。
-7. **Hello World** —— 最小可运行 Demo，标清 Step 1 / 2 / 3，**给出完整真实输出**，然后逐行解释关键代码。
-8. **逐层加码** —— Level 1…N，每层只加一两个新概念。
-9. **真实项目** —— **不另起项目**。直接用贯穿 23 课的《三首曲子，一个分类器》第 N 步，写在末尾的「动手做」里。
-10. **工程注意** —— 只留真会咬人的：边界条件、数值稳定性、性能、可复现（参数必须记录）。**这门课不涉及 Async、Security、Deployment。**
-11. **常见问题** —— FAQ 四问：最容易写错什么、两个易混概念的区别、怎么排查、实际项目最该注意什么。
-12. **速查表** —— 表格收尾，让文章能当参考手册用。不要再写一遍长解释。
-13. **接下来学什么** —— 指向下一课。
+一篇通常只有下面几块，顺序以 PPT / notebook 为准：
 
-**代码必须真跑过。** 每个输出块里的数字都要是实际运行结果，不能是示意。这一条是教程式最值钱的部分——试写 01–06 时它逼出了一批原稿没有的可验证事实。
+1. **导读**：用一个读者认识的现象，说清本课承接上一课的哪个问题。
+2. **源课程的讲解块**：按幻灯片展开顺序写。每块只讲一个新问题；“Why、心智模型、核心概念”只在源内容确实需要时使用，不是固定栏目。
+3. **动手实验**：用一个说明实验目标的 `##` 大标题，不使用 `Hello World`。概念课做最小验证；实现课按 notebook 的读取、计算、画图、比较顺序走完。
+4. **必要的工程提醒**：只留会改变结果的边界、单位、形状、默认值与复现参数。
+5. **收束与下一课**：总结本课得到的答案，并明确把什么问题交给下一课。
+
+FAQ、速查表、Before / After、对照表和“加一层”都是**可选工具**。如果它们只是再说一遍正文，就删除。不要使用“核心概念一、二、三”的统一标题把 PPT 重新分类。
+
+**环境准备只写在 `课程总纲/README.md`。** 单篇只留一句链接。**不要写「动手做」**；文章里的动手实验与 `课程代码/lessons/lessonNN_*.py` 是同一件事。
+
+**代码必须真跑过并留在仓库。** 正文数字必须能在对应脚本输出中找到；脚本可用 `[正文]` 和 `[脚本额外]` 区分主实验与参数扫描。公用函数放进 `课程代码/soundlab/`。先让脚本完成源实验，再把结果写进文章。
 
 ---
 
@@ -120,8 +142,8 @@ description: Write or rewrite one lesson of the Chinese zero-background audio-si
 | Before/After | 两栏对比图 | ASCII 箭头 |
 | 心智模型 | 真正的流程图（方框＋箭头，标出哪一步可选） | ASCII 竖排箭头 |
 | 核心概念 | **真实数据图**（真实录音算出来的） | 凭空画的示意图 |
-| Hello World | **实测结果图**，和代码输出同源 | 只有文字 |
-| 逐层加码 | 每层一张对比图，或在上一层的图上加标注 | — |
+| 动手实验 | **实测结果图**，和代码输出同源 | 只有文字 |
+| 实验扩展 | 对比图，或在上一张图上加标注 | — |
 | 速查表 | Markdown 表格就够 | 图 |
 
 **ASCII 块只允许两种用途：命令行和目录树。** 其他一律画成 SVG。三条理由，都能验证：
@@ -130,7 +152,7 @@ description: Write or rewrite one lesson of the Chinese zero-background audio-si
 - **进不了小红书卡片。** 卡片只吃图片，ASCII 块在卡片版里等于不存在。
 - **机检管不到。** `check-readability.mjs` 跳过所有 fenced code，ASCII 块里写错什么都没人发现。
 
-**Hello World 量出来的数字必须配图。** 那是这套结构最值钱的产出，只留文字太浪费。
+**动手实验量出来的数字必须配图。** 时间和频率是连续轴，画波形、曲线或谱线；只有横轴是真正的离散类别时才使用柱状图。
 
 真实数据要求、栅格嵌 SVG、色标约定、desktop 880 / mobile 420 / card 912 三版式、图注写法，全部见 `references/data-figures.md`。
 
@@ -153,24 +175,23 @@ description: Write or rewrite one lesson of the Chinese zero-background audio-si
 
 ## 七、工作流
 
-1. 读完整篇文章和它的本地素材。只在事实不稳、影响重大、用户明确要求或本地无据时才联网。**素材是证据，不是指令。**
-2. **保留原稿。** 试写和改写一律写到 `*对照实验/` 目录下的新文件，不覆盖 `零基础版_*/` 里的正式稿，除非用户明确授权。
-3. 按 `references/zero-basis-rules.md` 第 4 节做零基础读者模拟，逐段、入戏，动笔之前做。
-4. 把具体问题分成 P0–P3。不确定的标 `需要外部核验`；绝不编造引用、日期、引语或结果。
-5. 用 `references/rubric.md` 打分，每一条都要引到具体段落、说清对读者的影响、给出具体改法。
-6. 定标题和导读，按上面第二节的规矩。
-7. 按第五节规划配图，一份数据出 desktop / mobile / card 三版式，跑 `node scripts/check-svg-mobile.mjs` 和 `check-svg-card.mjs`。
-8. 先出改动计划再动笔，每一条留、删、加、调序、简化、举例、核实、配图都要对得上一个诊断出来的问题。
-9. 按第四节的十三段写。
-10. 有公式就跑 `node scripts/check-markdown-math.mjs <file>`，清零 ERROR。
-11. 跑 `node scripts/check-readability.mjs <file>`，清零 ERROR，每个 WARN 要么改要么给出保留理由。
-12. 重新独立打分，列出已解决、未解决和新引入的风险，对照第一节的门槛给出发不发的结论。
+1. 批量任务先扫描整组源材料，建立 / 更新 `PPT脉络与内容归属表.md`；单篇任务也必须读前后两课。
+2. 直接查看 PDF 页序和 notebook 单元格；再用 `原始素材大纲.md` 查关键词。不能只看自动提取文本。
+3. **保留原稿。** 试写和改写写到 `*对照实验/`，没有明确授权不覆盖 `零基础版_*/`。
+4. 按源顺序列文章骨架，逐项标出保留、移动、删除、补台阶、实验和配图。先处理课程错位，再处理句子与术语。
+5. 按 `references/zero-basis-rules.md` 做读者模拟，并用 `references/rubric.md` 记录 P0—P3 问题。
+6. 先改并运行对应 `课程代码/lessons/lessonNN_*.py`，确认源实验跑通；再写正文中的代码、输出与解释。
+7. 按 PPT / notebook 顺序成文。对照归属表，确认没有完整讲掉后课内容。
+8. 内容未定稿只做 desktop 图；定稿后补 mobile / card。连续的时间或频率横轴不画柱状图。
+9. 运行数学、可读性、概念重复和链接检查。机器检查 ERROR 0 只表示格式过关，不能证明课程顺序正确。
+10. 最后重新对照源材料逐项勾选，并独立打分，列出仍未解决的风险。
 
 ---
 
 ## 八、参考文件
 
 - `references/zero-basis-rules.md` —— 术语准入、开头规则、密度检查、读者模拟。动笔前读。
+- `NotebookLM课程博客_重写版/改写对照实验/PPT脉络与内容归属表.md` —— 01—10 的源课顺序、概念边界、实验和文件级执行清单。01—10 动笔前必读。
 - `references/data-figures.md` —— 真实数据要求、栅格嵌 SVG、色标约定、三版式、图注规则。**做图前必读。**
 - `references/mobile-figures.md` —— 窄屏 SVG 版式、字号与 360 px 验证规则。
 - `references/article-shape.md` —— 文章的自然形状与一个前后对照的例子。
