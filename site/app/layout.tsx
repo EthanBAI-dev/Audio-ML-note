@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import 'katex/dist/katex.min.css';
 import './globals.css';
+import ThemeToggle from '../components/ThemeToggle';
 
 export const metadata: Metadata = {
   title: { default: '音频信号处理二十三讲', template: '%s · 音频信号处理二十三讲' },
@@ -10,21 +11,37 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        {/* 先于首屏应用保存的主题，避免闪一下浅色再切深色 */}
+        <script dangerouslySetInnerHTML={{ __html:
+          `try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}` }} />
+      </head>
       <body>
-        <header className="site-header">
-          <Link href="/" className="brand">音频信号处理二十三讲</Link>
-          <nav>
-            <Link href="/guide">课程总纲</Link>
-            <Link href="/project">课程项目</Link>
-            <a href="https://github.com/EthanBAI-dev/Audio-ML-note">源码</a>
-          </nav>
-        </header>
-        <main>{children}</main>
+        {children}
         <footer className="site-footer">
-          <p>课程改写自 Valerio Velardo 的 Audio Signal Processing for ML 系列。正文、配图与代码见仓库。</p>
+          课程改写自 Valerio Velardo 的 Audio Signal Processing for ML 系列。正文、配图与代码见
+          {' '}<a href="https://github.com/EthanBAI-dev/Audio-ML-note">仓库</a>。
         </footer>
       </body>
     </html>
+  );
+}
+
+export function Masthead({ eyebrow, title, lead }: { eyebrow: React.ReactNode; title: string; lead?: string }) {
+  return (
+    <>
+      <header className="top">
+        <p className="eyebrow">{eyebrow}</p>
+        <h1>{title}</h1>
+        {lead ? <p>{lead}</p> : null}
+      </header>
+      <div className="toolbar">
+        <Link href="/">目录</Link>
+        <Link href="/guide">课程总纲</Link>
+        <Link href="/project">课程项目</Link>
+        <ThemeToggle />
+      </div>
+    </>
   );
 }
