@@ -12,7 +12,7 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   MODES, wide, doc, T, MT, R, L, P, O, ARROW, header, headerH,
-  panel, curve,
+  panel, curve, legend,
   BLUE, WARM, GREEN, GOLD, INK, MUTED, GRID, PLATE,
 } from './lib/tutorial-figure.mjs';
 import { spectrogramPng, matrixPng, image, colorbar } from './lib/figure.mjs';
@@ -29,6 +29,7 @@ const d16 = D('16');
 const d17 = D('17');
 const d18 = D('18');
 const d19 = D('19');
+const d20 = D('20');
 const FIG = {};
 
 /** 一块声谱图：外框、标题、纵轴刻度、横轴刻度，中间放渲染好的 PNG。
@@ -1140,6 +1141,275 @@ FIG['19-dct-decorrelate'] = async (M) => {
   { size: M.small, fill: MUTED, leading: 21 });
   y += (w ? 2 : 3) * 21 + 12;
   return doc(M.W, y, s, '梅尔带之间与 DCT 系数之间的相关系数矩阵对比');
+};
+
+// ================================================================ 第 20 课
+
+// 逐个改默认值，看和库的最大差怎么掉下来。用横条表示差值，最后一条是零。
+FIG['20-align-stages'] = (M) => {
+  const head = wide(M)
+    ? ['一行 librosa.feature.mfcc，', '要改对四个默认值才能自己复现']
+    : ['要改对四个默认值，', '才能自己复现那一行'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const st = d20.stages;
+  const walk = st.filter((r) => r.param !== 'only');
+  const only = st.find((r) => r.param === 'only');
+  const names = w
+    ? ['起点：40 带 + 第 18 课改过的那三个',
+      '把 htk 改回 False', "把 norm 改回 'slaney'",
+      '去掉 fmax（默认到 sr/2）', '把梅尔带数 40 改成 128']
+    : ['起点：40 带 + 第 18 课那三个',
+      'htk → False', "norm → 'slaney'", 'fmax → 默认', '梅尔带 40 → 128'];
+
+  const barX = w ? 268 : 148;
+  const barW = pw - barX - (w ? 96 : 74);
+  const lim = Math.max(...walk.map((r) => r.diff)) * 1.06;
+  const rh = w ? 34 : 42;
+
+  walk.forEach((r, i) => {
+    const ry = y + i * rh;
+    const cy = ry + rh / 2;
+    const zero = r.diff < 1e-9;
+    const c = zero ? GREEN : (i === 0 ? WARM : BLUE);
+    s += T(px, cy + 4, names[i], { size: tiny(M), fill: zero ? GREEN : INK, weight: zero ? 700 : 400 });
+    s += L(px + barX, ry + 3, px + barX, ry + rh - 3, { c: GRID, w: 1 });
+    const bw = Math.max(zero ? 0 : 2, (r.diff / lim) * barW);
+    s += R(px + barX, cy - 7, bw, 14, { fill: c, stroke: 'none', r: 2 });
+    s += T(px + barX + bw + 8, cy + 4,
+      zero ? '0.0000　逐位相同' : r.diff.toFixed(1), {
+        size: tiny(M), weight: 700, fill: c,
+      });
+  });
+  y += walk.length * rh + 10;
+
+  s += L(px, y, px + pw, y, { c: GRID, w: 1, dash: '3 3' });
+  y += 20;
+  s += MT(px, y, w
+    ? ['对照：从起点只把梅尔带改成 128、别的三个不动，最大差还有 '
+      + only.diff.toFixed(1) + '。',
+      '四个默认值缺一不可；其中梅尔带数最要命，因为它决定喂给 DCT 的原料有几根。']
+    : ['只改梅尔带、别的不动，最大差还有 ' + only.diff.toFixed(1) + '。',
+      '四个缺一不可。梅尔带数最要命——',
+      '它决定喂给 DCT 的原料有几根。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 3) * 21 + 12;
+  return doc(M.W, y, s, '逐个改默认值时，自己算的 MFCC 与库的最大差');
+};
+
+// 13 行系数的热力图；第 0 行拿掉之后，其余十二行才看得见。
+FIG['20-thirteen-rows'] = async (M) => {
+  const head = wide(M)
+    ? ['13 行 MFCC 的量级差得远，', '低阶那几行压过其余']
+    : ['低阶那几行的量级', '压过其余']; 
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 22;
+
+  const mp = d20.map;
+  const left = w ? 62 : 52;
+  const iw = pw - left - 10;
+
+  const blocks = [
+    ['原样画出来', mp.mfcc],
+    [w ? '每一行各自减去自己的均值、除以自己的标准差之后' : '每一行各自标准化之后', mp.norm],
+  ];
+  for (const [title, hm] of blocks) {
+    const ih = w ? 104 : 92;
+    // 第 0 行画在最下面，和声谱图的纵轴方向一致：序号从下往上长
+    const grid = [];
+    for (let r = hm.rows - 1; r >= 0; r -= 1) {
+      grid.push(Array.from({ length: hm.cols },
+        (_, c) => hm.q[r * hm.cols + c] / 255));
+    }
+    const uri = await matrixPng(grid, {
+      px: [Math.max(1, Math.round((iw * 2) / hm.cols)),
+        Math.round((ih * 2) / hm.rows)],
+      lo: 0, hi: 1, cmap: 'magma',
+    });
+    s += T(px, y, title, { size: tiny(M), weight: 700, fill: INK });
+    y += 12;
+    s += image(uri, px + left, y, iw, ih);
+    s += R(px + left, y, iw, ih, { fill: 'none', stroke: GRID, sw: 1 });
+    s += T(px + left - 6, y + 11, '第 12 行', { size: tiny(M), fill: MUTED, anchor: 'end' });
+    s += T(px + left - 6, y + ih - 3, '第 0 行', { size: tiny(M), fill: MUTED, anchor: 'end' });
+    y += ih + 20;
+  }
+
+  const rs = mp.row_scale;
+  const restAvg = rs.slice(1).reduce((a, b) => a + b, 0) / (rs.length - 1);
+  s += MT(px, y, w
+    ? ['上面那张只分得出最下面那一条，其余十二行被压成同一片颜色。逐行的平均绝对值是一道陡坡：'
+      + '第 0 行 ' + rs[0].toFixed(0) + '、第 1 行 ' + rs[1].toFixed(0)
+      + '，第 4 行以后就掉到十上下。',
+      '第 0 个系数是其余十二个平均的 ' + (rs[0] / restAvg).toFixed(1)
+      + ' 倍，而它和「这一帧的对数梅尔谱平均有多高」相关系数 '
+      + d20.zero.corr_logmel.toFixed(2) + '——它说的是多响，不是什么音色。',
+      '把每一行各自标准化之后，十二行各自的花纹才同时看得见。'
+      + '很多流水线因此会把第 0 行单独处理或直接扔掉。']
+    : ['上面只分得出最下面那一条，其余十二行',
+      '被压成同一片颜色。逐行平均绝对值是一道陡坡：',
+      '第 0 行 ' + rs[0].toFixed(0) + '、第 1 行 ' + rs[1].toFixed(0) + '，',
+      '到第 4 行以后就掉到十上下了。',
+      '第 0 个系数是其余十二个平均的 ' + (rs[0] / restAvg).toFixed(1) + ' 倍，',
+      '而它和该帧对数梅尔谱均值相关 ' + d20.zero.corr_logmel.toFixed(2) + '，',
+      '说的是这一帧多响，不是什么音色。',
+      '各行标准化之后，花纹才同时看得见。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 8) * 21 + 12;
+  return doc(M.W, y, s, '13 行 MFCC 原样画出与逐行标准化之后的对比');
+};
+
+FIG['20-delta-along-time'] = (M) => {
+  const head = wide(M)
+    ? ['只改第 200 帧：', 'MFCC 变一列，delta 变八列']
+    : ['只改一帧：MFCC 变一列，', 'delta 变八列'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 24;
+
+  const pk = d20.poke;
+  const n = pk.mfcc_changed.length;
+  const cw = pw / n;
+  const rows = [
+    ['MFCC 自己', pk.mfcc_changed, BLUE],
+    ['它的 delta', pk.delta_changed, WARM],
+  ];
+  const bh = w ? 82 : 74;
+
+  rows.forEach(([name, vals, c], ri) => {
+    // 两块各按自己的最大值定标：MFCC 那一列改了 10，delta 只改了零点几，
+    // 共用一个刻度的话下面那排会全贴在底边上，看不出「变了八列」。
+    const lim = Math.max(...vals) * 1.15;
+    const ry = y + ri * (bh + 44);
+    s += R(px, ry, pw, bh, { fill: PLATE, stroke: GRID, r: 6 });
+    s += T(px + 8, ry - 6, name, { size: tiny(M), weight: 700, fill: c });
+    const hit = vals.filter((v) => v > 1e-6).length;
+    s += T(px + pw, ry - 6, hit + ' 列变了（这块按自己的最大值定标）', {
+      size: tiny(M), weight: 700, fill: c, anchor: 'end',
+    });
+    vals.forEach((v, i) => {
+      const h = (v / lim) * (bh - 10);
+      const bx = px + i * cw + cw * 0.18;
+      if (v > 1e-6) {
+        s += R(bx, ry + bh - h - 5, cw * 0.64, h, { fill: c, stroke: 'none', r: 1 });
+      } else {
+        s += L(bx, ry + bh - 5, bx + cw * 0.64, ry + bh - 5, { c: GRID, w: 2 });
+      }
+    });
+    // 被改的那一帧：画一根竖线穿过两块
+    const mx = px + (pk.frame - pk.lo) * cw + cw / 2;
+    s += L(mx, ry - 2, mx, ry + bh + 2, { c: GOLD, w: 1.4, dash: '4 3' });
+    if (ri === 1) {
+      s += T(mx, ry + bh + 18, w ? '被改的第 200 帧' : '被改的那一帧', {
+        size: tiny(M), weight: 700, fill: GOLD, anchor: 'middle',
+      });
+    }
+  });
+  y += 2 * (bh + 44) + 6;
+
+  s += MT(px, y, w
+    ? ['delta 不是「后一帧减前一帧」，而是把连续 ' + pk.width
+      + ' 帧摆在一起拟合一条直线，取斜率。',
+      '所以一帧的改动会摊到左右各四帧上。中间那一列反而纹丝不动——'
+      + '斜率是右边四帧减左边四帧，',
+      '被改的那一帧自己的权重正好是 0：一帧的 delta 完全不取决于它自己。']
+    : ['delta 把连续 ' + pk.width + ' 帧拟合成一条直线取斜率，',
+      '所以一帧的改动摊到左右各四帧上。',
+      '中间那一列纹丝不动：斜率是右四帧减左四帧，',
+      '被改的那一帧自己权重正好是 0。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 4) * 21 + 12;
+  return doc(M.W, y, s, '扰动一帧之后 MFCC 与 delta 各自变了哪几列');
+};
+
+// 三种风格在 13 个系数上的均值曲线，带 ±1 个标准差的带子。
+FIG['20-three-genres'] = (M) => {
+  const head = wide(M)
+    ? ['13 个系数里，', '没有哪一个单独分得开三种风格']
+    : ['没有哪个系数单独', '分得开三种风格'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 26;
+
+  const gr = d20.genres;
+  const rows = gr.rows.slice(1);          // 第 0 个系数量级差十倍，单独说
+  const cols = [BLUE, WARM, GREEN];
+  let lo = 0;
+  let hi = 0;
+  rows.forEach((r) => gr.names.forEach((g) => {
+    lo = Math.min(lo, r.mean[g] - r.std[g]);
+    hi = Math.max(hi, r.mean[g] + r.std[g]);
+  }));
+  const ph = w ? 210 : 190;
+  const left = w ? 40 : 34;
+  const pn = panel(px + left, y, pw - left, ph, {
+    fill: PLATE, xr: [1, 12], yr: [lo * 1.06, hi * 1.06], zero: true,
+  });
+  s += pn.s;
+  s += T(px + pw, y - 8, '横轴：系数序号 1—12', {
+    size: tiny(M), fill: MUTED, anchor: 'end',
+  });
+
+  gr.names.forEach((g, gi) => {
+    const c = cols[gi];
+    // ±1 个标准差的带子
+    const up = rows.map((r, i) => [pn.sx(i + 1), pn.sy(r.mean[g] + r.std[g])]);
+    const dn = rows.map((r, i) => [pn.sx(i + 1), pn.sy(r.mean[g] - r.std[g])]).reverse();
+    s += `<path d="M${[...up, ...dn].map((p) => p.join(' ')).join('L')}Z" `
+      + `fill="${c}" fill-opacity="0.10" stroke="none"/>`;
+    s += P(rows.map((r, i) => [pn.sx(i + 1), pn.sy(r.mean[g])]), { c, w: 2 });
+    rows.forEach((r, i) => {
+      s += O(pn.sx(i + 1), pn.sy(r.mean[g]), 2.6, { fill: c });
+    });
+  });
+
+  // 横轴：每个系数一个刻度
+  for (let i = 1; i <= 12; i += 1) {
+    s += T(pn.sx(i), y + ph + 17, String(i), {
+      size: tiny(M), fill: MUTED, anchor: 'middle',
+    });
+  }
+
+  y += ph + 32;
+
+  s += legend(px, y, gr.names.map((g, i) => ({ name: g, c: cols[i] })), {
+    gap: w ? 150 : 106, size: tiny(M),
+  });
+  y += 26;
+
+  const best = gr.rows.reduce((a, b) => (b.worst > a.worst ? b : a));
+  s += MT(px, y, w
+    ? ['浅色带子是各自的一个标准差。带子几乎处处相叠——最分得开的第 '
+      + best.i + ' 个系数，最难分的那一对也只差 ' + best.worst.toFixed(2) + ' 个标准差。',
+      '但把它们放在一起就不一样了：按最近中心法逐帧判断，只用第 ' + best.i
+      + ' 个系数判对 ' + (gr.acc.best_one * 100).toFixed(1) + '%，',
+      '13 个一起用 ' + (gr.acc.all * 100).toFixed(1) + '%，挑最分得开的 4 个还要再高一点，'
+      + (gr.acc.top4 * 100).toFixed(1) + '%（乱猜是 33.3%）。']
+    : ['浅色带子是一个标准差，处处相叠。',
+      '最分得开的第 ' + best.i + ' 个系数，最难分的一对',
+      '也只差 ' + best.worst.toFixed(2) + ' 个标准差。',
+      '但放在一起就不同：最近中心法逐帧判断，',
+      '单用它 ' + (gr.acc.best_one * 100).toFixed(1) + '%，13 个一起 '
+      + (gr.acc.all * 100).toFixed(1) + '%，',
+      '挑最好的 4 个 ' + (gr.acc.top4 * 100).toFixed(1) + '%。乱猜是 33.3%。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 3 : 6) * 21 + 12;
+  return doc(M.W, y, s, '三种风格在第 1—12 个 MFCC 系数上的均值与标准差');
 };
 
 // ================================================================

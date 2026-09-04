@@ -47,7 +47,7 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `spectral.py` | 单边 FFT、Hz 频率轴、相对 dB、频谱数据池化 | 14 |
 | `figdata.py` | 把脚本实测数据写成配图读取的 JSON | 贯穿各课 |
 
-第 15 课会继续给 `spectral.py` 加 STFT；第 17—20 课再加入 `mel.py`。
+第 15 课会继续给 `spectral.py` 加 STFT。第 17—20 课的梅尔与倒谱部分目前直接写在各自的课程脚本里，等 21—23 写完再一起收进 `mel.py`。
 
 ### `lessons/` 现在有什么
 
@@ -72,6 +72,8 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `lesson16_spectrogram.py` | 16 | 同一批数换上色方式和纵轴刻法，能多看见多少 |
 | `lesson17_mel_scale.py` | 17 | 按听感刻的尺子长什么样，十个三角形怎样把 1025 行压成 10 行 |
 | `lesson18_mel_spectrogram.py` | 18 | 库造的滤波器组和手写的差在哪三个默认值上 |
+| `lesson19_cepstrum.py` | 19 | 相乘的两样东西，能不能按变化快慢分到一根轴的两端 |
+| `lesson20_mfcc.py` | 20 | 一行 `librosa.feature.mfcc` 等于哪四步，delta 沿哪个轴 |
 
 ## 输出怎么读
 
