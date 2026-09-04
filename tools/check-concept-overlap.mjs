@@ -115,10 +115,14 @@ let missing = 0;
 let restated = 0;
 const seenBy = new Map();
 
+// 全课按课号索引文件名。跨组链接写成 `../第06-10课/10-....md`，正文里
+// 不会出现「第 10 课」这几个字，所以只在本组里找会把真链接判成缺链
+// （2026-09-04：9 条缺链全部是这样误报出来的）。
+const byIdAll = new Map();
+for (const { files } of groups) for (const f of files) byIdAll.set(f.slice(0, 2), f);
+
 for (const { dir, files } of groups) {
-  // 同一组里按课号索引，链接只能指向同组的文件
-  const byId = new Map();
-  for (const f of files) byId.set(f.slice(0, 2), f);
+  const byId = byIdAll;
 
   for (const f of files.sort()) {
     const id = f.slice(0, 2);

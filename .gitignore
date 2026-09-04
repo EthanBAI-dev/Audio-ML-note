@@ -1,5 +1,10 @@
 tmp/
 source_course/
+# 但课程音频要进版本库：正文的试听链接指向这里
+!source_course/
+source_course/*
+!source_course/audio_resources/
+!source_course/audio_resources/*.wav
 __pycache__/
 *.pyc
 node_modules/
