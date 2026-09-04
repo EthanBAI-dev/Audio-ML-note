@@ -68,6 +68,8 @@ python NotebookLM课程博客_重写版/课程代码/lessons/lesson07_three_time
 | `lesson12_complex_ft.py` | 12 | 复数形式的傅里叶变换能否完整往返 |
 | `lesson13_dft.py` | 13 | 有限个样本怎样变成可逆的有限 DFT，FFT 快多少 |
 | `lesson14_fft_spectrum.py` | 14 | 四段真实声音怎样变成可正确读取 Hz 横轴的低频幅度谱 |
+| `lesson15_stft.py` | 15 | 移动短窗怎样找回时间，矩阵形状 501 × 19 从哪来 |
+| `lesson16_spectrogram.py` | 16 | 同一批数换上色方式和纵轴刻法，能多看见多少 |
 
 ## 输出怎么读
 

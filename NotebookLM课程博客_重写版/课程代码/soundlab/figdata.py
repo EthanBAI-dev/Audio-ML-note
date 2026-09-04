@@ -38,12 +38,39 @@ def _plain(o):
     return o
 
 
+def _write(o, level=1):
+    """按结构缩进，但把长的纯数字数组压成一行。
+
+    json.dump(indent=1) 会把每一个数字单独放一行，一个数就多出三四个字节的
+    换行和空格。第 16 课要存四张声谱图、二十万个数，光这些空白就有八百 KB。
+    结构部分仍然缩进，方便人翻。
+    """
+    pad = " " * level
+    if isinstance(o, dict):
+        if not o:
+            return "{}"
+        body = ",\n".join(
+            f"{pad}{json.dumps(k, ensure_ascii=False)}: {_write(v, level + 1)}"
+            for k, v in o.items())
+        return "{\n" + body + "\n" + " " * (level - 1) + "}"
+    if isinstance(o, list):
+        if not o:
+            return "[]"
+        numeric = all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                      for v in o)
+        if numeric and len(o) > 12:
+            return json.dumps(o, ensure_ascii=False, separators=(",", ":"))
+        body = ",\n".join(f"{pad}{_write(v, level + 1)}" for v in o)
+        return "[\n" + body + "\n" + " " * (level - 1) + "]"
+    return json.dumps(o, ensure_ascii=False)
+
+
 def dump(lesson, payload):
     """写 data/lessonNN.json，返回写到哪儿了。"""
     os.makedirs(DATA_DIR, exist_ok=True)
     path = os.path.join(DATA_DIR, f"lesson{lesson:02d}.json")
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(_plain(payload), f, ensure_ascii=False, indent=1)
+        f.write(_write(_plain(payload)))
     return path
 
 

@@ -86,38 +86,69 @@ export const P = (pts, o = {}) => {
 // ---------- 栅格热力图 ----------
 
 /**
- * 把 STFT 幅度矩阵渲染成 PNG，并返回可直接放进 <image href> 的 data URI。
+ * 把 STFT 矩阵渲染成 PNG，并返回可直接放进 <image href> 的 data URI。
  *
- * @param {object} S            stft() 的返回值
+ * 矩阵可以用两种方式交进来：
+ *   S.mag   逐格的模，行是等间距的频率格（配 S.nfft 换算 Hz）；
+ *   S.dbq   已经整数化的「比峰值低多少 dB」，配 S.dbFloorStored 还原。
+ *           配套的 S.freqs 给出每一行的中心频率，可以是对数分布的。
+ * 后一种是给真实音乐用的：一张三十秒的声谱图存原始的模会让 JSON 涨到几 MB。
+ *
+ * @param {object} S            矩阵与它的坐标
  * @param {object} opt
  *   w, h        输出像素（建议取显示尺寸的 2 倍，保证高分屏清晰）
  *   fmax        频率上限（Hz）
  *   logFreq     纵轴是否用对数频率
  *   dbFloor     动态范围下限（相对峰值，dB）
+ *   scale       'db'（默认）按分贝上色；'power' 直接按功率占峰值的比例上色
  *   cmap        'blue' | 'viridis' | 'magma'
  */
 export async function spectrogramPng(S, opt = {}) {
   const {
     w = 1200, h = 600, fmax = S.sampleRate / 2, logFreq = false,
-    dbFloor = -70, cmap = 'blue',
+    dbFloor = -70, cmap = 'blue', scale = 'db',
   } = opt;
   const map = COLORMAPS[cmap] ?? COLORMAPS.blue;
 
-  // 转 dB 并以全局峰值为 0 dB
-  let peak = 0;
-  for (let i = 0; i < S.mag.length; i += 1) if (S.mag[i] > peak) peak = S.mag[i];
-  const ref = Math.max(peak, 1e-12);
+  // 统一成「比峰值低多少 dB」，两种输入都走同一条上色路径
+  let dbAt;
+  if (S.dbq) {
+    const floor = S.dbFloorStored ?? -100;
+    dbAt = (f, k) => S.dbq[f * S.bins + k] + floor;
+  } else {
+    let peak = 0;
+    for (let i = 0; i < S.mag.length; i += 1) if (S.mag[i] > peak) peak = S.mag[i];
+    const ref = Math.max(peak, 1e-12);
+    dbAt = (f, k) => 20 * Math.log10(Math.max(S.mag[f * S.bins + k], 1e-12) / ref);
+  }
 
-  const binHz = S.sampleRate / S.nfft;
-  const kMax = Math.min(S.bins - 1, Math.floor(fmax / binHz));
-  const fLo = Math.max(binHz, 20);
+  // 行 -> 频率。给了 freqs 就照它查（可以是对数分布的），否则按等间距频率格算
+  const binHz = S.sampleRate / (S.nfft ?? 0);
+  const kMax = S.freqs
+    ? S.bins - 1
+    : Math.min(S.bins - 1, Math.floor(fmax / binHz));
+  const fLo = Math.max(S.freqs ? S.freqs[0] : binHz, 20);
+  const rowOf = S.freqs
+    ? (f) => {
+      const a = S.freqs;
+      if (f <= a[0]) return 0;
+      if (f >= a[a.length - 1]) return a.length - 1;
+      let lo = 0;
+      let hi = a.length - 1;
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (a[mid] <= f) lo = mid; else hi = mid;
+      }
+      return lo + (f - a[lo]) / (a[hi] - a[lo]);
+    }
+    : (f) => f / binHz;
 
   const buf = Buffer.alloc(w * h * 3);
   for (let py = 0; py < h; py += 1) {
     // py=0 是顶部 = 高频
     const v = 1 - py / (h - 1);
     const f = logFreq ? fLo * (fmax / fLo) ** v : v * fmax;
-    const kf = f / binHz;
+    const kf = rowOf(f);
     const k0 = Math.max(0, Math.min(kMax, Math.floor(kf)));
     const k1 = Math.min(kMax, k0 + 1);
     const kt = kf - k0;
@@ -126,11 +157,14 @@ export async function spectrogramPng(S, opt = {}) {
       const f0 = Math.floor(ff);
       const f1 = Math.min(S.frames - 1, f0 + 1);
       const ft = ff - f0;
-      const a = S.mag[f0 * S.bins + k0] * (1 - kt) + S.mag[f0 * S.bins + k1] * kt;
-      const b = S.mag[f1 * S.bins + k0] * (1 - kt) + S.mag[f1 * S.bins + k1] * kt;
-      const m = a * (1 - ft) + b * ft;
-      const db = 20 * Math.log10(Math.max(m, 1e-12) / ref);
-      const t = Math.max(0, Math.min(1, (db - dbFloor) / -dbFloor));
+      const a = dbAt(f0, k0) * (1 - kt) + dbAt(f0, k1) * kt;
+      const b = dbAt(f1, k0) * (1 - kt) + dbAt(f1, k1) * kt;
+      const db = a * (1 - ft) + b * ft;
+      // 'power' 是给第 16 课那张「直接上色几乎全黑」用的：颜色正比于功率
+      // 占峰值的比例。db 是按模算的，所以功率比是 10^(db/10)。
+      const t = scale === 'power'
+        ? Math.max(0, Math.min(1, 10 ** (db / 10)))
+        : Math.max(0, Math.min(1, (db - dbFloor) / -dbFloor));
       const [r, g, bl] = map(t);
       const o = (py * w + px) * 3;
       buf[o] = r; buf[o + 1] = g; buf[o + 2] = bl;

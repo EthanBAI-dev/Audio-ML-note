@@ -10,7 +10,7 @@
 4. **实验沿着源材料走。** 概念课使用最小验证；实现课按 notebook 的读取、计算、画图、比较顺序展开。仓库脚本可以更全面，但正文先完成源实验。
 5. **图跟着推理出现。** 时间和频率都是连续轴，使用曲线、波形或谱线，不用柱状图；柱状图只用于离散类别比较。
 
-## 01—15 的课程主线
+## 01—23 的课程主线
 
 | 课 | 必须读取的源文件 | 源材料的讲解顺序 | 当前草稿的主要偏差 | 重写后的实验与代码 |
 | --- | --- | --- | --- | --- |
@@ -28,7 +28,15 @@
 | 12 复数形式的傅里叶 | `source_course/12 - Defining the Fourier transform.../Defining the Fourier transform using complex numbers.pdf` | 回顾 → 直觉：把强度和相位当极坐标，编码进一个复数 → 复数傅里叶系数 → 连续信号的傅里叶变换 → 幅度谱 → 幅度与相位 → 逆变换 → 傅里叶表示：纯音加权、加相位、全部叠加 → 一次完整往返 | **已修复：**已按 PPT 顺序重写，并用“保留相位 / 丢掉相位”的往返实验收束 | `lesson12_complex_ft.py` 已验证复数系数、幅度 / 相位与完整往返 |
 | 13 离散傅里叶变换 | `source_course/13 - Discrete Fourier Transform/Discrete Fourier Transform.pdf` | 数字化 → 数字信号 → 构造 DFT → 视觉解释 → **Hack 1 时间**：只在有限区间取值 x(0)…x(N−1) → **Hack 2 频率**：只算有限个频率，且 M = N（可逆、算得快）→ DFT 的冗余与奈奎斯特 → 从 DFT 到 FFT（N² 降到 N log₂N，靠正弦之间的冗余，N 是 2 的幂时最快） | **已修复：**已按 PDF 的“数字化 → 两次收口 → 冗余 → FFT”顺序重写，并澄清现代 FFT 不限于 2 的幂长度 | `lesson13_dft.py` 已手写 N=8 DFT 并与 NumPy 对齐，验证逆变换、镜像和 DFT / FFT 耗时 |
 | 14 用 Python 取频谱 | `source_course/14 - Extracting the Discrete Fourier Transform/Visualising the Power Spectrum.ipynb` | 载入 violin_c4 / piano_c5 / sax / noise → `np.fft.fft` → 取绝对值得幅度 → 画幅度谱，用 `f_ratio` 只看低频那一段 → 四种声音的谱对比 | **已修复：**已按 cell 0—13 原顺序重写；用 `rfftfreq` 修正源 Notebook 横轴，并澄清 `np.abs(X)` 是幅度谱而非功率谱；窗函数与 STFT 留给 15 | `lesson14_fft_spectrum.py` 已读取四段原始 WAV、统一 22050 Hz 单声道、验证 FFT / rFFT 长度，并输出四张 0—2205 Hz 相对 dB 曲线；公共计算进入 `soundlab/spectral.py` |
-| 15 短时傅里叶变换 | `source_course/15 - Short-Time Fourier Transform.../Short-Time Fourier Transform explained easily.pdf` | 傅里叶变换的问题（时间没了）→ STFT 直觉 → 加窗 → STFT → 重叠帧 → 从 DFT 到 STFT → 输出：DFT 给一个向量，STFT 给一个矩阵（频率格数 × 帧数）→ 例子：10K 样本、帧长 1000、帧移 500 → 501 × 19 → 参数：帧长 → **时间与频率的取舍** → Hann 窗 → 可视化 → 声谱图 | 尚未按 PPT 重写 | `lesson15_stft.py`（待建）：先手算 501×19 再和 librosa.stft 对形状；扫帧长，量出「帧长越大频率越细、时间越糊」这条取舍的具体数字 |
+| 15 短时傅里叶变换 | `source_course/15 - Short-Time Fourier Transform.../Short-Time Fourier Transform explained easily.pdf` | 傅里叶变换的问题（时间没了）→ STFT 直觉 → 加窗 → STFT → 重叠帧 → 从 DFT 到 STFT → 输出：DFT 给一个向量，STFT 给一个矩阵（频率格数 × 帧数）→ 例子：10K 样本、帧长 1000、帧移 500 → 501 × 19 → 参数：帧长 → **时间与频率的取舍** → Hann 窗 → 可视化 → 声谱图 | **已修复：**已按 PDF 顺序重写。补边方式统一写死 `center=False`，「怎么把矩阵画成声谱图」整块留给 16 | `lesson15_stft.py` 已手算 501×19 并与 `librosa.stft(center=False)` 逐个复数比对（9519 个系数最大差 0.000e+00）；扫帧长量出时间与频率的取舍，扫帧移量出重叠与列数；公共 STFT 进入 `soundlab/spectral.py` |
+| 16 用 Python 画声谱图 | `source_course/16 - Extracting Spectrograms from Audio with Python/Extracting Spectrograms from Audio with Python.ipynb` | 载入 scale / debussy / redhot / duke → 定 FRAME_SIZE 2048、HOP_SIZE 512 → `librosa.stft` → 看 shape 和元素类型（复数）→ `np.abs(S) ** 2` 得功率、再看 shape 和类型（实数）→ 画线性幅度声谱图 → `power_to_db` 画对数幅度声谱图 → `y_axis="log"` 画对数频率声谱图 → 三种风格的音乐各画一张 | **已修复：**已按 cell 1—26 的原顺序重写。对数频率轴的理由只用第 02 课的八度，人耳感知留给 17；`top_db=80` 这个默认截断在正文里点名 | `lesson16_spectrogram.py` 已验证 `(1025, 342)` 与 `center=False` 的 `(1025, 338)` 都对上算式，`abs(S) ** 2` 后 dtype 从 complex64 变 float32；量出线性上色时 99.70% 的格子低于峰值 1%、中间 60% 色阶只装 0.0445%，换 dB 后升到 11.34%；线性纵轴上 0—1000 Hz 占 9.07%，对数轴上占 61.98% |
+| 17 梅尔声谱图 | `source_course/17 - Mel Spectrogram Explained Easily/Mel-Spectrogram Explained Easily.pdf` | 上一课回顾 → 我们还有问题：人对频率的感知是对数的 → 心理声学实验 → 理想的音频特征（时频表示、感知上合理的幅度、感知上合理的频率）→ 梅尔刻度 → 刻度上等距＝听感上等距 → 提取配方：STFT → 幅度转 dB → 频率转梅尔刻度 → 选梅尔带数 → 造梅尔滤波器组 → 用它加权 | 待写 | `lesson17_mel_scale.py`（待建）：用心理声学公式验证「等距的梅尔对应不等距的赫兹」，把 1000 Hz 上下的间隔差量出来；只画刻度和滤波器组，不调 `melspectrogram` |
+| 18 用 Python 取梅尔声谱图 | `source_course/18 - Extracting Mel Spectrograms with Python/Extracting Mel Spectrograms with Python.ipynb` | 载入 scale → `librosa.filters.mel(n_fft, sr, n_mels=10)` → 看滤波器组的 shape 并画出来 → 改 n_mels 再画 → `librosa.feature.melspectrogram` → 看 shape → `power_to_db` → 画图 | 待写 | `lesson18_mel_spectrogram.py`（待建）：验证滤波器组形状 = (n_mels, 1 + n_fft/2)，并证明梅尔声谱图就是滤波器组乘以功率矩阵；对比 n_mels 取 10 / 90 的行数变化 |
+| 19 MFCC 是什么 | `source_course/19 - MFCCs Explained Easily/Mel-Frequency Cepstral Coefficients Explained Easily.pdf` | 上一课回顾 → 倒谱（cepstrum）→ 谱与倒谱、频率与倒频率（quefrency）→ 提升（liftering）→ 声音怎样产生：声门激励 × 声道传递函数 → 取对数把乘法变成加法 → 共振峰承载音色 → 用 DCT 把两者分开 → 为什么取前 12—13 个系数 → MFCC 的用途与优缺点 | 待写 | `lesson19_cepstrum.py`（待建）：造一个「快变的激励 × 慢变的包络」信号，量出取对数后两者变成相加、DCT 后落在倒频率轴的两端 |
+| 20 用 Python 取 MFCC | `source_course/20 - Extracting MFCCs with Python/Extracting Mel-Frequency Cepstral Coefficients with Python.ipynb` | 载入 debussy → `librosa.feature.mfcc(n_mfcc=13)` → 看 shape → 画图 → `librosa.feature.delta` 求一阶差分 → `order=2` 求二阶 → 各自画图 → `np.concatenate` 拼成 39 行 | 待写 | `lesson20_mfcc.py`（待建）：验证 13 / 13 / 13 → 39 行，并说明 delta 是沿时间轴的差分；量出三种风格在前几个系数上的均值差 |
+| 21 频域特征 | `source_course/21 - Frequency-Domain Audio Features/Frequency-domain audio features.pdf` | 上一课回顾 → 频域特征有哪些 → 提取流程（波形 → 分帧加窗 → 傅里叶变换 → 频谱 → 算特征）→ 数学约定 mt(n)、N → 频带能量比：低频段与高频段的能量之比，衡量低频有多主导 → 谱质心：频谱的「重心」，对应听感上的明亮度 → 带宽：围绕质心的展开程度 | 待写 | `lesson21_freq_features.py`（待建）：三个公式各手算一遍，用一个已知答案的合成谱验证质心落在预期位置；不碰真实音乐，留给 22 / 23 |
+| 22 手写频带能量比 | `source_course/22 - Implementing Band Energy Ratio from Scratch with Python/Implementing Band Energy Ratio from scratch with Python.ipynb` | 载入 debussy / redhot / duke → FRAME_SIZE 2048、HOP_SIZE 512 → `librosa.stft` → 写 `calculate_split_frequency_bin` → 写 `band_energy_ratio` → 三段各算一次 → `frames_to_time` 换成秒 → 三条曲线画在一起 | 待写 | `lesson22_band_energy_ratio.py`（待建）：先验证分界格的算法（2000 Hz 落在第几格），再手写 BER 并与逐帧求和对齐；量出三种风格的中位数差多少 |
+| 23 谱质心与带宽 | `source_course/23 - Spectral centroid and bandwidth/Frequency-domain audio features.ipynb` | 载入 debussy / redhot / duke → FRAME_SIZE 1024、HOP_LENGTH 512 → `librosa.feature.spectral_centroid` → 看 shape → `frames_to_time` → 三条质心曲线 → `librosa.feature.spectral_bandwidth` → 三条带宽曲线 | 待写 | `lesson23_centroid_bandwidth.py`（待建）：手写质心与带宽并与 librosa 对齐；把第 21 课的公式和这里的实测数接上，量出三种风格的差别 |
 
 ## 跨课归属与允许的预告
 
@@ -51,6 +59,14 @@
 | DFT 的两个 Hack、冗余、FFT | 13 | 14 只调用 np.fft.fft，不重讲原理 |
 | 用 np.fft 取谱、频率轴、单边谱 | 14 | 13 不写代码；16 起直接用 |
 | STFT、声谱图的形状与参数取舍 | 15 | 06 只讲分帧和加窗，不提 STFT；16 讲怎么把它画对 |
+| librosa.stft 的调用、功率矩阵、dB 换算、对数频率轴 | 16 | 15 只手写原理和形状，不调绘图接口；17 起直接用「声谱图」这个词 |
+| 人耳对频率的对数感知、梅尔刻度、梅尔滤波器组的道理 | 17 | 16 不提梅尔；18 只调库，不重讲刻度是怎么来的 |
+| `librosa.filters.mel` / `melspectrogram` 的实现与形状 | 18 | 17 不写代码；19 起把梅尔声谱图当作已知输入 |
+| 倒谱、倒频率、提升、DCT、为什么取 13 个系数 | 19 | 18 不提倒谱；20 只调库 |
+| `librosa.feature.mfcc`、delta、拼成 39 维 | 20 | 19 不写代码；21 起把 MFCC 当作已有特征 |
+| 频带能量比、谱质心、带宽的定义与公式 | 21 | 22 / 23 只用一句回顾后进入实现，不重讲定义 |
+| 频带能量比的实现与三种风格对比 | 22 | 21 不写代码；23 不重复 BER |
+| 谱质心与带宽的实现与三种风格对比 | 23 | 21 不写代码；22 不提前画质心曲线 |
 
 ## 文件级执行顺序
 
