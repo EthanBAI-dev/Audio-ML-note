@@ -21,17 +21,18 @@
 body{margin:0;background:var(--bg);color:var(--ink);position:relative;isolation:isolate;
   font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
   font-size:16.5px;line-height:1.9;-webkit-text-size-adjust:100%}
-/* 克制但清晰的声学粒子层：能看见移动，又不盖住正文。 */
+/* 灰烬只在版心两侧缓慢飘动，正文和目录区域完全留白。 */
 body::before{content:"";position:fixed;inset:-80px;z-index:-1;pointer-events:none;
-  opacity:.58;background-image:
-    radial-gradient(circle at center,color-mix(in srgb,var(--accent) 62%,transparent) 0 2.2px,transparent 3px),
-    radial-gradient(circle at center,color-mix(in srgb,var(--accent) 34%,transparent) 0 1.5px,transparent 2.3px),
-    radial-gradient(circle at center,color-mix(in srgb,var(--muted) 28%,transparent) 0 1.2px,transparent 2px);
-  background-size:72px 72px,113px 113px,157px 157px;
-  background-position:0 0,31px 47px,73px 18px;
-  mask-image:linear-gradient(to bottom,black 0 58%,transparent 94%);
-  animation:particle-drift 22s linear infinite}
-@keyframes particle-drift{to{transform:translate3d(72px,36px,0)}}
+  opacity:.46;background-image:
+    radial-gradient(ellipse at center,color-mix(in srgb,var(--muted) 58%,transparent) 0 1.25px,transparent 1.9px),
+    radial-gradient(ellipse at center,color-mix(in srgb,var(--muted) 38%,transparent) 0 1.7px,transparent 2.4px),
+    radial-gradient(circle at center,color-mix(in srgb,var(--muted) 45%,transparent) 0 .9px,transparent 1.6px);
+  background-size:67px 79px,109px 127px,151px 173px;
+  background-position:5px 17px,41px 68px,87px 29px;
+  -webkit-mask-image:linear-gradient(to right,black 0,black calc(50% - 690px),transparent calc(50% - 640px),transparent calc(50% + 640px),black calc(50% + 690px),black 100%);
+  mask-image:linear-gradient(to right,black 0,black calc(50% - 690px),transparent calc(50% - 640px),transparent calc(50% + 640px),black calc(50% + 690px),black 100%);
+  animation:ash-drift 19s ease-in-out infinite alternate}
+@keyframes ash-drift{to{transform:translate3d(18px,-64px,0)}}
 @media(prefers-reduced-motion:reduce){body::before{animation:none}}
 h1,h2,h3{font-family:"Noto Serif SC","Songti SC","SimSun",Georgia,serif;font-weight:600;text-wrap:balance}
 a{color:var(--accent)}
@@ -251,7 +252,7 @@ pre code{background:none;padding:0}
 .course-docs-head .eyebrow{margin:0;color:var(--accent);font-size:11px;letter-spacing:.15em;
   font-family:ui-monospace,Consolas,monospace;white-space:nowrap}
 .course-docs-head h2{margin:0;font-size:19px;border:0;padding:0}
-.course-docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.course-docs-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .course-doc{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:18px 20px;
   border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);
   text-decoration:none;transition:transform .18s ease,border-color .18s ease,background .18s ease}
@@ -263,7 +264,7 @@ pre code{background:none;padding:0}
 .course-doc i{grid-column:2;grid-row:2;color:var(--accent);font-size:12px;font-style:normal;align-self:center}
 @media(max-width:700px){
   .course-docs{padding:20px 18px}.course-docs-head{display:block}
-  .course-docs-head .eyebrow{margin-bottom:4px}.course-docs-grid{grid-template-columns:1fr}
+  .course-docs-head .eyebrow{margin-bottom:4px}
   .group h2{font-size:20px}
 }
 

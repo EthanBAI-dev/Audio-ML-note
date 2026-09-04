@@ -36,7 +36,7 @@ function rewritePaths(md: string, group: string): string {
   // 课程内互链
   md = md.replace(/\]\((?:\.\.\/第\d\d-\d\d课\/)?(\d\d)-[^)]*\.md\)/g, (_m, n) => `](/lesson/${n})`);
   md = md.replace(/\]\(\.\.\/课程总纲\/README\.md\)/g, '](/guide)');
-  md = md.replace(/\]\(\.\.\/课程项目\/README\.md\)/g, '](/project)');
+  md = md.replace(/\]\(\.\.\/课程项目\/README\.md\)/g, '](/guide#实践项目)');
   md = md.replace(/\]\(\.\.\/课程代码\/([^)]+)\)/g,
     (_m, p) => `](${REPO}/${encodeURI('音频信号处理二十三讲/课程代码/' + p)})`);
   return md;

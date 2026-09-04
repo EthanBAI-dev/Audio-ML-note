@@ -30,16 +30,10 @@ export default function Home() {
           </div>
           <div className="course-docs-grid">
             <Link href="/guide" className="course-doc">
-              <span className="course-doc-kicker">学习地图</span>
-              <strong>课程总纲</strong>
-              <span>了解课程边界、共同基础和四条特征路线。</span>
-              <i aria-hidden>阅读总纲 →</i>
-            </Link>
-            <Link href="/project" className="course-doc">
-              <span className="course-doc-kicker">实践路线</span>
-              <strong>三首曲子，一个分类器</strong>
-              <span>查看最终产物，以及 23 个实验怎样连成一个项目。</span>
-              <i aria-hidden>查看项目 →</i>
+              <span className="course-doc-kicker">课程导览</span>
+              <strong>学习地图与实践项目</strong>
+              <span>一次看清课程边界、四条特征路线、最终产物，以及 23 个实验怎样连起来。</span>
+              <i aria-hidden>查看导览 →</i>
             </Link>
           </div>
         </section>

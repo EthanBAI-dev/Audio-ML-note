@@ -45,8 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div>
                 <p className="foot-h">相关</p>
                 <ul>
-                  <li><Link href="/guide">课程总纲</Link></li>
-                  <li><Link href="/project">课程项目</Link></li>
+                  <li><Link href="/guide">课程导览</Link></li>
                   <li><a href="https://github.com/EthanBAI-dev/Audio-ML-note">GitHub 仓库</a></li>
                   <li><a href="https://github.com/EthanBAI-dev/Audio-ML-note/tree/main/%E9%9F%B3%E9%A2%91%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86%E4%BA%8C%E5%8D%81%E4%B8%89%E8%AE%B2/%E8%AF%BE%E7%A8%8B%E4%BB%A3%E7%A0%81">课程代码</a></li>
                 </ul>
