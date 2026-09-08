@@ -1,10 +1,12 @@
 /** 哪一课在哪个二级标题之前插入哪个交互组件。
  *  锚点用标题原文；文章改标题时这里要跟着改，构建脚本会报出对不上的锚点。 */
-export const WIDGET_NAMES = ['framing', 'spectrum', 'mel', 'bandsplit', 'sliding', 'probe', 'phasor', 'tone'] as const;
+export const WIDGET_NAMES = ['framing', 'spectrum', 'mel', 'bandsplit', 'sliding', 'probe', 'phasor', 'tone', 'blindguess'] as const;
 export type WidgetName = (typeof WIDGET_NAMES)[number];
 export type Placement = { before: string; name: WidgetName };
 
 export const WIDGETS: Record<string, Placement[]> = {
+  // 01 —— 只呈现「你分得出、程序只有数字」这个落差；不解释声音为什么不同，那是 03
+  '01': [{ before: '把声音整理好之后，程序能做哪些事', name: 'blindguess' }],
   // 02 —— 第一次把波形、参数和听感连在一起
   '02': [{ before: '人耳能听到多快的振动', name: 'tone' }],
   // 06 第一次看窗口移动；15 再单独比较帧长，不重复同一个演示

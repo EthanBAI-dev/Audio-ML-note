@@ -11,6 +11,7 @@ const map = {
   probe: dynamic(() => import('./ProbeSweepAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
   phasor: dynamic(() => import('./PhasorAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
   tone: dynamic(() => import('./ToneLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  blindguess: dynamic(() => import('./BlindGuessLab'), { ssr: false, loading: () => <LabSkeleton /> }),
 } as const;
 
 function LabSkeleton() {
