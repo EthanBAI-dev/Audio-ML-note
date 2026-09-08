@@ -7,12 +7,18 @@ export const COURSE_PRODUCT = {
 } as const;
 
 export function coursePriceCents(): number {
-  const yuan = Number(process.env.COURSE_PRICE_CNY ?? '199');
-  return Number.isFinite(yuan) && yuan > 0 ? Math.round(yuan * 100) : 19900;
+  const yuan = Number(process.env.COURSE_PRICE_CNY ?? '19');
+  return Number.isFinite(yuan) && yuan > 0 ? Math.round(yuan * 100) : 1900;
 }
 
 export function coursePriceLabel(): string {
   return `¥${(coursePriceCents() / 100).toFixed(0)}`;
+}
+
+export function courseOriginalPriceLabel(): string {
+  const yuan = Number(process.env.COURSE_ORIGINAL_PRICE_CNY ?? '49');
+  const cents = Number.isFinite(yuan) && yuan > 0 ? Math.round(yuan * 100) : 4900;
+  return `¥${(cents / 100).toFixed(0)}`;
 }
 
 export function paymentsConfigured(): boolean {

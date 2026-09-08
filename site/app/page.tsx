@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { coursePriceLabel } from '../lib/commerce';
+import { courseOriginalPriceLabel, coursePriceLabel } from '../lib/commerce';
 
 const benefits = [
   {
@@ -281,7 +281,7 @@ export default function Home() {
                 <h2>当前主课：音频信号处理二十三讲</h2>
                 <p>实验室的第一门完整课程，从物理直觉一路走到音频特征。</p>
               </div>
-              <div className="price-module"><strong>{coursePriceLabel()}</strong><span>当前价 · 单次购买</span><Link href="/pricing">查看完整版</Link></div>
+              <div className="price-module"><strong>{coursePriceLabel()}</strong><span>当前价 · 单次购买</span><del>原价 {courseOriginalPriceLabel()}</del><Link href="/pricing">查看完整版</Link></div>
             </header>
             <div className="phase-grid">
               {phases.map((item) => (

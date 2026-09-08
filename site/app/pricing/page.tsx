@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { coursePriceLabel, paymentsConfigured } from '../../lib/commerce';
+import { courseOriginalPriceLabel, coursePriceLabel, paymentsConfigured } from '../../lib/commerce';
 import { auth, wechatAuthConfigured } from '../../auth';
 
 export const metadata: Metadata = {
@@ -42,7 +42,11 @@ export default async function PricingPage({ searchParams }: {
           <div>
             <p className="eyebrow">互动持续版</p>
             <h2 id="price-title">音频信号处理二十三讲</h2>
-            <p className="price"><strong>{coursePriceLabel()}</strong><span>单次购买</span></p>
+            <p className="price">
+              <strong>{coursePriceLabel()}</strong>
+              <span>当前价 · 单次购买</span>
+              <del>原价 {courseOriginalPriceLabel()}</del>
+            </p>
           </div>
           <ul className="feature-list">
             <li>23 讲当前版本完整课程</li>

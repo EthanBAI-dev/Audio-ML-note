@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { coursePriceLabel, paymentsConfigured } from '../lib/commerce';
+import { courseOriginalPriceLabel, coursePriceLabel, paymentsConfigured } from '../lib/commerce';
 
 export default function Paywall({ compact = false }: { compact?: boolean }) {
   const ready = paymentsConfigured();
@@ -14,6 +14,7 @@ export default function Paywall({ compact = false }: { compact?: boolean }) {
         <li>申请加入课程会员群，交流、反馈和接收更新</li>
         <li>持续获得这门课程的勘误与内容升级</li>
       </ul>
+      <p className="paywall-price"><del>原价 {courseOriginalPriceLabel()}</del><strong>当前价 {coursePriceLabel()}</strong></p>
       <div className="purchase-actions">
         {ready ? (
           <form action="/api/checkout" method="post">
