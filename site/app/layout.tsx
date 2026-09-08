@@ -41,6 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ul>
                   <li><Link href="/courses">全部课程</Link></li>
                   <li><Link href="/roadmap">学习路线</Link></li>
+                  <li><Link href="/project">课程项目</Link></li>
+                  <li><Link href="/code">课程代码</Link></li>
                   <li><Link href="/signin">登录 / 注册</Link></li>
                   <li><Link href="/pricing">购买完整版</Link></li>
                   <li><Link href="/legal/terms">服务条款</Link></li>

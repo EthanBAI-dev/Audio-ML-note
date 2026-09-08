@@ -49,6 +49,15 @@ if (existsSync(audioSrc)) {
 }
 console.log(`同步配图 ${figs} 张，音频 ${auds} 个${auds === 0 ? '（source_course/audio_resources 不存在，属正常）' : ''}`);
 
+// 正文里 21 处链接指向课程代码，站内 /code 直接读它。目录不在就早点说清楚，
+// 否则构建会死在一个看不出原因的地方。
+if (!existsSync(join(COURSE, '课程代码', 'README.md'))) {
+  console.error('找不到 音频信号处理二十三讲/课程代码/README.md。\n'
+    + '  站内代码页（/code）读的就是它，正文里的脚本链接也指向那里。\n'
+    + '  把 课程代码/ 一起发布进这个仓库，或者先改掉 lib/markdown.ts 里的改写规则。');
+  process.exit(1);
+}
+
 // 交互组件按二级标题定位。文章改标题时这里要立刻报错，否则组件会悄悄掉到文末。
 const wsrc = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'content', 'widgets.ts'), 'utf8');
 const blocks = [...wsrc.matchAll(/'(\d\d)':\s*\[([\s\S]*?)\],\r?\n/g)];

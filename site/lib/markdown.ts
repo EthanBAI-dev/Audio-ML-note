@@ -9,8 +9,6 @@ import rehypeSlug from 'rehype-slug';
 import rehypeStringify from 'rehype-stringify';
 import type { Lesson } from './lessons';
 
-const REPO = 'https://github.com/EthanBAI-dev/Audio-ML-note/blob/main';
-
 // 自制或无版权疑虑的素材可以直接内嵌播放；三段商业录音只给外链。
 export const SELF_MADE = new Set(['scale', 'noise', 'piano_c', 'violin_c', 'sax', 'tremolo', 'voice']);
 export const EXTERNAL: Record<string, { label: string; url: string }> = {
@@ -40,9 +38,11 @@ function rewritePaths(md: string, group: string): string {
   // 课程内互链
   md = md.replace(/\]\((?:\.\.\/第\d\d-\d\d课\/)?(\d\d)-[^)]*\.md\)/g, (_m, n) => `](/lesson/${n})`);
   md = md.replace(/\]\(\.\.\/课程总纲\/README\.md\)/g, '](/guide)');
-  md = md.replace(/\]\(\.\.\/课程项目\/README\.md\)/g, `](${REPO}/${encodeURI('音频信号处理二十三讲/课程项目/README.md')})`);
-  md = md.replace(/\]\(\.\.\/课程代码\/([^)]+)\)/g,
-    (_m, p) => `](${REPO}/${encodeURI('音频信号处理二十三讲/课程代码/' + p)})`);
+  md = md.replace(/\]\(\.\.\/课程项目\/README\.md\)/g, '](/project)');
+  // 课程代码：目录说明去索引页，单个文件去它自己的源码页。这些以前指向 GitHub，
+  // 仓库转私有后读者只会拿到 404，所以一律留在站内。
+  md = md.replace(/\]\(\.\.\/课程代码\/README\.md\)/g, '](/code)');
+  md = md.replace(/\]\(\.\.\/课程代码\/([^)]+)\)/g, (_m, p) => `](/code/${p})`);
   return md;
 }
 
