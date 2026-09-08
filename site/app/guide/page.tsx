@@ -15,7 +15,7 @@ export default async function Page() {
       <Toc items={extractToc(html)} />
       <main>
         <nav className="crumb" aria-label="面包屑">
-          <Link href="/">全部课程</Link><span aria-hidden>/</span>
+          <Link href="/courses">全部课程</Link><span aria-hidden>/</span>
           <span aria-current="page">课程导览</span>
         </nav>
         <article>

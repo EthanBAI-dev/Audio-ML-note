@@ -4,33 +4,23 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const LINKS = [
-  { href: '/', label: '全部课程' },
+  { href: '/', label: '首页' },
+  { href: '/courses', label: '课程目录' },
+  { href: '/roadmap', label: '学习路线' },
+  { href: '/labs', label: '互动实验室' },
 ];
 
 export default function SiteNav() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
-  const [dark, setDark] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('theme');
-    setDark(saved ? saved === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches);
-  }, []);
   useEffect(() => { setOpen(false); }, [path]);
-
-  const toggleTheme = () => {
-    const next = dark ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    try { localStorage.setItem('theme', next); } catch { /* 隐私模式写不进去 */ }
-    setDark(!dark);
-  };
 
   return (
     <header className="nav">
       <div className="nav-inner">
         <Link href="/" className="nav-brand">
-          <span className="nav-mark" aria-hidden>♪</span>
-          音频信号处理二十三讲
+          <span className="nav-mark" aria-hidden><i /><i /><i /><i /><i /></span>
+          <span className="nav-brand-copy"><b>Ethan 音乐实验室</b><small>ACOUSTIC &amp; AUDIO LAB</small></span>
         </Link>
 
         <button type="button" className="nav-burger" aria-expanded={open}
@@ -41,15 +31,14 @@ export default function SiteNav() {
         <nav className={`nav-links${open ? ' open' : ''}`} aria-label="站点导航">
           {LINKS.map((l) => (
             <Link key={l.href} href={l.href}
-              aria-current={l.href === path || (l.href === '/' && path.startsWith('/lesson')) ? 'page' : undefined}>
+              aria-current={l.href === path
+                || (l.href !== '/' && path.startsWith(`${l.href}/`))
+                || (l.href === '/courses' && path.startsWith('/lesson')) ? 'page' : undefined}>
               {l.label}
             </Link>
           ))}
-          <a href="https://github.com/EthanBAI-dev/Audio-ML-note" rel="noreferrer">仓库</a>
-          <button type="button" className="nav-theme" onClick={toggleTheme}
-            aria-label={dark ? '切换到浅色' : '切换到深色'}>
-            {dark === null ? '' : dark ? '☀ 浅色' : '☾ 深色'}
-          </button>
+          <Link className="nav-signin" href="/signin">登录</Link>
+          <Link className="nav-start" href="/lesson/01">开始学习</Link>
         </nav>
       </div>
     </header>

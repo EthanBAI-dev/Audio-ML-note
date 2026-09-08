@@ -51,7 +51,7 @@ console.log(`同步配图 ${figs} 张，音频 ${auds} 个${auds === 0 ? '（sou
 
 // 交互组件按二级标题定位。文章改标题时这里要立刻报错，否则组件会悄悄掉到文末。
 const wsrc = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'content', 'widgets.ts'), 'utf8');
-const blocks = [...wsrc.matchAll(/'(\d\d)':\s*\[([\s\S]*?)\],\n/g)];
+const blocks = [...wsrc.matchAll(/'(\d\d)':\s*\[([\s\S]*?)\],\r?\n/g)];
 let checked = 0;
 const broken = [];
 for (const [, id, body] of blocks) {

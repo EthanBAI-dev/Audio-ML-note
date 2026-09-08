@@ -7,6 +7,9 @@ import { WIDGETS } from '../../../content/widgets';
 import Article from '../../../components/Article';
 import Toc from '../../../components/Toc';
 import ReadingProgress from '../../../components/ReadingProgress';
+import Paywall from '../../../components/Paywall';
+import { hasCourseAccess } from '../../../lib/access';
+import { isPublicLesson, previewMarkdown } from '../../../lib/commerce';
 
 export function generateStaticParams() {
   return allLessons().map((l) => ({ id: l.id }));
@@ -22,7 +25,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const l = lessonById(id);
   if (!l) notFound();
-  const html = await renderLesson(rawBody(l), l, WIDGETS[l.id] ?? []);
+  const free = isPublicLesson(l.id);
+  const unlocked = free || await hasCourseAccess();
+  const lessonBody = rawBody(l);
+  const html = await renderLesson(unlocked ? lessonBody : previewMarkdown(lessonBody), l,
+    unlocked ? (WIDGETS[l.id] ?? []) : []);
   const toc = extractToc(html);
   const all = allLessons();
   const i = all.findIndex((x) => x.id === l.id);
@@ -36,9 +43,9 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         <Toc items={toc} />
         <main>
           <nav className="crumb" aria-label="面包屑">
-            <Link href="/">全部课程</Link>
+            <Link href="/courses">全部课程</Link>
             <span aria-hidden>/</span>
-            <Link href={`/#g${l.group}`}>{GROUP_TITLE[l.group]}</Link>
+            <Link href={`/courses/audio-ml#g${l.group}`}>{GROUP_TITLE[l.group]}</Link>
             <span aria-hidden>/</span>
             <span aria-current="page">第 {l.id} 讲</span>
           </nav>
@@ -50,12 +57,16 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
                 <span>共 23 讲</span>
                 <span>约 {readingMinutes(l)} 分钟</span>
                 {hasLab ? <span className="art-chip">含交互实验</span> : null}
+                {free ? <span className="art-chip">免费试看</span> : null}
+                {!free && unlocked ? <span className="art-chip">已解锁</span> : null}
               </p>
               <h1>{l.title}</h1>
               {l.lead ? <p className="lead">{l.lead}</p> : null}
             </header>
 
             <Article html={html} />
+
+            {!unlocked ? <Paywall compact /> : null}
 
           </article>
 
