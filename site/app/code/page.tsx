@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { readDoc } from '../../lib/lessons';
 import { renderLesson } from '../../lib/markdown';
 import { extractToc } from '../../lib/toc';
-import { codeAvailable, codeFiles, lessonOf } from '../../lib/code';
+import { CODE_ZIP, codeAvailable, codeFiles, lessonOf, zipSizeLabel } from '../../lib/code';
 import Article from '../../components/Article';
 import Toc from '../../components/Toc';
 
@@ -29,6 +29,14 @@ export default async function Page() {
           <header className="art-head">
             <h1>{doc.title}</h1>
             {doc.lead ? <p className="lead">{doc.lead}</p> : null}
+            <p className="hero-cta">
+              <a className="btn" href={CODE_ZIP} download>下载全部代码{zipSizeLabel() ? `（${zipSizeLabel()}）` : ''}</a>
+            </p>
+            <p className="art-meta">
+              包含 {lessons.length} 个课程脚本、工具包 <code>soundlab/</code>（{toolkit.length} 个模块）与依赖清单。
+              解开后在包目录里 <code>pip install -r requirements.txt</code> 就能跑；
+              音频素材不在包里，见<Link href="/lesson/01">第 01 讲</Link>。
+            </p>
           </header>
           <Article html={html} />
 

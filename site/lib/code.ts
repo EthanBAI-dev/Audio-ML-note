@@ -4,6 +4,15 @@ import { COURSE } from './lessons';
 
 export const CODE_ROOT = join(COURSE, '课程代码');
 
+/** 打包下载。文件由 scripts/sync-assets.mjs 在构建前生成到 public/downloads/。 */
+export const CODE_ZIP = '/downloads/audio-ml-course-code.zip';
+
+export function zipSizeLabel(): string | null {
+  const abs = join(process.cwd(), 'public', CODE_ZIP.replace(/^\//, ''));
+  if (!existsSync(abs)) return null;
+  return `${Math.max(1, Math.round(statSync(abs).size / 1024))} KB`;
+}
+
 /** 课程代码没随目录发布时，构建期就该看得出来，而不是让读者点到空页面。 */
 export function codeAvailable(): boolean {
   return existsSync(join(CODE_ROOT, 'README.md'));

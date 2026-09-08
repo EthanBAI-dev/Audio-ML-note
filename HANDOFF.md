@@ -15,7 +15,7 @@
 
 部署仓是主仓的一个子集：只有 `site/` + `音频信号处理二十三讲/` + `source_course/audio_resources/`。
 
-### ⚠️ 三个已知的坑
+### ⚠️ 四个已知的坑
 
 1. **两个 `site/` 已经双向漂移，没有任何同步脚本。**
    主仓较新（微信登录 `wechatAuthConfigured`、首页改版、划线原价）；部署仓较旧，但**独有** `app/api/health/route.ts`（数据库健康检查），主仓没有。
@@ -25,7 +25,13 @@
 2. **部署仓里没有 `音频信号处理二十三讲/课程代码/`。**
    本次改动让站内 `/code` 直接读它，所以**部署仓在补上这个目录之前构建会失败**——`site/scripts/sync-assets.mjs` 会在构建前打印明确原因并退出 1。这是故意的，不要靠删检查绕过。
 
-3. **课程代码里 `README.md` 说的 `project/` 目录并不存在。**
+3. **`课程代码/README.md` 的「怎么开始」是写给有仓库的人的，和打包下载对不上。**
+   它让读者 `cp -r 课程代码/soundlab 课程代码/lessons project/`；而从站内下载 zip 的读者解开后
+   `lessons/`、`soundlab/` 已经在包的顶层，也没有 `source_course/`。
+   `/code` 页的按钮下面直接给了适用于压缩包的那一句，绕开了这个矛盾，**但 README 本身还没改**。
+   要彻底理顺，得把 README 的「怎么开始」写成两条路径（克隆仓库 / 下载压缩包）。
+
+4. **课程代码里 `README.md` 说的 `project/` 目录并不存在。**
    `课程代码/README.md` 让读者 `mkdir -p project/audio` 再把 `soundlab/`、`lessons/` 拷进去；仓库里没有现成的 `project/`。正文第 01 讲的目录树跟着这个约定写。要改就两处一起改。
 
 ---
@@ -66,8 +72,11 @@
 | `site/lib/markdown.ts` | 删掉 `REPO` 常量；改写规则改为 `/code`、`/code/<path>`、`/project` |
 | `site/scripts/sync-assets.mjs` | 缺 `课程代码/` 时构建前退出并说明原因 |
 | `site/app/layout.tsx` | 页脚加「课程项目」「课程代码」入口 |
+| `site/scripts/lib/zip.mjs` | 新增。最小 ZIP 打包器，用 Node 自带 zlib，不加依赖 |
+| `site/scripts/sync-assets.mjs` | 另外在构建前把课程代码打成 `public/downloads/audio-ml-course-code.zip`（36 个文件，119 KB；`data/` 是配图中间产物，不打进去）|
+| `/code` 与单文件页 | 都加了「下载全部代码」按钮 |
 
-**已验证：** 21 处链接逐个请求全部 200；第 01 讲页面里 `github.com` 链接归零；`/code/../../../etc/passwd` 等穿越尝试全部 404；单文件页在 390 px 窄屏无横向溢出。
+**已验证：** 21 处链接逐个请求全部 200；第 01 讲页面里 `github.com` 链接归零；`/code/../../../etc/passwd` 等穿越尝试全部 404；单文件页在 390 px 窄屏无横向溢出；压缩包 `unzip -t` 通过、解开后与仓库逐字节一致、从解压目录能跑通 lesson01。
 
 ---
 

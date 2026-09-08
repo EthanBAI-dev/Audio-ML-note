@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // 把课程目录里的 SVG 配图和自制音频复制进 public/，让网站按 URL 取用。
 // 文章 Markdown 不复制——站点在构建时直接读原文件，正式版仍是唯一事实来源。
-import { cpSync, mkdirSync, existsSync, readdirSync, readFileSync } from 'node:fs';
+import { cpSync, mkdirSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { makeZip } from './lib/zip.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const COURSE = join(ROOT, '音频信号处理二十三讲');
@@ -57,6 +58,28 @@ if (!existsSync(join(COURSE, '课程代码', 'README.md'))) {
     + '  把 课程代码/ 一起发布进这个仓库，或者先改掉 lib/markdown.ts 里的改写规则。');
   process.exit(1);
 }
+
+// 打成一个可下载的包。data/ 是配图工具读的中间产物，读者跑课程用不到，不放进去。
+const ZIP_ROOT = 'audio-ml-course-code';
+const zipEntries = [];
+for (const rel of ['README.md', 'requirements.txt', 'dataset_manifest.csv']) {
+  const abs = join(COURSE, '课程代码', rel);
+  if (existsSync(abs)) zipEntries.push({ name: `${ZIP_ROOT}/${rel}`, data: readFileSync(abs) });
+}
+for (const sub of ['lessons', 'soundlab']) {
+  const dir = join(COURSE, '课程代码', sub);
+  if (!existsSync(dir)) continue;
+  for (const f of readdirSync(dir).sort()) {
+    const abs = join(dir, f);
+    if (!statSync(abs).isFile()) continue;
+    zipEntries.push({ name: `${ZIP_ROOT}/${sub}/${f}`, data: readFileSync(abs) });
+  }
+}
+const zipDir = join(PUB, 'downloads');
+mkdirSync(zipDir, { recursive: true });
+const zipBuf = makeZip(zipEntries);
+writeFileSync(join(zipDir, `${ZIP_ROOT}.zip`), zipBuf);
+console.log(`课程代码打包 ${zipEntries.length} 个文件，${(zipBuf.length / 1024).toFixed(0)} KB`);
 
 // 交互组件按二级标题定位。文章改标题时这里要立刻报错，否则组件会悄悄掉到文末。
 const wsrc = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'content', 'widgets.ts'), 'utf8');

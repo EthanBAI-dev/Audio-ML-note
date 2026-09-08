@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { codeFiles, lessonOf, readCodeFile } from '../../../lib/code';
+import { CODE_ZIP, codeFiles, lessonOf, readCodeFile } from '../../../lib/code';
 
 export function generateStaticParams() {
   return codeFiles().map((f) => ({ file: f.path.split('/') }));
@@ -40,6 +40,9 @@ export default async function Page({ params }: { params: Promise<{ file: string[
             <p className="lead">
               这是课程代码里的原文件。
               {n ? <> 它跑出来的数字，就是<Link href={`/lesson/${n}`}>第 {n} 讲</Link>正文里引用的那些。</> : null}
+            </p>
+            <p className="hero-cta">
+              <a className="btn ghost" href={CODE_ZIP} download>下载全部代码</a>
             </p>
           </header>
           <div className="prose">

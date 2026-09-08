@@ -6,3 +6,4 @@ public/figures/
 public/audio/
 *.tsbuildinfo
 next-env.d.ts
+public/downloads/
