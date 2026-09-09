@@ -1,6 +1,6 @@
 # 课程网页版
 
-把 `音频信号处理二十三讲/` 的 23 篇 Markdown 直接渲染成网站，并在关键位置插入可以动手调的交互程序。
+把 `音频信号处理二十三讲/` 的 23 篇 Markdown 直接渲染成网站，并在关键位置插入可以动手调的交互程序。前三讲免费开放；其余课程支持账号登录、购买和跨设备恢复访问。
 
 **文章不复制一份。** 站点在构建时读取课程目录里的原文件，正式版仍然是唯一的事实来源；改文章不需要动这里。
 
@@ -17,7 +17,13 @@ npm --prefix site run dev     # http://localhost:3000
 
 1. 在 Vercel 里导入这个仓库。
 2. **Root Directory 填 `site`**，框架会被识别成 Next.js，其余保持默认。
-3. 部署。23 篇文章全部是构建期静态生成，没有服务端依赖。
+3. 先保持 `PAYMENTS_ENABLED=false`，按 `.env.example` 配置正式域名、课程价格和服务端密钥。
+4. 准备 PostgreSQL，并执行 `db/migrations/0001_accounts_and_entitlements.sql`。
+5. 配置微信开放平台网站应用，回调地址为 `https://你的域名/api/auth/callback/wechat`。
+6. 先部署预览环境，检查免费章节、付费预览、登录、测试支付、Webhook、退款与跨设备恢复访问。
+7. 上述流程全部通过后，在正式环境把 `PAYMENTS_ENABLED` 改为 `true`。
+
+站点不是纯静态导出：课程正文和公开页面主要在构建期生成，登录、定价、付费课程、结账确认和 Stripe Webhook 使用服务端路由。完整收费模式依赖 PostgreSQL、Auth.js、微信登录和 Stripe；未配置时免费内容仍可正常运行，购买入口会保持关闭。详细配置与上线边界见 `COMMERCE.md`。
 
 ## 交互程序放在哪
 

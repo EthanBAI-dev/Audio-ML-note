@@ -1,8 +1,9 @@
 import Link from 'next/link';
+import { wechatAuthConfigured } from '../auth';
 import { courseOriginalPriceLabel, coursePriceLabel, paymentsConfigured } from '../lib/commerce';
 
 export default function Paywall({ compact = false }: { compact?: boolean }) {
-  const ready = paymentsConfigured();
+  const ready = paymentsConfigured() && wechatAuthConfigured;
   return (
     <section className={`paywall${compact ? ' paywall-compact' : ''}`} aria-labelledby="paywall-title">
       <p className="eyebrow">互动持续版</p>

@@ -8,7 +8,7 @@
 2. 在微信开放平台申请“网站应用微信登录”，填写 `AUTH_WECHAT_ID`、`AUTH_WECHAT_SECRET` 和 `AUTH_SECRET`。回调地址为 `https://你的域名/api/auth/callback/wechat`。
 3. 在 Stripe 测试环境取得 `STRIPE_SECRET_KEY`。
 4. 生成至少 32 个随机字符作为 `COURSE_ACCESS_SECRET`。
-5. 填写正式域名 `NEXT_PUBLIC_SITE_URL` 和价格 `COURSE_PRICE_CNY`。
+5. 填写正式域名 `NEXT_PUBLIC_SITE_URL`、现价 `COURSE_PRICE_CNY` 和划线原价 `COURSE_ORIGINAL_PRICE_CNY`。
 6. 在 Stripe 中创建 Webhook，地址为 `https://你的域名/api/stripe/webhook`，监听 `checkout.session.completed`，并填写 `STRIPE_WEBHOOK_SECRET`。
 7. 测试登录、支付、退款和恢复访问后，才把 `PAYMENTS_ENABLED` 改为 `true`。
 
@@ -37,11 +37,9 @@ npm run export:free -- --site-url=https://你的正式域名 --version=2026-09-0
 
 推荐第二阶段使用 PostgreSQL 保存 `users`、`accounts`、`orders`、`entitlements` 和 `lesson_progress`，支付 Webhook 作为唯一授予和撤销访问权的入口。微信支付、小红书店铺和公众号只需要接入同一份 entitlement，不应各自维护一套课程权限。完整设计见 `参考资料/个人主站会员与微信登录架构.md`。
 
-## 正式收款前仍需人工填写
+## 正式收款前仍需确认
 
-- 经营主体名称与所在地；
-- 支持邮箱或客服电话；
-- 适用法律和争议解决方式；
+- 建立法定经营者姓名、实际经营地址和电话号码的邮件请求模板，确保消费者在购买前提出请求时可以及时获得；
 - 发票或收据安排；
-- 最终价格、促销规则和退款处理时限；
+- 最终价格与促销规则；
 - 当前公开 GitHub 仓库与付费内容之间的关系。

@@ -46,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <li><Link href="/legal/terms">服务条款</Link></li>
                   <li><Link href="/legal/privacy">隐私说明</Link></li>
                   <li><Link href="/legal/refund">退款规则</Link></li>
+                  <li><Link href="/legal/commercial-disclosure">特定商取引法说明</Link></li>
                   <li><Link href="/legal/licenses">版权与许可</Link></li>
                 </ul>
               </div>

@@ -83,7 +83,7 @@ export default async function PricingPage({ searchParams }: {
           <details><summary>后续更新包含什么？</summary><p>包含这门课程的勘误、表达优化、新图解和新增案例；不自动包含未来单独发布的其他课程。</p></details>
           <details><summary>怎样加入会员群？</summary><p>购买后在学习中心提交入群申请。验证课程权益后发送邀请，群内用于课程交流、反馈和更新通知。</p></details>
           <details><summary>课程适合零基础吗？</summary><p>适合。专业词会在第一次使用前解释，公式、代码和图形按同一条学习路线推进。</p></details>
-          <details><summary>能否退款？</summary><p>重复支付、无法正常交付等情况按退款规则处理；其他情况受数字内容性质和适用法律约束。</p></details>
+          <details><summary>能否退款？</summary><p>可以在支付成功后 7 个自然日内申请退款；重复支付、无法正常交付等情况超过七日仍可联系客服处理。详情见退款规则。</p></details>
         </section>
       </main>
     </div>
