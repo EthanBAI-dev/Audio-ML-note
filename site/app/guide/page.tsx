@@ -4,6 +4,7 @@ import { renderLesson } from '../../lib/markdown';
 import { extractToc } from '../../lib/toc';
 import Article from '../../components/Article';
 import Toc from '../../components/Toc';
+import CourseCredit from '../../components/CourseCredit';
 
 export const metadata = { title: '课程导览' };
 
@@ -15,7 +16,7 @@ export default async function Page() {
       <Toc items={extractToc(html)} />
       <main>
         <nav className="crumb" aria-label="面包屑">
-          <Link href="/courses">全部课程</Link><span aria-hidden>/</span>
+          <Link href="/courses/audio-ml">音频课程</Link><span aria-hidden>/</span>
           <span aria-current="page">课程导览</span>
         </nav>
         <article>
@@ -25,6 +26,7 @@ export default async function Page() {
           </header>
           <Article html={html} />
         </article>
+        <CourseCredit />
       </main>
     </div>
   );

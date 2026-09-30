@@ -1,4 +1,4 @@
-import { integer, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { bigint, index, integer, pgTable, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -35,50 +35,20 @@ export const verificationTokens = pgTable('verification_tokens', {
   expires: timestamp('expires', { mode: 'date', withTimezone: true }).notNull(),
 }, (token) => [primaryKey({ columns: [token.identifier, token.token] })]);
 
-export const courses = pgTable('courses', {
-  id: text('id').primaryKey(),
-  slug: text('slug').notNull().unique(),
-  title: text('title').notNull(),
-  status: text('status').notNull().default('draft'),
-  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
-});
-
-export const products = pgTable('products', {
-  id: text('id').primaryKey(),
-  courseId: text('course_id').references(() => courses.id),
-  name: text('name').notNull(),
-  accessType: text('access_type').notNull().default('lifetime'),
-  active: integer('active').notNull().default(1),
-});
-
-export const orders = pgTable('orders', {
+/** 文章评论。page 是页面标识（如 lesson/05），以后实验室其他内容也能挂评论；回复只有一层。 */
+export const comments = pgTable('comments', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('user_id').notNull().references(() => users.id),
-  productId: text('product_id').notNull().references(() => products.id),
-  provider: text('provider').notNull(),
-  externalOrderId: text('external_order_id').notNull(),
-  status: text('status').notNull(),
-  amount: integer('amount').notNull(),
-  currency: text('currency').notNull(),
-  paidAt: timestamp('paid_at', { mode: 'date', withTimezone: true }),
-  refundedAt: timestamp('refunded_at', { mode: 'date', withTimezone: true }),
+  page: text('page').notNull(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  parentId: text('parent_id'),
+  body: text('body').notNull(),
   createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
-}, (order) => [uniqueIndex('orders_provider_external_unique').on(order.provider, order.externalOrderId)]);
+  deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }),
+}, (comment) => [index('comments_page_created').on(comment.page, comment.createdAt)]);
 
-export const entitlements = pgTable('entitlements', {
-  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  productId: text('product_id').notNull().references(() => products.id),
-  sourceOrderId: text('source_order_id').references(() => orders.id),
-  grantedAt: timestamp('granted_at', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
-  expiresAt: timestamp('expires_at', { mode: 'date', withTimezone: true }),
-  revokedAt: timestamp('revoked_at', { mode: 'date', withTimezone: true }),
-}, (entitlement) => [uniqueIndex('entitlements_user_product_unique').on(entitlement.userId, entitlement.productId)]);
-
-export const lessonProgress = pgTable('lesson_progress', {
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  courseId: text('course_id').notNull().references(() => courses.id, { onDelete: 'cascade' }),
-  lessonId: text('lesson_id').notNull(),
-  percent: integer('percent').notNull().default(0),
+/** 每个页面的累计浏览次数。 */
+export const pageViews = pgTable('page_views', {
+  path: text('path').primaryKey(),
+  views: bigint('views', { mode: 'number' }).notNull().default(0),
   updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
-}, (progress) => [primaryKey({ columns: [progress.userId, progress.courseId, progress.lessonId] })]);
+});

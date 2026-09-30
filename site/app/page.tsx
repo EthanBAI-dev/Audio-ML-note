@@ -1,64 +1,74 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { courseOriginalPriceLabel, coursePriceLabel } from '../lib/commerce';
 
 const benefits = [
   {
-    index: '01',
-    meta: 'SYSTEM COURSES',
-    title: '围绕真实目标学习',
-    description: '每门课程解决一个完整问题，而不是把零散知识堆成目录。',
-    readout: 'CONCEPT / EXPERIMENT / PROJECT',
+    icon: 'listen',
+    title: '先听，再学',
+    description: '课里的声音都能直接播放。你先用耳朵听出差别，再看它背后的道理。',
   },
   {
-    index: '02',
-    meta: 'INTERACTIVE LABS',
-    title: '每个抽象概念都能操作',
-    description: '播放声音、拨动参数、观察图形，让公式与真实听感在同一刻发生。',
-    readout: 'HEAR / TOUCH / UNDERSTAND',
+    icon: 'slider',
+    title: '拖一下就明白',
+    description: '拖动频率、音量滑块，波形和声音马上跟着变，不用先背公式。',
   },
   {
-    index: '03',
-    meta: 'LEARNING PATHS',
-    title: '看得见知识之间的关系',
-    description: '用路线串起基础、方法和项目，知道自己在哪里、下一步学什么。',
-    readout: 'FOUNDATION / METHOD / PRACTICE',
+    icon: 'steps',
+    title: '零基础，按顺序走',
+    description: '23 讲从「声音是什么」讲起，每一讲只多走一小步。',
   },
   {
-    index: '04',
-    meta: 'CREATOR NOTES',
-    title: '一座持续生长的个人实验室',
-    description: '课程、实验和创作记录会持续增加，同时保留个人作者的判断与温度。',
-    readout: 'BUILD / TEST / PUBLISH',
+    icon: 'chat',
+    title: '看不懂就留言',
+    description: '每一讲下面都有留言区，登录后可以提问、和其他读者讨论。',
   },
-];
+] as const;
 
 const domains = [
   {
-    index: '01',
+    icon: 'wave',
     status: '已上线',
+    live: true,
     title: '声音与信号',
-    description: '从听见声音开始，理解波形、频谱、采样和音频特征。',
+    description: '声音怎样变成电脑里的一串数字？从波形讲到频谱，一共 23 讲。',
     href: '/courses/audio-ml',
-    action: '进入音频信号处理课程',
+    action: '开始学',
   },
   {
-    index: '02',
+    icon: 'model',
     status: '筹备中',
+    live: false,
     title: '音频机器学习',
-    description: '把特征、数据、模型训练和误差分析做成可以亲手运行的项目。',
+    description: '教电脑认出一段声音：准备数据、训练模型，再看它错在哪里。',
     href: '/roadmap',
-    action: '查看学习路线',
+    action: '看学习路线',
   },
   {
-    index: '03',
-    status: '持续记录',
+    icon: 'pen',
+    status: '持续更新',
+    live: false,
     title: '创作者技术与 AI',
-    description: '记录内容设计、自动化和 AI 工具怎样变成可靠的创作工作流。',
+    description: '记录我怎样用 AI 和自动化工具做课程、做内容。',
     href: '/courses',
-    action: '浏览内容计划',
+    action: '看内容计划',
   },
-];
+] as const;
+
+type IconName = (typeof benefits)[number]['icon'] | (typeof domains)[number]['icon'];
+
+function LineIcon({ name }: { name: IconName }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden>
+      {name === 'listen' ? <path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v6H5a1 1 0 0 1-1-1zM20 14h-3v6h2a1 1 0 0 0 1-1z" /> : null}
+      {name === 'slider' ? <path d="M4 7h16M4 17h16M9 4v6M15 14v6" /> : null}
+      {name === 'steps' ? <path d="M4 20h5v-5h5v-5h6V4" /> : null}
+      {name === 'chat' ? <path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" /> : null}
+      {name === 'wave' ? <path d="M2 12h3l2-6 3 12 3-9 2 6 2-3h5" /> : null}
+      {name === 'model' ? <path d="M6 6h12v12H6zM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4M10 10h4v4h-4z" /> : null}
+      {name === 'pen' ? <path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4" /> : null}
+    </svg>
+  );
+}
 
 const labs = [
   {
@@ -136,18 +146,18 @@ export default function Home() {
               <p className="hardware-tag"><span>ETHAN MUSIC LAB</span><i aria-hidden /> INDEPENDENT LEARNING SYSTEM</p>
               <p className="eyebrow">用实验理解技术</p>
               <h1>Ethan<br /><span>音乐实验室</span></h1>
-              <h2 className="hero-statement">把声音、音乐与 AI 技术，做成可以亲手理解的课程</h2>
+              <h2 className="hero-statement">一个关于声音、音乐与 AI 的个人实验室</h2>
               <p className="hero-description">
-                这里收录我持续制作的系统课程、互动实验和学习路线。先从声音出发，逐步走向音频机器学习与创作者技术。
+                我在这里做课程、做能动手调的声音实验，也记录音乐技术和创作工具的研究。先从声音出发，逐步走向音频机器学习与创作者技术。
               </p>
               <div className="hero-actions">
-                <Link className="btn" href="/courses">浏览所有课程</Link>
+                <Link className="btn" href="/courses">浏览实验室内容</Link>
                 <Link className="btn ghost" href="/labs">体验声音实验</Link>
               </div>
-              <div className="hero-proof" aria-label="课程特点">
-                <span><i aria-hidden /> 系统课程</span>
-                <span><i aria-hidden /> 互动实验</span>
-                <span><i aria-hidden /> 持续更新</span>
+              <div className="hero-proof" aria-label="实验室内容">
+                <span><i aria-hidden /> 课程</span>
+                <span><i aria-hidden /> 声音实验</span>
+                <span><i aria-hidden /> 研究笔记</span>
               </div>
             </div>
 
@@ -175,14 +185,13 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="benefit-band" aria-label="课程优势">
+        <section className="benefit-band" aria-label="在这里怎么学">
           <div className="home-container benefit-grid">
             {benefits.map((item) => (
-              <article className="benefit-module" key={item.index}>
-                <div className="module-meta"><span>[ {item.index} ]</span><span>{item.meta}</span></div>
+              <article className="benefit-module" key={item.icon}>
+                <span className="benefit-icon"><LineIcon name={item.icon} /></span>
                 <h2>{item.title}</h2>
                 <p>{item.description}</p>
-                <small>{item.readout}</small>
               </article>
             ))}
           </div>
@@ -192,20 +201,21 @@ export default function Home() {
           <div className="home-container">
             <header className="home-section-heading">
               <div>
-                <p className="eyebrow">LEARNING DOMAINS</p>
-                <h2>不止一门课，而是一张持续展开的学习地图</h2>
-                <p>从声音技术开始，逐步延伸到音频机器学习和个人创作工具。</p>
+                <h2>这里能学什么</h2>
+                <p>现在可以学声音基础，后面会陆续加上音频机器学习和创作工具。</p>
               </div>
               <Link className="section-link" href="/courses">查看全部方向</Link>
             </header>
             <div className="domain-grid">
               {domains.map((domain) => (
-                <Link className="domain-module" href={domain.href} key={domain.index}>
-                  <div className="domain-index">{domain.index}</div>
-                  <div className="module-meta"><span>{domain.status}</span><span>LEARNING FIELD</span></div>
+                <Link className="domain-module" href={domain.href} key={domain.icon}>
+                  <div className="domain-top">
+                    <span className="benefit-icon"><LineIcon name={domain.icon} /></span>
+                    <span className={domain.live ? 'domain-status is-live' : 'domain-status'}>{domain.status}</span>
+                  </div>
                   <h3>{domain.title}</h3>
                   <p>{domain.description}</p>
-                  <b>{domain.action}</b>
+                  <b>{domain.action} →</b>
                 </Link>
               ))}
             </div>
@@ -281,7 +291,6 @@ export default function Home() {
                 <h2>当前主课：音频信号处理二十三讲</h2>
                 <p>实验室的第一门完整课程，从物理直觉一路走到音频特征。</p>
               </div>
-              <div className="price-module"><strong>{coursePriceLabel()}</strong><span>当前价 · 单次购买</span><del>原价 {courseOriginalPriceLabel()}</del><Link href="/pricing">查看完整版</Link></div>
             </header>
             <div className="phase-grid">
               {phases.map((item) => (
@@ -313,8 +322,8 @@ export default function Home() {
 
         <section className="final-cta">
           <div className="home-container final-cta-inner">
-            <div><p className="eyebrow">START FROM COURSE 01</p><h2>从实验室的第一门课程开始</h2><p>《音频信号处理二十三讲》前三讲完整开放，先真实体验讲解和实验。</p></div>
-            <div className="hero-actions"><Link className="btn" href="/lesson/01">免费学习第 01 讲</Link><Link className="btn ghost inverse" href="/courses">浏览全部方向</Link></div>
+            <div><p className="eyebrow">START FROM COURSE 01</p><h2>从实验室的第一门课开始</h2><p>《音频信号处理二十三讲》23 讲全部公开，登录后可以在每一讲下面留言讨论。</p></div>
+            <div className="hero-actions"><Link className="btn" href="/lesson/01">从第 01 讲开始</Link><Link className="btn ghost inverse" href="/courses">浏览实验室内容</Link></div>
           </div>
         </section>
       </main>

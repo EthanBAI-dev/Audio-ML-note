@@ -10,7 +10,7 @@ export default function LicensesPage() {
       <h2>第三方组件</h2>
       <p>网站使用 Next.js、React、KaTeX 等第三方软件。它们继续适用各自许可证。本声明不将第三方权利归为本站所有。</p>
       <h2>音频</h2>
-      <p>商业发布版只应包含自行制作或已经取得明确商业发布权的音频。替换工作完成前，不应把现有教学音频描述为本站自制。</p>
+      <p>站内可以直接播放的七段教学音频来自上面提到的原课程仓库，按 MIT License 使用，不是本站自制。原课程中的三段商业音乐片段（德彪西、Red Hot Chili Peppers、Duke Ellington）不在本站分发，只给出外部链接。</p>
     </article></main></div>
   );
 }

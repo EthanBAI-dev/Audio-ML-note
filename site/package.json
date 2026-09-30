@@ -1,13 +1,12 @@
 {
-  "name": "audio-course-site",
+  "name": "ethan-music-lab-site",
   "private": true,
   "scripts": {
     "prebuild": "node scripts/sync-assets.mjs",
     "predev": "node scripts/sync-assets.mjs",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
-    "start": "next start",
-    "export:free": "node scripts/export-free-edition.mjs"
+    "start": "next start"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
@@ -27,7 +26,6 @@
     "remark-math": "6.0.0",
     "remark-parse": "11.0.0",
     "remark-rehype": "11.1.1",
-    "stripe": "^18.5.0",
     "unified": "11.0.5"
   },
   "devDependencies": {
