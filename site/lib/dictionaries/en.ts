@@ -297,12 +297,12 @@ export const en: Dictionary = {
     },
     licenses: {
       title: 'Copyright and third-party licences',
-      updated: 'Last updated: 7 September 2026',
+      updated: 'Last updated: 30 September 2026',
       sections: [
         { h: 'Original content', p: ['© 2026 Ethan BAI. The original Chinese text, original figures, lab designs, site interactions and newly written code are subject to the corresponding rights.'] },
         { h: 'Course reference', p: ['Part of the course structure and basic materials is based on Valerio Velardo’s AudioSignalProcessingForML project. The original project is Copyright © 2020 Valerio Velardo and is used under the MIT License.'] },
         { h: 'Third-party software', p: ['This site uses third-party software such as Next.js, React and KaTeX, which remain under their own licences. This notice does not claim any third-party rights for this site.'] },
-        { h: 'Audio', p: ['The seven teaching audio clips that play directly on this site come from the original course repository mentioned above and are used under the MIT License; they were not made by this site. The three commercial music excerpts in the original course (Debussy, Red Hot Chili Peppers, Duke Ellington) are not distributed here; only external links are given.'] },
+        { h: 'Audio', p: ['The seven teaching audio clips that play directly on this site come from the original course repository mentioned above and are used under the MIT License; they were not made by this site. The three commercial music excerpts in the original course (Debussy, Red Hot Chili Peppers, Duke Ellington) cannot be played or downloaded on the website; the lessons give external links only. These three recordings are included, along with the original course materials, in this site’s public GitHub repository. Their copyright belongs to their respective owners; they do not belong to this site and are not covered by the MIT License.'] },
       ],
     },
   },
