@@ -5,6 +5,8 @@ import Resend from 'next-auth/providers/resend';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from './lib/db';
 import { accounts, sessions, users, verificationTokens } from './lib/db/schema';
+import { DEFAULT_LOCALE, HTML_LANG, splitLocale } from './lib/i18n';
+import { dictionary } from './lib/dictionaries';
 
 const hasSecret = Boolean(process.env.AUTH_SECRET && db);
 
@@ -20,15 +22,25 @@ export const emailAuthConfigured = hasSecret
 /** 任何一种登录方式可用，账号功能就开着。 */
 export const authConfigured = wechatAuthConfigured || emailAuthConfigured;
 
+/** 登录链接里带着 callbackUrl，也就是读者登录完要回去的页面；从它的语言前缀判断邮件用哪种语言写。 */
+function mailLocale(url: string) {
+  try {
+    return splitLocale(new URL(new URL(url).searchParams.get('callbackUrl') ?? '/', 'http://localhost').pathname).lang;
+  } catch {
+    return DEFAULT_LOCALE;
+  }
+}
+
 function signInMail(url: string) {
-  const text = `点击下面的链接登录 Ethan 音乐实验室（24 小时内有效）：\n\n${url}\n\n如果不是你本人操作，忽略这封邮件即可。`;
-  const html = `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1d20">
-<p style="font-size:18px;font-weight:600">登录 Ethan 音乐实验室</p>
-<p>点击下面的按钮完成登录。第一次登录会自动建立账号。</p>
-<p style="margin:28px 0"><a href="${url}" style="background:#1a1d20;color:#fff;padding:12px 22px;border-radius:6px;text-decoration:none">登录</a></p>
-<p style="color:#59616a;font-size:13px">链接 24 小时内有效，只能用一次。如果不是你本人操作，忽略这封邮件即可。</p>
+  const lang = mailLocale(url);
+  const t = dictionary(lang).mail;
+  const html = `<div lang="${HTML_LANG[lang]}" style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1d20">
+<p style="font-size:18px;font-weight:600">${t.heading}</p>
+<p>${t.body}</p>
+<p style="margin:28px 0"><a href="${url}" style="background:#1a1d20;color:#fff;padding:12px 22px;border-radius:6px;text-decoration:none">${t.button}</a></p>
+<p style="color:#59616a;font-size:13px">${t.note}</p>
 </div>`;
-  return { text, html };
+  return { subject: t.subject, text: t.text(url), html };
 }
 
 const providers: Provider[] = [];
@@ -44,7 +56,7 @@ if (emailAuthConfigured) {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${provider.apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: provider.from, to, subject: '登录 Ethan 音乐实验室', ...signInMail(url) }),
+        body: JSON.stringify({ from: provider.from, to, ...signInMail(url) }),
       });
       if (!res.ok) throw new Error(`Resend error: ${await res.text()}`);
     },

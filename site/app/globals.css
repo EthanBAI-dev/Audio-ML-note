@@ -647,3 +647,33 @@ pre code{background:none;padding:0}
   .signin-guide-bubble p{max-width:none}
   .signin-guide-buddy{width:64px;height:72px}
 }
+
+/* ---------- 语言切换 + 「正文只有中文」提示 ---------- */
+.nav-lang{display:flex;align-items:center;gap:2px;margin:0 12px 0 10px;padding:2px;border:1px solid var(--line);border-radius:999px;font-size:12px;flex:none}
+.nav-lang a{min-width:28px;padding:3px 8px;border-radius:999px;color:var(--muted);text-align:center;text-decoration:none;line-height:1.5}
+.nav-lang a:hover{color:var(--ink);background:var(--code-bg)}
+.nav-lang a[aria-current="true"]{background:var(--ink);color:#fff;font-weight:650}
+@media(max-width:720px){
+  .nav-lang{margin:0 8px 0 auto}
+  .nav-lang+.nav-cta-wrap{margin-left:0}
+}
+.lang-note{margin:0;padding:12px 16px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:4px;
+  background:var(--accent-soft);color:var(--ink);font-size:14px;line-height:1.7}
+.legal-shell .lang-note{margin:0 0 20px}
+/* 日文页面换日文字体，汉字字形才对；页面里仍是中文的正文、课名保持中文字体 */
+body:lang(ja),h1:lang(ja),h2:lang(ja),h3:lang(ja){font-family:"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif}
+/* 英文页面先用西文字体，否则弯引号会被中文字体排成全角 */
+body:lang(en),h1:lang(en),h2:lang(en),h3:lang(en){font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif}
+body:lang(ja) [lang="zh-CN"],body:lang(en) [lang="zh-CN"]{font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+.course-detail .lang-note{margin-bottom:28px}
+.lesson-n{white-space:nowrap}
+/* 手机上放不下「图标 + 站名 + 语言切换 + 登录 + 菜单」，站名先收起来 */
+@media(max-width:480px){
+  .nav-brand-copy{display:none}
+  .nav-lang{margin-right:6px}
+  .nav-lang a{min-width:24px;padding:3px 6px}
+  .nav-cta{padding:7px 12px}
+}
+/* 中文正文里又标回日文、英文的那一块（译好的课名和导读），字体也跟着换回来 */
+body [lang="zh-CN"] [lang="ja"]{font-family:"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif}
+body [lang="zh-CN"] [lang="en"]{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif}

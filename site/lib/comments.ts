@@ -12,14 +12,18 @@ export type CommentView = {
   createdAt: Date;
   deleted: boolean;
   userId: string;
-  author: string;
+  /** null 表示既没昵称也没邮箱，由页面按当前语言显示「匿名读者」。 */
+  author: string | null;
 };
 
+/** 发评论失败的原因。文字按语言放在词典的 comments.errors 里。 */
+export type CommentError = 'noDb' | 'empty' | 'tooLong' | 'tooFast' | 'parentGone';
+
 /** 没起昵称的用户显示成邮箱前两位加星号，不把完整邮箱公开出去。 */
-export function displayName(name: string | null, email: string | null): string {
+export function displayName(name: string | null, email: string | null): string | null {
   if (name?.trim()) return name.trim();
   if (email) return `${email.split('@')[0].slice(0, 2)}***`;
-  return '匿名读者';
+  return null;
 }
 
 export async function listComments(page: string): Promise<CommentView[]> {
@@ -59,20 +63,20 @@ export async function isAdmin(userId: string | null): Promise<boolean> {
   return Boolean(email && admins.includes(email.toLowerCase()));
 }
 
-export async function addComment(userId: string, page: string, body: string, parentId: string | null): Promise<string | null> {
-  if (!db) return '评论功能还没有接上数据库。';
+export async function addComment(userId: string, page: string, body: string, parentId: string | null): Promise<CommentError | null> {
+  if (!db) return 'noDb';
   const text = body.trim();
-  if (!text) return '评论不能是空的。';
-  if (text.length > COMMENT_MAX) return `评论最多 ${COMMENT_MAX} 字。`;
+  if (!text) return 'empty';
+  if (text.length > COMMENT_MAX) return 'tooLong';
 
   const [last] = await db.select({ createdAt: comments.createdAt }).from(comments)
     .where(eq(comments.userId, userId)).orderBy(desc(comments.createdAt)).limit(1);
-  if (last && Date.now() - last.createdAt.getTime() < COOLDOWN_MS) return '发得太快了，歇几秒再发。';
+  if (last && Date.now() - last.createdAt.getTime() < COOLDOWN_MS) return 'tooFast';
 
   if (parentId) {
     const [parent] = await db.select({ page: comments.page, parentId: comments.parentId }).from(comments)
       .where(and(eq(comments.id, parentId), isNull(comments.deletedAt)));
-    if (!parent || parent.page !== page) return '要回复的评论已经不在了。';
+    if (!parent || parent.page !== page) return 'parentGone';
     // 回复只有一层：回复一条回复时，挂到它的上级下面
     if (parent.parentId) parentId = parent.parentId;
   }

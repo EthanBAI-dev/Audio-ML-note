@@ -1,11 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
+import type { Dictionary } from '../lib/dictionaries';
 
 const DISMISS_KEY = 'eml-signin-guide-dismissed';
 const HIDDEN_ON = ['/signin', '/account'];
 
 /** 挂在登录按钮下面的引导小人：只给没登录的人看，关掉一次就不再出现。 */
-export default function SignInGuide({ path }: { path: string }) {
+/** path 是去掉语言前缀后的路径。 */
+export default function SignInGuide({ path, t }: { path: string; t: Dictionary['signinGuide'] }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -27,8 +29,8 @@ export default function SignInGuide({ path }: { path: string }) {
   return (
     <div className="signin-guide" role="note">
       <div className="signin-guide-bubble">
-        <p><b>登录就可以评论啦</b>哪里没看懂、哪里写错了，在文章下面留言，一起把文章改得更好。</p>
-        <button type="button" className="signin-guide-close" aria-label="不再提示" onClick={dismiss}>×</button>
+        <p><b>{t.title}</b>{t.body}</p>
+        <button type="button" className="signin-guide-close" aria-label={t.dismiss} onClick={dismiss}>×</button>
       </div>
       <svg className="signin-guide-buddy" viewBox="0 0 64 72" aria-hidden>
         {/* 举起来指向登录按钮的手 */}

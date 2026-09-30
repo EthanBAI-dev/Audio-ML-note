@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 
 /** 正文配图点开看大图。配图本身在 SVG 里画了很多细节，缩在正文栏里读不清。 */
-export default function Lightbox() {
+export default function Lightbox({ labels }: { labels: { figure: string; close: string } }) {
   const [src, setSrc] = useState<string | null>(null);
   const [alt, setAlt] = useState('');
 
@@ -27,9 +27,9 @@ export default function Lightbox() {
 
   if (!src) return null;
   return (
-    <div className="lightbox" role="dialog" aria-modal="true" aria-label={alt || '放大的配图'}
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={alt || labels.figure}
       onClick={() => setSrc(null)}>
-      <button type="button" className="lightbox-close" aria-label="关闭">✕</button>
+      <button type="button" className="lightbox-close" aria-label={labels.close}>✕</button>
       <img src={src} alt={alt} onClick={(e) => e.stopPropagation()} />
     </div>
   );
