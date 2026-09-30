@@ -271,8 +271,8 @@ export const en: Dictionary = {
       title: 'Terms of use',
       updated: 'Last updated: 30 September 2026',
       sections: [
-        { h: 'What this site provides', p: ['This site provides course articles, animations, audio and interactive labs free of charge for personal learning. Reading and using the labs require no sign-in; once signed in, you can post comments.'] },
-        { h: 'Permitted use', p: ['You are welcome to read, quote and share links for learning. Please do not copy the content of this site and republish it as your own course, or use it for sale.'] },
+        { h: 'What this site provides', p: ['This site provides course articles, animations, audio and interactive labs free of charge; anyone can read and use them. Reading and using the labs require no sign-in; once signed in, you can post comments.'] },
+        { h: 'Permitted use', p: ['You are welcome to read, quote and share links. Please do not copy the content of this site and republish it as your own course, or use it for sale.'] },
         { h: 'Intellectual property', p: ['The original Chinese text, original figures, interaction design and newly written code belong to their respective rights holders. Third-party content remains under its own licence; see {licenses}.'] },
         { h: 'Comments', p: ['Once signed in, you can post comments at the bottom of a page. Comments are public, so please keep the discussion on topic and do not post advertising, harassment, illegal content or other people’s personal information. The operator may delete comments that break these rules, and you can delete your own comments at any time.'] },
         { h: 'Operator and contact', p: ['Brand: Ethan Music Lab (Ethan 音乐实验室); creator: Ethan BAI; location: Japan; contact email: {email}.'] },
