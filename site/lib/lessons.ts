@@ -63,8 +63,6 @@ export function groups(): Group[] {
   }));
 }
 
-export const GROUP_TITLE = GROUP_TITLES;
-
 /** 粗略阅读时长：中文按每分钟 400 字算，代码块和公式不计。 */
 export function readingMinutes(l: Lesson): number {
   const body = readFileSync(l.file, 'utf8')

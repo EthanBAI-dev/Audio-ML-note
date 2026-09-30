@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import type { TocItem } from '../lib/toc';
 
 /** 本页小节目录。摆在哪、横着还是竖着，全由布局的 CSS 决定。 */
-export default function Toc({ items }: { items: TocItem[] }) {
+export type TocLabels = { aria: string; title: string; collapse: string; expand: string };
+
+export default function Toc({ items, labels }: { items: TocItem[]; labels: TocLabels }) {
   const [active, setActive] = useState(items[0]?.id ?? '');
   const [open, setOpen] = useState(true);
 
@@ -34,9 +36,9 @@ export default function Toc({ items }: { items: TocItem[] }) {
 
   if (items.length < 2) return null;
   return (
-    <nav className={`toc${open ? ' is-open' : ''}`} aria-label="本页小节目录">
+    <nav className={`toc${open ? ' is-open' : ''}`} aria-label={labels.aria}>
       <button type="button" className="toc-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span>本页小节</span><span className="toc-action">{open ? '收起' : '展开'}</span>
+        <span>{labels.title}</span><span className="toc-action">{open ? labels.collapse : labels.expand}</span>
       </button>
       <ol hidden={!open}>
         {items.map((i, n) => (

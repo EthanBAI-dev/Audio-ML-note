@@ -1,6 +1,10 @@
 # Audio ML Note
 
-面向零基础中文读者的音频信号处理与机器学习课程：从「声音是什么」讲到梅尔频谱、MFCC 与频域统计特征，全程围绕一个项目——**让程序听 1 秒钟的音乐片段，判断它来自古典、爵士还是摇滚。**
+[Ethan 音乐实验室](site/README.md)的第一门课，也是这个网站的源码仓库。课程面向零基础中文读者，讲音频信号处理与机器学习：从「声音是什么」讲到梅尔频谱、MFCC 与频域统计特征，全程围绕一个项目——**让程序听 1 秒钟的音乐片段，判断它来自古典、爵士还是摇滚。**
+
+## 课程来源
+
+这套课程基于 **Valerio Velardo** 的英文系列课程《[Audio Signal Processing for Machine Learning](https://www.youtube.com/playlist?list=PL-wATfeyAMNqIee7cH3q1bh4QJFAaeNv0)》（YouTube 频道 The Sound of AI）改编。课程结构、讲授顺序和七段教学音频来自原课程的视频、幻灯片与配套仓库 [musikalkemist/AudioSignalProcessingForML](https://github.com/musikalkemist/AudioSignalProcessingForML)（MIT 许可，Copyright © 2020 Valerio Velardo）；中文讲解、配图、交互实验和示例代码由 Ethan 重新编写。感谢 Valerio 把这套课程免费公开。
 
 ## 仓库怎么放
 
@@ -8,7 +12,7 @@
 |---|---|
 | **[音频信号处理二十三讲](音频信号处理二十三讲/README.md)** | **正式版课程。**23 篇文章、课程总纲、课程项目与全部可运行代码。对外只看这一个目录。 |
 | [参考资料](参考资料/) | 源课程逐页全文、原始素材大纲、概念归属表、改写与配图工作流。写作时查，不对外发布。 |
-| **[site](site/README.md)** | **课程网页版。**Next.js，读同一批 Markdown，带八种可动手调的交互程序与动画。部署在 Vercel。 |
+| **[site](site/README.md)** | **课程网页版。**Next.js，读同一批 Markdown，带八种可动手调的交互程序与动画，以及邮箱登录、评论和浏览统计。部署在 Vercel。 |
 | `tools/` | 配图生成器、联系表、可读性与公式检查脚本。 |
 | `.claude/skills/`、`.agents/skills/` | 写作与审校规则（两份同步）。 |
 

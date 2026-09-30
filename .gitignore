@@ -10,6 +10,9 @@ source_course/*
 __pycache__/
 *.pyc
 node_modules/
+.env
+.env.local
+.env.*.local
 site/AGENTS.md
 site/CLAUDE.md
 
