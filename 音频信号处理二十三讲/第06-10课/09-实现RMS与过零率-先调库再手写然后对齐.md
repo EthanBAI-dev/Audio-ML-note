@@ -7,6 +7,8 @@
   <img src="figures/desktop/00-course-position-09.svg" alt="第 9 课属于第 2 组「把录音变成可计算片段」，本组共 5 课">
 </picture>
 
+完整代码在[第 9 课脚本](../课程代码/lessons/lesson09_rms_zcr.py)，运行环境沿用[课程总纲](../课程总纲/README.md)里的一次性配置。
+
 ## 第 1 步：先用 librosa 算一遍
 
 ```python
