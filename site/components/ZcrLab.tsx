@@ -1,6 +1,7 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Lab, Slider, Choice, Canvas, axes, C } from './lab';
+import { playSamples } from '../lib/audio';
 
 const SR = 22050, K = 1024;
 
@@ -15,6 +16,7 @@ function noiseFrame(n: number): Float32Array {
   return out;
 }
 const NOISE = noiseFrame(K);
+const LONG_NOISE = noiseFrame(SR * 1.5);
 
 /** 09：同一帧 1024 个样本，调音高、噪声、直流偏置和一声爆音，看 AE、RMS、ZCR 各自怎么动。 */
 export default function ZcrLab() {
@@ -47,17 +49,40 @@ export default function ZcrLab() {
     return { ae: a, rms: Math.sqrt(s / K), crossings: cr };
   }, [x]);
   const zcr = crossings.length / (K - 1);
+
+  // 把同样的参数拉长到 1.5 秒播出来：爆音放在 0.75 秒处，整条抬高听不出来
+  const [playing, setPlaying] = useState(false);
+  const stopRef = useRef<(() => void) | null>(null);
+  useEffect(() => () => stopRef.current?.(), []);
+  const play = () => {
+    stopRef.current?.();
+    const n = Math.round(SR * 1.5), y = new Float32Array(n);
+    for (let i = 0; i < n; i++) y[i] = 0.5 * Math.sin((2 * Math.PI * hz * i) / SR) + noise * 0.5 * LONG_NOISE[i] + offset;
+    if (click === '有') y[n / 2] = 0.95;
+    if (center === '先减去平均值') { let m = 0; for (let i = 0; i < n; i++) m += y[i]; m /= n; for (let i = 0; i < n; i++) y[i] -= m; }
+    // 头尾各 20 毫秒淡入淡出，免得开关本身变成一声「咔」
+    const f = Math.round(SR * 0.02);
+    for (let i = 0; i < f; i++) { y[i] *= i / f; y[n - 1 - i] *= i / f; }
+    setPlaying(true);
+    stopRef.current = playSamples(y, SR, () => setPlaying(false));
+  };
   const expect = Math.round((2 * hz * K) / SR);
 
   return (
     <Lab title="同一帧 1024 个样本，三个数各听谁的"
-      hint="先只拖音高，看过零次数怎样跟着变；再加噪声、把整条曲线抬高、塞进一声爆音，看哪一个数被骗。">
+      hint="先只拖音高，边听边看过零次数怎样跟着变；再加噪声、把整条曲线抬高、塞进一声爆音，看哪一个数被骗。整条抬高是听不出来的，过零率却会掉。">
       <>
         <Slider label="音高" value={hz} min={50} max={2000} step={10} onChange={setHz} fmt={(v) => `${v} Hz`} />
         <Slider label="噪声" value={noise} min={0} max={1} step={0.05} onChange={setNoise} fmt={(v) => v.toFixed(2)} />
         <Slider label="整条抬高" value={offset} min={0} max={0.6} step={0.02} onChange={setOffset} fmt={(v) => v.toFixed(2)} />
         <Choice label="中间一声爆音" value={click} options={['无', '有'] as const} onChange={setClick} />
         <Choice label="算之前" value={center} options={['不减', '先减去平均值'] as const} onChange={setCenter} />
+        <div className="lab-choice">
+          <span className="lab-slider-label">听一听</span>
+          <div role="group">
+            <button type="button" aria-pressed={playing} onClick={play}>▶ 播放 1.5 秒</button>
+          </div>
+        </div>
       </>
       <>
         <Canvas w={840} h={230} deps={[x, ae, rms]} ariaLabel="一帧波形，标出穿过中线的位置、振幅包络和均方根的高度"

@@ -157,6 +157,25 @@ def nb_zcr_rate_and_count():
     return {"top": float(top), "songs": out}
 
 
+def nb_voice_by_frame():
+    """语音逐帧看过零率：整段平均会把几帧嘶嘶声抹平。"""
+    print("[正文] 第 5 步补充 · 语音逐帧看：有声音的帧里，过零率差了十倍")
+    y, sr = io.load("voice")
+    f = frame(y, FRAME_LENGTH, HOP_LENGTH)
+    r, z = rms(f), zero_crossing_rate(f)
+    sounding = r > np.percentile(r, 30)          # 去掉最安静的三成，只看有声音的帧
+    med = float(np.median(z[sounding]))
+    top = np.sort(z[sounding])[-5:]
+    times = sorted(round(float(i) * HOP_LENGTH / sr, 1)
+                   for i in np.argsort(np.where(sounding, z, 0))[-5:])
+    print(f"  整首 30 秒，帧长 {FRAME_LENGTH}，只看最响的七成帧（{int(sounding.sum())} 帧）")
+    print(f"  过零率中位数 {med:.3f}，最高的 5 帧 {[round(float(v), 3) for v in top]}")
+    print(f"  最高的几帧出现在第 {times} 秒，是中位数的 {top.min() / med:.0f} 倍以上")
+    print("  元音一类的浊音过零少，嘶嘶声一类的清音过零多；整段平均把这几帧抹平了。")
+    print()
+    return {"median": med, "top": [float(v) for v in top], "times": times}
+
+
 def dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio, ae_rms, zcr_count):
     """这一课要上图的数：对齐结果、五段素材、直流偏置。"""
     y, sr = io.load("debussy", seconds=3)
@@ -340,6 +359,7 @@ if __name__ == "__main__":
 
     clips = load_clips()
     step3_real(clips)
+    nb_voice_by_frame()
     level_dc_offset(clips)
     level_threshold(clips)
     level_joint(clips)

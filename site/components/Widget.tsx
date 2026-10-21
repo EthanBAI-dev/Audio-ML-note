@@ -12,6 +12,7 @@ const map = {
   phasor: dynamic(() => import('./PhasorAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
   tone: dynamic(() => import('./ToneLab'), { ssr: false, loading: () => <LabSkeleton /> }),
   zcr: dynamic(() => import('./ZcrLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  track: dynamic(() => import('./FeatureTrackLab'), { ssr: false, loading: () => <LabSkeleton /> }),
 } as const;
 
 function LabSkeleton() {
