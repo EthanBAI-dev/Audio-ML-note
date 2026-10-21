@@ -136,6 +136,7 @@ export const en: Dictionary = {
     items: {
       '02': ['Hear frequency and amplitude', 'Adjust the sound directly and connect what the waveform does with what you hear.'],
       '06': ['Sliding window', 'Watch short-time analysis move step by step along a recording.'],
+      '09': ['RMS, zero crossings and clicks', 'Change pitch, noise and DC offset in one frame and see what moves each time-domain feature.'],
       '10': ['Frequency probe and spectrum', 'Sweep through frequencies yourself, then split a signal apart and put it back together.'],
       '11': ['Complex numbers and phase', 'Rotate a phasor and see how its length and angle describe a signal together.'],
       '15': ['Choosing a frame length', 'Change the window length and compare detail in time with detail in frequency.'],
