@@ -10,9 +10,6 @@ export const WIDGETS: Record<string, Placement[]> = {
   // 06 第一次看窗口移动；15 再单独比较帧长，不重复同一个演示
   '06': [{ before: '频域那条流水线，为什么要多一步', name: 'sliding' }],
   '15': [{ before: '帧长决定时间和频率哪边看得更细', name: 'framing' }],
-  // 09 —— 先在一帧合成信号上看三个数各被什么骗，再边听边看真实录音的逐帧曲线
-  '09': [{ before: '三首曲子、一段人声：过零率听出了什么', name: 'zcr' },
-         { before: '两个一起看，强多少', name: 'track' }],
   // 10 第一次建立频谱直觉；14、16 直接使用真实音频和各自的静态计算图
   '10': [{ before: '第 2 步：把所有频率都试一遍', name: 'probe' },
           { before: '第 4 步：能拆开，就能拼回去', name: 'spectrum' }],
@@ -22,4 +19,11 @@ export const WIDGETS: Record<string, Placement[]> = {
   '20': [{ before: '13 行里，第 0 行说的是另一件事', name: 'mel' }],
   // 21 用一组已知答案比较三种统计量；22、23 保留各自的真实代码实验
   '21': [{ before: '三个公式放进同一组已知答案', name: 'bandsplit' }],
+};
+
+/** v2 试行版的交互组件位置。原版课文不变，这里单独配置。 */
+export const WIDGETS_V2: Record<string, Placement[]> = {
+  // 09 —— 先在一帧合成信号上看三个数各被什么骗，再边听边看真实录音的逐帧曲线
+  '09': [{ before: '9.4 三首曲子、一段人声：过零率听出了什么', name: 'zcr' },
+         { before: '9.5 两个一起看，强多少', name: 'track' }],
 };

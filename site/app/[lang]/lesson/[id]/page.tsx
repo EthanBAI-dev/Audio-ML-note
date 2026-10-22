@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { allLessons, lessonById, rawBody, readingMinutes } from '../../../../lib/lessons';
+import { allLessons, lessonById, rawBody, readingMinutes, v2LessonById, V2_COMPARE } from '../../../../lib/lessons';
 import { renderLesson } from '../../../../lib/markdown';
 import { extractToc } from '../../../../lib/toc';
 import { WIDGETS } from '../../../../content/widgets';
@@ -15,6 +15,7 @@ import ReadingProgress from '../../../../components/ReadingProgress';
 import Comments from '../../../../components/Comments';
 import CourseCredit from '../../../../components/CourseCredit';
 import ChineseOnly from '../../../../components/ChineseOnly';
+import VersionSwitch from '../../../../components/VersionSwitch';
 import { viewsOf } from '../../../../lib/views';
 
 export function generateStaticParams() {
@@ -71,6 +72,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           </nav>
 
           <ChineseOnly />
+
+          {v2LessonById(l.id) ? (
+            <VersionSwitch id={l.id} current="original" original={to(`/lesson/${l.id}`)} v2={to(`/v2/lesson/${l.id}`)}
+              compare={V2_COMPARE(l.id)} />
+          ) : null}
 
           <article lang="zh-CN">
             {/* 正文是中文；日文、英文页面的课名和导读已经翻译，标回页面语言 */}

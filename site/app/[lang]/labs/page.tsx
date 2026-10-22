@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** 有实验的课号，按课程顺序排。实验名和说明在词典的 labsPage.items 里。 */
-const LAB_LESSONS = ['02', '06', '09', '10', '11', '15', '20', '21'];
+const LAB_LESSONS = ['02', '06', '10', '11', '15', '20', '21'];
 
 export default async function LabsPage() {
   const { lang, t: dict, to } = await getT();

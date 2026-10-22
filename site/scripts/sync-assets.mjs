@@ -51,18 +51,23 @@ console.log(`同步配图 ${figs} 张，音频 ${auds} 个${auds === 0 ? '（sou
 
 // 交互组件按二级标题定位。文章改标题时这里要立刻报错，否则组件会悄悄掉到文末。
 const wsrc = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'content', 'widgets.ts'), 'utf8');
-const blocks = [...wsrc.matchAll(/'(\d\d)':\s*\[([\s\S]*?)\],\r?\n/g)];
+// WIDGETS_V2 之后的配置对的是 v2 课文
+const cutV2 = wsrc.indexOf('WIDGETS_V2');
+const COURSE_V2 = join(ROOT, '音频信号处理二十三讲-v2');
+const sources = [[cutV2 < 0 ? wsrc : wsrc.slice(0, cutV2), COURSE], [cutV2 < 0 ? '' : wsrc.slice(cutV2), COURSE_V2]];
 let checked = 0;
 const broken = [];
-for (const [, id, body] of blocks) {
-  const dir = readdirSync(COURSE).find((d) => /^第\d\d-\d\d课$/.test(d)
-    && readdirSync(join(COURSE, d)).some((f) => f.startsWith(`${id}-`)));
-  if (!dir) { broken.push(`${id}：找不到这一课`); continue; }
-  const file = readdirSync(join(COURSE, dir)).find((f) => f.startsWith(`${id}-`) && f.endsWith('.md'));
-  const text = readFileSync(join(COURSE, dir, file), 'utf8');
-  for (const [, anchor, name] of body.matchAll(/before:\s*'([^']*)',\s*name:\s*'(\w+)'/g)) {
-    checked += 1;
-    if (!text.includes(`## ${anchor}`)) broken.push(`${id} 的 ${name}：找不到标题「${anchor}」`);
+for (const [src, base] of sources) {
+  for (const [, id, body] of src.matchAll(/'(\d\d)':\s*\[([\s\S]*?)\],\r?\n/g)) {
+    const dir = existsSync(base) && readdirSync(base).find((d) => /^第\d\d-\d\d课$/.test(d)
+      && readdirSync(join(base, d)).some((f) => f.startsWith(`${id}-`)));
+    if (!dir) { broken.push(`${id}：找不到这一课`); continue; }
+    const file = readdirSync(join(base, dir)).find((f) => f.startsWith(`${id}-`) && f.endsWith('.md'));
+    const text = readFileSync(join(base, dir, file), 'utf8');
+    for (const [, anchor, name] of body.matchAll(/before:\s*'([^']*)',\s*name:\s*'(\w+)'/g)) {
+      checked += 1;
+      if (!text.includes(`## ${anchor}`)) broken.push(`${id} 的 ${name}：找不到标题「${anchor}」`);
+    }
   }
 }
 if (broken.length) {

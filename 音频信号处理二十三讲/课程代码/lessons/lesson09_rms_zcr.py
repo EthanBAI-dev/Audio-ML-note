@@ -269,6 +269,10 @@ def level_dc_offset(clips):
     print("  声音一点没变，只是整条曲线离开了中线，低处的摆动够不着零线了。")
     print("  真实录音里这种偏移来自设备直流偏置，肉眼在波形图上几乎看不出来。")
     print("  对策：算过零率之前先减去整段的平均值。")
+    z0 = zero_crossing_rate(frame(y, N, H)).mean()
+    zc = zero_crossing_rate(frame(y - y.mean(), N, H)).mean()
+    print(f"  [正文] 这段人声自己就带偏置：平均值 {y.mean():.4f}（峰值的 {y.mean():.1%}）")
+    print(f"  减去平均值后过零率 {z0:.4f} → {zc:.4f}，是原来的 {zc / z0:.3f} 倍")
     print()
 
 
