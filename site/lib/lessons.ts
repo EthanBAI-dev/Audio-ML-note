@@ -130,8 +130,12 @@ export function v2LessonById(id: string): Lesson | undefined {
 
 /** v2 正文：去掉标题；把指向原版目录的相对路径改写成原版课文里的写法，好复用同一套站点改写规则。 */
 export function v2RawBody(l: Lesson): string {
+  const has = new Set(v2Lessons().map((x) => x.id));
   return readFileSync(l.file, 'utf8')
     .replace(/^#\s+.+$/m, '')
+    // v2 课文之间的互链（同组或 ../第GG-GG课/）：有 v2 就留在 v2，没有就回原版
+    .replace(/\]\((?:\.\.\/第\d\d-\d\d课\/)?(\d\d)-[^)/]*\.md\)/g,
+      (_m, n) => `](${has.has(n) ? '/v2' : ''}/lesson/${n})`)
     .replace(/\.\.\/\.\.\/音频信号处理二十三讲\//g, '../')
     .trim();
 }

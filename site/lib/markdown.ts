@@ -46,11 +46,11 @@ function rewritePaths(md: string, group: string): string {
   return md;
 }
 
-/** 在指定二级标题之前插入交互组件占位。 */
+/** 在指定二级或三级标题之前插入交互组件占位。 */
 function injectWidgets(md: string, widgets: { before: string; name: string }[]): string {
   for (const w of widgets) {
-    const needle = new RegExp(`^## ${w.before}`, 'm');
-    if (needle.test(md)) md = md.replace(needle, `<div data-widget="${w.name}"></div>\n\n## ${w.before}`);
+    const needle = new RegExp(`^(#{2,3}) ${w.before}`, 'm');
+    if (needle.test(md)) md = md.replace(needle, `<div data-widget="${w.name}"></div>\n\n$1 ${w.before}`);
     else md += `\n\n<div data-widget="${w.name}"></div>\n`;
   }
   return md;

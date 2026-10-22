@@ -1,6 +1,6 @@
 /** 哪一课在哪个二级标题之前插入哪个交互组件。
  *  锚点用标题原文；文章改标题时这里要跟着改，构建脚本会报出对不上的锚点。 */
-export const WIDGET_NAMES = ['framing', 'spectrum', 'mel', 'bandsplit', 'sliding', 'probe', 'phasor', 'tone', 'zcr', 'track'] as const;
+export const WIDGET_NAMES = ['framing', 'spectrum', 'mel', 'bandsplit', 'sliding', 'probe', 'phasor', 'tone', 'zcr', 'track', 'zoom', 'pitch', 'loudness', 'attack', 'timbre'] as const;
 export type WidgetName = (typeof WIDGET_NAMES)[number];
 export type Placement = { before: string; name: WidgetName };
 
@@ -23,6 +23,15 @@ export const WIDGETS: Record<string, Placement[]> = {
 
 /** v2 试行版的交互组件位置。原版课文不变，这里单独配置。 */
 export const WIDGETS_V2: Record<string, Placement[]> = {
+  // 01 —— 先亲眼看到「录音就是一长串数」
+  '01': [{ before: '1.2 缺的那一步：把一串数整理成证据', name: 'zoom' }],
+  // 02 —— 先摸正弦的三个旋钮，再听「按倍数」和「按差值」的差别
+  '02': [{ before: '2.5 人耳能听到的范围', name: 'tone' },
+         { before: '2.7 实验：把琴键编号换成赫兹', name: 'pitch' }],
+  // 03 —— 等响自己调一次；音色先切真实录音的起音，再拿实测比例拼一个音
+  '03': [{ before: '3.4 实验：数值一样的两段声音，听感差多少', name: 'loudness' },
+         { before: '泛音：一个音里其实有很多个频率', name: 'attack' },
+         { before: '📌 本课小结', name: 'timbre' }],
   // 09 —— 先在一帧合成信号上看三个数各被什么骗，再边听边看真实录音的逐帧曲线
   '09': [{ before: '9.4 三首曲子、一段人声：过零率听出了什么', name: 'zcr' },
          { before: '9.5 两个一起看，强多少', name: 'track' }],
