@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -14,7 +15,7 @@ function safeReturnTo(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : fallback;
 }
 
-export default async function SignInPage({ searchParams }: {
+async function SignInPageBody({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { t: dict, to } = await getT();
@@ -87,4 +88,9 @@ export default async function SignInPage({ searchParams }: {
       </aside>
     </main></div>
   );
+}
+
+/** 这一页要读登录状态，只能每次现算；包一层 Suspense，页头页脚仍可预先生成。 */
+export default function SignInPage(props: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return <Suspense fallback={null}><SignInPageBody {...props} /></Suspense>;
 }

@@ -11,6 +11,13 @@ const map = {
   probe: dynamic(() => import('./ProbeSweepAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
   phasor: dynamic(() => import('./PhasorAnim'), { ssr: false, loading: () => <LabSkeleton /> }),
   tone: dynamic(() => import('./ToneLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  zcr: dynamic(() => import('./ZcrLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  track: dynamic(() => import('./FeatureTrackLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  zoom: dynamic(() => import('./ZoomLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  pitch: dynamic(() => import('./PitchGapLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  loudness: dynamic(() => import('./LoudnessLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  attack: dynamic(() => import('./AttackLab'), { ssr: false, loading: () => <LabSkeleton /> }),
+  timbre: dynamic(() => import('./TimbreLab'), { ssr: false, loading: () => <LabSkeleton /> }),
 } as const;
 
 function LabSkeleton() {

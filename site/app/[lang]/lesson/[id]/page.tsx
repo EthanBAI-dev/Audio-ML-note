@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
-import { allLessons, lessonById, rawBody, readingMinutes } from '../../../../lib/lessons';
+import { Suspense } from 'react';
+import { allLessons, lessonById, rawBody, readingMinutes, v2LessonById, V2_COMPARE } from '../../../../lib/lessons';
 import { renderLesson } from '../../../../lib/markdown';
 import { extractToc } from '../../../../lib/toc';
 import { WIDGETS } from '../../../../content/widgets';
@@ -15,6 +16,7 @@ import ReadingProgress from '../../../../components/ReadingProgress';
 import Comments from '../../../../components/Comments';
 import CourseCredit from '../../../../components/CourseCredit';
 import ChineseOnly from '../../../../components/ChineseOnly';
+import VersionSwitch from '../../../../components/VersionSwitch';
 import { viewsOf } from '../../../../lib/views';
 
 export function generateStaticParams() {
@@ -30,29 +32,26 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return pageMetadata(`/lesson/${l.id}`, { title: text.title, description: text.lead });
 }
 
-/** 正文每次请求都一样，缓存渲染结果；评论和阅读次数才需要每次现取。 */
-const rendered = new Map<string, Promise<string>>();
-
-export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
+/** 阅读次数要查数据库，每次现取；放在 Suspense 里，正文不用等它。 */
+async function Views({ path, label }: { path: string; label: (n: string) => string }) {
   await connection();
+  const { lang } = await getT();
+  const views = await viewsOf(path);
+  return views ? <span>{label(views.toLocaleString(NUMBER_LOCALE[lang]))}</span> : null;
+}
+
+/** 正文在构建时生成静态页，点进来不用等服务器现渲染；评论和阅读次数随后流式补上。 */
+export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const l = lessonById(id);
   if (!l) notFound();
   const { lang, t, to } = await getT();
-  const lessonBody = rawBody(l);
-  const key = l.id;
-  if (process.env.NODE_ENV !== 'production' || !rendered.has(key)) {
-    const job = renderLesson(lessonBody, l, WIDGETS[l.id] ?? []);
-    job.catch(() => rendered.delete(key));
-    rendered.set(key, job);
-  }
-  const html = localizeLinks(lang, await rendered.get(key)!);
+  const html = localizeLinks(lang, await renderLesson(rawBody(l), l, WIDGETS[l.id] ?? []));
   const toc = extractToc(html);
   const all = allLessons();
   const i = all.findIndex((x) => x.id === l.id);
   const prev = all[i - 1], next = all[i + 1];
   const hasLab = (WIDGETS[l.id] ?? []).length > 0;
-  const views = await viewsOf(`/lesson/${l.id}`);
   const text = lessonText(lang, l);
   const prevText = prev && lessonText(lang, prev), nextText = next && lessonText(lang, next);
 
@@ -72,6 +71,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
           <ChineseOnly />
 
+          {v2LessonById(l.id) ? (
+            <VersionSwitch id={l.id} current="original" original={to(`/lesson/${l.id}`)} v2={to(`/v2/lesson/${l.id}`)}
+              compare={V2_COMPARE(l.id)} />
+          ) : null}
+
           <article lang="zh-CN">
             {/* 正文是中文；日文、英文页面的课名和导读已经翻译，标回页面语言 */}
             <header className="art-head" lang={lang === 'zh' ? undefined : HTML_LANG[lang]}>
@@ -79,7 +83,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
                 <span className="art-n">{t.lesson.n(l.id)}</span>
                 <span>{t.lesson.total}</span>
                 <span>{t.lesson.minutes(readingMinutes(l))}</span>
-                {views ? <span>{t.lesson.views(views.toLocaleString(NUMBER_LOCALE[lang]))}</span> : null}
+                <Suspense fallback={null}><Views path={`/lesson/${l.id}`} label={t.lesson.views} /></Suspense>
                 {hasLab ? <span className="art-chip">{t.course.hasLab}</span> : null}
               </p>
               <h1 lang={text.lang}>{text.title}</h1>
@@ -92,7 +96,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
           <CourseCredit compact />
 
-          <Comments page={`lesson/${l.id}`} />
+          <Suspense fallback={null}><Comments page={`lesson/${l.id}`} /></Suspense>
 
           <nav className={`pager${prev && next ? '' : ' single'}`} aria-label={t.lesson.pagerAria}>
             {prev ? (

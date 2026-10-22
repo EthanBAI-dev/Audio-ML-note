@@ -110,6 +110,17 @@ def extra_a4_convention():
     print()
 
 
+def level_same_gap():
+    """同样加 100 Hz，落在不同音区，耳朵听到的距离差多少。"""
+    print("[正文] 加一层 · 同样加 100 Hz，听到的距离不一样")
+    print(f"  相邻两个半音的频率比 2^(1/12) = {2 ** (1 / 12):.4f}，在哪个音区都一样")
+    for f in (110, 220, 440, 880, 1760):
+        c = cents(f, f + 100)
+        print(f"  {f:5d} -> {f + 100:5d} Hz  {c:7.1f} 音分  约 {c / 100:4.1f} 个半音")
+    print("  同一个 100 Hz，在 110 Hz 上差不多是一个八度，在 1760 Hz 上只有一个半音左右。")
+    print()
+
+
 def dump_figures():
     """这一课要上图的数：周期/非周期的真实波形、听觉范围、编号与赫兹。"""
     # 周期性用小提琴的稳态段，非周期性用课程自带的噪声。
@@ -160,6 +171,7 @@ if __name__ == "__main__":
     level_cents()
     level_back()
     level_real_audio()
+    level_same_gap()
     extra_wrong_range()
     extra_a4_convention()
     if "--dump" in sys.argv:

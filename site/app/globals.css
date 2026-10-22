@@ -677,3 +677,27 @@ body:lang(ja) [lang="zh-CN"],body:lang(en) [lang="zh-CN"]{font-family:"Noto Sans
 /* 中文正文里又标回日文、英文的那一块（译好的课名和导读），字体也跟着换回来 */
 body [lang="zh-CN"] [lang="ja"]{font-family:"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif}
 body [lang="zh-CN"] [lang="en"]{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif}
+
+/* v2：版本切换栏与课末小测验 */
+.version-switch{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 18px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:13.5px}
+.version-switch .version-label{color:var(--muted);margin-right:4px}
+.version-switch a{padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.version-switch a[aria-current="page"]{background:var(--ink);color:var(--bg, #fff);border-color:var(--ink)}
+.quiz{margin:40px 0 8px;padding:20px 22px;border:1px solid var(--line);border-radius:14px}
+.quiz h2{margin:0 0 4px;font-size:22px}
+.quiz-hint{margin:0 0 14px;color:var(--muted);font-size:14px}
+.quiz ol{margin:0;padding-left:20px}
+.quiz-q{margin:0 0 18px}
+.quiz-stem{margin:0 0 8px;font-weight:600;line-height:1.7}
+.quiz-options{display:grid;gap:6px}
+.quiz-opt{text-align:left;padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);font:inherit;font-size:14.5px;line-height:1.6;cursor:pointer}
+.quiz-opt:hover:not(:disabled){border-color:var(--ink)}
+.quiz-opt:disabled{cursor:default}
+.quiz-opt b{display:inline-block;width:1.4em;color:var(--muted)}
+.quiz-opt.is-right{border-color:#2E8B57;background:rgba(46,139,87,.10)}
+.quiz-opt.is-wrong{border-color:#D95319;background:rgba(217,83,25,.10)}
+.quiz-explain{margin:8px 0 0;padding:8px 12px;border-radius:8px;font-size:14px;line-height:1.75}
+.quiz-explain.is-right{background:rgba(46,139,87,.08)}
+.quiz-explain.is-wrong{background:rgba(217,83,25,.08)}
+.quiz-score{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.quiz-score button{padding:5px 12px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font:inherit;cursor:pointer}

@@ -604,6 +604,62 @@ FIG['09-align-zcr'] = (M) => {
   return doc(M.W, y, s, '手写过零率与 librosa 的比值恒等于 K 除以 K 减一');
 };
 
+// 整首 30 秒：AE 与 RMS 叠在一起，再看一个样本的爆音把两者各抬高多少。
+FIG['09-ae-vs-rms'] = (M) => {
+  const head = ['一声「咔」进来，', '振幅包络翻几倍，均方根只多一成'];
+  const top = headerH(M, head);
+  const w = wide(M);
+  const px = M.pad;
+  const pw = M.W - M.pad * 2;
+  let s = header(M, head);
+  let y = top + 20;
+
+  const songs = Object.keys(d09.ae_vs_rms);
+  const ph = w ? 70 : 64;
+  s += legend(px + 8, y + 2,
+    [{ name: '振幅包络 AE', c: WARM }, { name: '均方根 RMS', c: BLUE }], { gap: w ? 120 : 112 });
+  y += 48;
+  songs.forEach((k) => {
+    const it = d09.ae_vs_rms[k];
+    const mx = Math.max.apply(null, it.ae);
+    const pn = panel(px, y, pw, ph, {
+      yr: [0, mx * 1.08], title: `${it.zh}（整首 30 秒）`, tsize: M.small, tfill: INK,
+    });
+    s += pn.s + curve(pn, it.ae, { c: WARM, w: 1.1 }) + curve(pn, it.rms, { c: BLUE, w: 1.4 });
+    y += ph + 30;
+  });
+
+  // 爆音实验：每段一行，两个倍数
+  const rowH = w ? 30 : 46;
+  const boxH = 40 + songs.length * rowH;
+  s += R(px, y, pw, boxH, { fill: PLATE, stroke: GREEN, sw: 1.6, r: 9 });
+  s += T(px + 14, y + 26, '第 10 秒塞进一个 ±0.9 的样本，那一帧被抬高', { size: M.small, weight: 700, fill: GREEN });
+  songs.forEach((k, i) => {
+    const it = d09.ae_vs_rms[k];
+    const ry = y + 40 + i * rowH + (w ? 16 : 14);
+    s += T(px + 14, ry, it.zh, { size: tiny(M), weight: 700, fill: INK });
+    if (w) {
+      s += T(px + 90, ry, `AE ${it.click_ae.toFixed(2)} 倍`, { size: tiny(M), weight: 700, fill: WARM });
+      s += T(px + 260, ry, `RMS ${it.click_rms.toFixed(3)} 倍`, { size: tiny(M), weight: 700, fill: BLUE });
+    } else {
+      s += T(px + 70, ry, `AE ${it.click_ae.toFixed(2)} 倍`, { size: tiny(M), weight: 700, fill: WARM });
+      s += T(px + 70, ry + 20, `RMS ${it.click_rms.toFixed(3)} 倍`, { size: tiny(M), weight: 700, fill: BLUE });
+    }
+  });
+  y += boxH + 22;
+
+  s += MT(px, y, w
+    ? ['平时两条曲线抖得差不多，只是 AE 整体高出约 3 倍。差别出在孤立尖峰上：',
+      'AE 只认那一个最大的数，RMS 让它和其余 1023 个数一起平均，于是被稀释掉。']
+    : ['平时两条曲线抖得差不多，只是 AE 整体高出',
+      '约 3 倍。差别出在孤立尖峰上：AE 只认最大',
+      '的那一个数，RMS 让它和其余 1023 个数一起',
+      '平均，于是被稀释掉。'],
+  { size: M.small, fill: MUTED, leading: 21 });
+  y += (w ? 2 : 4) * 21 + 8;
+  return doc(M.W, y, s, '三段音乐的振幅包络与均方根曲线，以及一个爆音样本对两者的影响');
+};
+
 // notebook cell 17–19：五段素材的 RMS 与 ZCR。
 FIG['09-five-clips'] = (M) => {
   const head = ['五段素材各两个数，', '语音和噪声那一对分不开'];

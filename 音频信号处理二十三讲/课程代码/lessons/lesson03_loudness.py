@@ -179,6 +179,40 @@ def level_modulation():
     print()
 
 
+def a_weight_db(f):
+    """IEC 61672 的 A 计权，和 dump_figures() 里画等响曲线用的是同一个式子。"""
+    f2 = f * f
+    num = (12194.0 ** 2) * (f2 ** 2)
+    den = ((f2 + 20.6 ** 2)
+           * np.sqrt((f2 + 107.7 ** 2) * (f2 + 737.9 ** 2))
+           * (f2 + 12194.0 ** 2))
+    return 20 * np.log10(num / den) + 2.00
+
+
+def level_equal_loudness_table():
+    """等响曲线上几个点：要和 1 kHz 一样响，各频率得多给多少 dB。"""
+    print("[正文] 加一层 · 要和 1 kHz 一样响，各频率得多给多少 dB")
+    for f in (31.5, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000):
+        need = round(-float(a_weight_db(f) - a_weight_db(1000.0)), 1) + 0.0
+        print(f"  {f:7.1f} Hz  {need:+6.1f} dB  约 {10 ** (need / 10):8.2f} 倍声强")
+    print("  负数表示比 1 kHz 还敏感，少给一点就一样响。")
+    print()
+
+
+def level_attack_time():
+    """包络峰值出现在第几秒：「怎么开始」换成绝对时间来看。"""
+    print("[正文] 加一层 · 三件乐器多久到最响")
+    from soundlab.framing import frame
+    from soundlab.time_features import amplitude_envelope
+    for nm, zh in [("violin_c", "小提琴"), ("sax", "萨克斯"), ("piano_c", "钢琴")]:
+        y, sr = io.load(nm)
+        env = amplitude_envelope(frame(io.rms_normalize(y), 1024, 512))
+        pos = (int(np.argmax(env)) * 512 + 512) / sr
+        print(f"  {zh:6} 全长 {len(y) / sr:4.2f} 秒，第 {pos:4.2f} 秒到最响")
+    print("  帧移 512 个样本，即 23 毫秒，时间读数的精度就在这个量级。")
+    print()
+
+
 def dump_figures():
     """这一课要上图的数：听阈到痛阈、三件乐器的包络与泛音、颤音的包络。"""
     from soundlab.framing import frame
@@ -266,9 +300,11 @@ if __name__ == "__main__":
     sine, noise = make_pair()
     step1_3_three_metrics(sine, noise)
     level_lufs(sine, noise)
+    level_equal_loudness_table()
     level_normalize()
     extra_frame_vs_global()
     level_timbre()
+    level_attack_time()
     level_modulation()
     if "--dump" in sys.argv:
         dump_figures()

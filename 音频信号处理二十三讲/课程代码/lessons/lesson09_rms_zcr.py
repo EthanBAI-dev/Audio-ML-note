@@ -87,7 +87,96 @@ def nb3_zcr_librosa_vs_mine():
     return lib, mine, ratio
 
 
-def dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio):
+SONGS = [("debussy", "古典"), ("duke", "爵士"), ("redhot", "摇滚")]
+
+
+def nb_rms_vs_ae():
+    """整首 30 秒：均方根和振幅包络放在一起，看哪条更经得起一个孤立尖峰。
+
+    第 07 课只从公式上说「RMS 比 AE 更不怕离群值」。这里在三段真实音乐上
+    量两件事：正常起伏时两条曲线各抖多少；人为塞进一个样本的爆音时，
+    那一帧的读数各被抬高多少倍。
+    """
+    print("[正文] 第 3 步 · 均方根和振幅包络放在一起：谁更怕一个孤立的尖峰")
+    print(f"  整首 30 秒，帧长 {FRAME_LENGTH}、帧移 {HOP_LENGTH}，不做归一化")
+    print(f"  {'':6}{'AE÷RMS':>9}{'AE 起伏':>9}{'RMS 起伏':>10}"
+          f"{'爆音后 AE':>11}{'爆音后 RMS':>12}")
+    out = {}
+    for nm, zh in SONGS:
+        y, sr = io.load(nm)
+        f = frame(y, FRAME_LENGTH, HOP_LENGTH)
+        ae, r = amplitude_envelope(f), rms(f)
+        cv_ae, cv_rms = float(np.std(ae) / np.mean(ae)), float(np.std(r) / np.mean(r))
+        # 第 10 秒处的一个样本换成 ±0.9，模拟一声「咔」
+        y2 = y.copy()
+        i = int(10 * sr)
+        y2[i] = 0.9 if y2[i] >= 0 else -0.9
+        f2 = frame(y2, FRAME_LENGTH, HOP_LENGTH)
+        ae2, r2 = amplitude_envelope(f2), rms(f2)
+        k = int(np.argmax(np.abs(ae2 - ae)))
+        out[nm] = {"zh": zh, "ae": thin(ae, 320), "rms": thin(r, 320),
+                   "level_ratio": float(np.median(ae / r)),
+                   "cv_ae": cv_ae, "cv_rms": cv_rms,
+                   "click_ae": float(ae2[k] / ae[k]),
+                   "click_rms": float(r2[k] / r[k])}
+        o = out[nm]
+        print(f"  {zh:6}{o['level_ratio']:9.2f}{cv_ae:9.3f}{cv_rms:10.3f}"
+              f"{o['click_ae']:10.2f}倍{o['click_rms']:11.3f}倍")
+    print("  AE÷RMS：同一帧里 AE 大约是 RMS 的 3 倍，两条曲线不在同一个高度。")
+    print("  起伏（标准差÷平均值）：正常音乐里两条曲线抖得差不多。")
+    print("  一个样本的爆音：AE 被抬高 4.6—6.0 倍，RMS 只多 9%—13%。")
+    print("  所以 RMS「更稳」稳在不怕孤立尖峰，不是整条曲线更平。")
+    print()
+    return out
+
+
+def nb_zcr_rate_and_count():
+    """库返回的是「比例」，乘上帧长才是这一帧真正穿过中线的次数。"""
+    print("[正文] 第 4 步补充 · 过零率是比例，乘帧长才是次数")
+    import librosa
+    alt = np.tile([1.0, -1.0], FRAME_LENGTH)
+    top = librosa.feature.zero_crossing_rate(
+        alt, frame_length=FRAME_LENGTH, hop_length=HOP_LENGTH, center=False)[0][0]
+    print(f"  每个样本都换号的极端信号：librosa 给 {top:.6f}"
+          f" = {FRAME_LENGTH - 1}/{FRAME_LENGTH}，到不了 1")
+    print(f"  整首 30 秒，帧长 {FRAME_LENGTH}（{FRAME_LENGTH / 22050 * 1000:.1f} 毫秒）")
+    print(f"  {'':6}{'平均比例':>10}{'每帧平均次数':>12}{'最多的一帧':>10}")
+    out = {}
+    for nm, zh in SONGS:
+        y, sr = io.load(nm)
+        z = librosa.feature.zero_crossing_rate(
+            y, frame_length=FRAME_LENGTH, hop_length=HOP_LENGTH, center=False)[0]
+        out[nm] = {"zh": zh, "mean": float(z.mean()),
+                   "count": float(z.mean() * FRAME_LENGTH),
+                   "max_count": int(round(z.max() * FRAME_LENGTH))}
+        print(f"  {zh:6}{z.mean():10.4f}{z.mean() * FRAME_LENGTH:12.1f}"
+              f"{out[nm]['max_count']:10d}")
+    print("  摇滚每帧平均穿过中线约 127 次，是古典（73）和爵士（64）的近两倍。")
+    print("  爵士不在中间，反而最低。")
+    print()
+    return {"top": float(top), "songs": out}
+
+
+def nb_voice_by_frame():
+    """语音逐帧看过零率：整段平均会把几帧嘶嘶声抹平。"""
+    print("[正文] 第 5 步补充 · 语音逐帧看：有声音的帧里，过零率差了十倍")
+    y, sr = io.load("voice")
+    f = frame(y, FRAME_LENGTH, HOP_LENGTH)
+    r, z = rms(f), zero_crossing_rate(f)
+    sounding = r > np.percentile(r, 30)          # 去掉最安静的三成，只看有声音的帧
+    med = float(np.median(z[sounding]))
+    top = np.sort(z[sounding])[-5:]
+    times = sorted(round(float(i) * HOP_LENGTH / sr, 1)
+                   for i in np.argsort(np.where(sounding, z, 0))[-5:])
+    print(f"  整首 30 秒，帧长 {FRAME_LENGTH}，只看最响的七成帧（{int(sounding.sum())} 帧）")
+    print(f"  过零率中位数 {med:.3f}，最高的 5 帧 {[round(float(v), 3) for v in top]}")
+    print(f"  最高的几帧出现在第 {times} 秒，是中位数的 {top.min() / med:.0f} 倍以上")
+    print("  元音一类的浊音过零少，嘶嘶声一类的清音过零多；整段平均把这几帧抹平了。")
+    print()
+    return {"median": med, "top": [float(v) for v in top], "times": times}
+
+
+def dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio, ae_rms, zcr_count):
     """这一课要上图的数：对齐结果、五段素材、直流偏置。"""
     y, sr = io.load("debussy", seconds=3)
     n = min(len(lib_zcr), len(mine_zcr))
@@ -106,6 +195,8 @@ def dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio):
                       "rms": thin(v["rms"], 320),
                       "zcr": thin(v["zcr"], 320)}
                   for k, v in clips.items()},
+        "ae_vs_rms": ae_rms,
+        "zcr_count": zcr_count,
     })
     print(f"[配图数据] 写好了 {path}")
 
@@ -178,6 +269,10 @@ def level_dc_offset(clips):
     print("  声音一点没变，只是整条曲线离开了中线，低处的摆动够不着零线了。")
     print("  真实录音里这种偏移来自设备直流偏置，肉眼在波形图上几乎看不出来。")
     print("  对策：算过零率之前先减去整段的平均值。")
+    z0 = zero_crossing_rate(frame(y, N, H)).mean()
+    zc = zero_crossing_rate(frame(y - y.mean(), N, H)).mean()
+    print(f"  [正文] 这段人声自己就带偏置：平均值 {y.mean():.4f}（峰值的 {y.mean():.1%}）")
+    print(f"  减去平均值后过零率 {z0:.4f} → {zc:.4f}，是原来的 {zc / z0:.3f} 倍")
     print()
 
 
@@ -258,7 +353,9 @@ if __name__ == "__main__":
     # 数值对不上就说明两边对「一帧是哪些样本」的理解不一样。
     y0, sr0, lib_rms = nb1_rms_librosa()
     mine_rms = nb2_rms_from_scratch(y0, sr0, lib_rms)
+    ae_rms = nb_rms_vs_ae()
     lib_zcr, mine_zcr, ratio = nb3_zcr_librosa_vs_mine()
+    zcr_count = nb_zcr_rate_and_count()
 
     # 公式本身的两个小例子
     step1_four_numbers()
@@ -266,10 +363,11 @@ if __name__ == "__main__":
 
     clips = load_clips()
     step3_real(clips)
+    nb_voice_by_frame()
     level_dc_offset(clips)
     level_threshold(clips)
     level_joint(clips)
     write_features(clips)
 
     if "--dump" in sys.argv:
-        dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio)
+        dump_figures(clips, mine_rms, lib_zcr, mine_zcr, ratio, ae_rms, zcr_count)

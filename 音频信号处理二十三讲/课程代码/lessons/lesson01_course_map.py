@@ -14,6 +14,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.stdout.reconfigure(encoding="utf-8")
 
+import numpy as np
 import soundfile as sf
 
 
@@ -76,6 +77,23 @@ def write_manifest(rows, target="dataset_manifest.csv"):
         writer.writerows(rows)
 
 
+def inspect_reference_audio():
+    """七段对照素材也只读文件头：它们来自不同来源，格式并不统一。"""
+    folder = audio_dir()
+    rows = []
+    for filename in REFERENCE_AUDIO:
+        info = sf.info(os.path.join(folder, filename))
+        rows.append((filename, info.duration, info.samplerate, info.channels, info.frames))
+    return rows
+
+
+def numbers_in_a_recording(filename="voice.wav", at_s=1.0, n=8):
+    """一段录音在程序眼里是什么：一长串数。取第 at_s 秒开始的 n 个看看。"""
+    x, sr = sf.read(os.path.join(audio_dir(), filename), dtype="float32")
+    start = int(at_s * sr)
+    return x, sr, start, x[start:start + n]
+
+
 def main():
     rows = inspect_course_audio()
 
@@ -106,6 +124,24 @@ def main():
     print("[脚本额外] 七段对照素材")
     print("  " + "、".join(REFERENCE_AUDIO))
     print("  它们用于音高、音色、颤音、语音与噪声实验，不加入三分类标签表。")
+    print()
+
+    x, sr, start, head = numbers_in_a_recording()
+    print("[正文] 一段录音在程序眼里")
+    print(f"  voice.wav：{len(x) / sr:.2f} 秒，每秒 {sr} 个数，共 {len(x)} 个数")
+    print(f"  相邻两个数隔 {1000 / sr:.4f} 毫秒")
+    print(f"  从第 {start / sr:.3f} 秒开始的 {len(head)} 个：")
+    print("  " + ", ".join(f"{v:+.4f}" for v in head))
+    print(f"  整段最大 {np.max(x):+.4f}，最小 {np.min(x):+.4f}")
+    print("  单独一个数说明不了什么；要成段地看，才看得出声音。")
+    print()
+
+    print("[正文] 七段对照素材的格式并不统一")
+    for name, dur, rate, ch, frames in inspect_reference_audio():
+        print(f"  {name:<12} {dur:6.2f} 秒 | {rate} Hz | {ch} 声道 | {frames} 个时刻")
+    rates = sorted({r[2] for r in inspect_reference_audio()})
+    print(f"  出现了 {len(rates)} 种「每秒记录次数」：{rates}")
+    print("  格式对不齐的素材不能直接放在一起算，第 04、06 课会先统一再计算。")
 
 
 if __name__ == "__main__":
