@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { eq } from 'drizzle-orm';
@@ -62,7 +63,7 @@ async function Stats({ t, lang }: { t: Dictionary; lang: Locale }) {
   );
 }
 
-export default async function AccountPage() {
+async function AccountPageBody() {
   await connection();
   const { lang, t: dict, to } = await getT();
   const t = dict.account;
@@ -100,4 +101,9 @@ export default async function AccountPage() {
       </aside>
     )}
   </main></div>;
+}
+
+/** 这一页要读登录状态，只能每次现算；包一层 Suspense，页头页脚仍可预先生成。 */
+export default function AccountPage() {
+  return <Suspense fallback={null}><AccountPageBody /></Suspense>;
 }

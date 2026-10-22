@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { authConfigured, currentUserId } from '../auth';
 import { db } from '../lib/db';
 import { isAdmin, listComments, type CommentView } from '../lib/comments';
@@ -46,6 +47,7 @@ function Item({ c, page, me, admin, replies, t, lang, time }: {
 /** 页面底部的评论区。page 是不带开头斜杠、也不带语言前缀的站内路径，比如 lesson/05；
  *  三种语言看到的是同一串评论。 */
 export default async function Comments({ page }: { page: string }) {
+  await connection();
   if (!authConfigured || !db) return null;
   const { lang, t: dict, to } = await getT();
   const t = dict.comments;
