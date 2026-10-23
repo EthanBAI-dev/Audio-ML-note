@@ -6,6 +6,8 @@ Ethan 的个人音乐实验室官网。《音频信号处理二十三讲》是�
 - **账号**：邮箱登录（点邮件里的链接，第一次登录自动注册）。登录后可以在每一讲下面评论、回复、删除自己的评论，并在「我的账号」里改显示名称。微信登录代码保留，配齐资质后填上密钥就会出现。
 - **浏览统计**：每个页面记一次浏览（同一访客 30 分钟内重复打开只记一次），每讲标题下显示阅读次数。`ADMIN_EMAILS` 里的账号在「我的账号」页能看到全站统计，也能删除任何评论。
 
+- **文章后台**：管理员登录后打开 `/admin`（或「我的账号」里的「编辑文章」），左边改 Markdown、右边实时预览，保存即提交到 GitHub 仓库，Vercel 自动重新部署，一两分钟后线上更新。需要配置 `GITHUB_TOKEN`；打开文件后仓库里又被改过的话，保存会被拒绝，不会悄悄覆盖。没保存的改动会暂存在浏览器里。
+
 **文章不复制一份。** 站点在构建时读取课程目录里的原文件，正式版仍然是唯一的事实来源；改文章不需要动这里。
 
 ## 本地跑
@@ -21,7 +23,7 @@ npm --prefix site run dev     # http://localhost:3000
 
 1. 在 Vercel 里导入这个仓库。
 2. **Root Directory 填 `site`**，框架会被识别成 Next.js，其余保持默认。
-3. 按 `.env.example` 配置 `AUTH_SECRET`、`DATABASE_URL`、`AUTH_RESEND_KEY`、`AUTH_EMAIL_FROM` 和 `ADMIN_EMAILS`。
+3. 按 `.env.example` 配置 `AUTH_SECRET`、`DATABASE_URL`、`AUTH_RESEND_KEY`、`AUTH_EMAIL_FROM`、`ADMIN_EMAILS`，要用文章后台再加 `GITHUB_TOKEN`。
 4. 准备 PostgreSQL（Vercel 集成里的 Neon 免费版即可），依次执行 `db/migrations/` 下的两个 SQL 文件。
 5. 在 [Resend](https://resend.com) 验证你的发信域名，拿到 API Key。以后要开微信登录，再配置微信开放平台网站应用，回调地址为 `https://你的域名/api/auth/callback/wechat`。
 6. 先在预览环境走一遍：邮箱登录、发评论、回复、删除、改显示名称、管理员看统计。
