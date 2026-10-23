@@ -50,6 +50,7 @@ async function Stats({ t, lang }: { t: Dictionary; lang: Locale }) {
       <p className="eyebrow">ADMIN · PAGE VIEWS</p>
       <h2>{t.account.statsTitle}</h2>
       <p>{t.account.statsBody(n(total))}</p>
+      <p><Link className="btn" href="/admin">编辑文章</Link></p>
       {rows.length ? (
         <table>
           <thead><tr><th>{t.account.colPage}</th><th>{t.account.colViews}</th></tr></thead>

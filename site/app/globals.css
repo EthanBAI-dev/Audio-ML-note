@@ -677,3 +677,37 @@ body:lang(ja) [lang="zh-CN"],body:lang(en) [lang="zh-CN"]{font-family:"Noto Sans
 /* 中文正文里又标回日文、英文的那一块（译好的课名和导读），字体也跟着换回来 */
 body [lang="zh-CN"] [lang="ja"]{font-family:"Noto Sans JP","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif}
 body [lang="zh-CN"] [lang="en"]{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif}
+
+/* 文章后台：只有管理员看得到，样式从简 */
+.admin-shell>main{max-width:860px;margin:0 auto 80px}
+.admin-head h1{font-size:32px;margin:8px 0 12px}.admin-head p{color:var(--muted);line-height:1.8}
+.admin-folder{margin-top:30px}.admin-folder h2{font-size:15px;margin:0 0 8px;color:var(--muted)}
+.admin-folder ul{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.admin-folder li+li{border-top:1px solid var(--line)}
+.admin-folder a{display:block;padding:11px 16px;color:var(--ink);text-decoration:none;font-size:14.5px}
+.admin-folder a:hover{background:var(--accent-soft);color:var(--accent-strong)}
+.admin-error,.editor-note.err{color:#b42318}
+.editor-shell{max-width:1500px;margin:0 auto;padding:16px 20px 40px}
+.editor-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 14px;border-bottom:1px solid var(--line)}
+.editor-title,.editor-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;min-width:0}
+.editor-title b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw}
+.editor-bar .text-link{font-size:14px}
+.editor-dirty{font-size:12px;color:var(--muted)}.editor-dirty.on{color:var(--orange)}
+.editor-summary{min-width:200px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:4px;background:var(--panel);color:var(--ink);font:inherit;font-size:13px}
+.editor-actions .btn{cursor:pointer}.editor-actions .btn:disabled{opacity:.45;cursor:default}
+.editor-note{margin:12px 0 0;font-size:13.5px;color:var(--muted)}.editor-note.ok{color:var(--green)}
+.editor-note .text-button{margin-left:6px}
+.editor-tabs{display:none}
+.editor-panes{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px}
+.editor-text,.editor-preview{height:calc(100vh - 190px);min-height:420px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.editor-text{width:100%;box-sizing:border-box;resize:none;padding:16px;color:var(--ink);font:13.5px/1.75 ui-monospace,"SFMono-Regular",Consolas,monospace;tab-size:2}
+.editor-text:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.editor-preview{overflow:auto;padding:4px 26px 26px}
+@media(max-width:900px){
+  .editor-tabs{display:flex;gap:6px;margin-top:14px}
+  .editor-tabs button{flex:1;padding:8px;border:1px solid var(--line-strong);border-radius:4px;background:var(--panel);color:var(--ink);font:inherit;cursor:pointer}
+  .editor-tabs button[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .editor-panes{grid-template-columns:1fr}
+  .editor-panes.show-edit .editor-preview,.editor-panes.show-preview .editor-text{display:none}
+  .editor-summary{flex:1}
+}
